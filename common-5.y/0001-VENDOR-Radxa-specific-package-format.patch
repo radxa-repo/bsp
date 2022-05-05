@@ -1,0 +1,118 @@
+From 23c3e9e77d66b3efb47c888b0f0fcd0564d512cb Mon Sep 17 00:00:00 2001
+From: Yuntian Zhang <yt@radxa.com>
+Date: Tue, 26 Apr 2022 20:06:38 +0800
+Subject: [PATCH] VENDOR: Radxa specific package format
+
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ scripts/Makefile.package |  4 ++++
+ scripts/package/builddeb |  8 ++++----
+ scripts/package/mkdebian | 15 +++++++++------
+ 3 files changed, 17 insertions(+), 10 deletions(-)
+
+diff --git a/scripts/Makefile.package b/scripts/Makefile.package
+index f952fb64789d..fb16e22db897 100644
+--- a/scripts/Makefile.package
++++ b/scripts/Makefile.package
+@@ -78,11 +78,15 @@ deb-pkg:
+ 	+dpkg-buildpackage -r$(KBUILD_PKG_ROOTCMD) -a$$(cat debian/arch) $(DPKG_FLAGS) -i.git -us -uc
+ 
+ PHONY += bindeb-pkg
++bindeb-pkg: export FORK = $(FORK)
++bindeb-pkg: export SUPPORTED_BOARDS = $(SUPPORTED_BOARDS)
+ bindeb-pkg:
+ 	$(CONFIG_SHELL) $(srctree)/scripts/package/mkdebian
+ 	+dpkg-buildpackage -r$(KBUILD_PKG_ROOTCMD) -a$$(cat debian/arch) $(DPKG_FLAGS) -b -nc -uc
+ 
+ PHONY += intdeb-pkg
++intdeb-pkg: export FORK = $(FORK)
++intdeb-pkg: export SUPPORTED_BOARDS = $(SUPPORTED_BOARDS)
+ intdeb-pkg:
+ 	+$(CONFIG_SHELL) $(srctree)/scripts/package/builddeb
+ 
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index 91a502bb97e8..67f3ae0a15b9 100755
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -109,8 +109,8 @@ deploy_libc_headers () {
+ version=$KERNELRELEASE
+ tmpdir=debian/linux-image
+ dbg_dir=debian/linux-image-dbg
+-packagename=linux-image-$version
+-dbg_packagename=$packagename-dbg
++packagename=linux-image-$FORK
++dbg_packagename=linux-image-dbg-$FORK
+ 
+ if [ "$ARCH" = "um" ] ; then
+ 	packagename=user-mode-linux-$version
+@@ -211,11 +211,11 @@ done
+ if [ "$ARCH" != "um" ]; then
+ 	if is_enabled CONFIG_MODULES; then
+ 		deploy_kernel_headers debian/linux-headers
+-		create_package linux-headers-$version debian/linux-headers
++		create_package linux-headers-$FORK debian/linux-headers
+ 	fi
+ 
+ 	deploy_libc_headers debian/linux-libc-dev
+-	create_package linux-libc-dev debian/linux-libc-dev
++	create_package linux-libc-dev-$FORK debian/linux-libc-dev
+ fi
+ 
+ create_package "$packagename" "$tmpdir"
+diff --git a/scripts/package/mkdebian b/scripts/package/mkdebian
+index 60a2a63a5e90..2d3622cb99b0 100755
+--- a/scripts/package/mkdebian
++++ b/scripts/package/mkdebian
+@@ -98,7 +98,7 @@ sourcename=$KDEB_SOURCENAME
+ if [ "$ARCH" = "um" ] ; then
+ 	packagename=user-mode-linux
+ else
+-	packagename=linux-image
++	packagename="linux-image-$FORK"
+ fi
+ 
+ debarch=
+@@ -178,15 +178,16 @@ Rules-Requires-Root: no
+ Build-Depends: bc, rsync, kmod, cpio, bison, flex | flex:native $extra_build_depends
+ Homepage: https://www.kernel.org/
+ 
+-Package: $packagename-$version
++Package: $packagename
++Provides:$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-image-&/g')
+ Architecture: $debarch
+ Description: Linux kernel, version $version
+  This package contains the Linux kernel, modules and corresponding other
+  files, version: $version.
+ 
+-Package: linux-libc-dev
++Package: linux-libc-dev-$FORK
+ Section: devel
+-Provides: linux-kernel-headers
++Provides: linux-kernel-headers,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-kernel-headers-&/g')
+ Architecture: $debarch
+ Description: Linux support headers for userspace development
+  This package provides userspaces headers from the Linux kernel.  These headers
+@@ -197,7 +198,8 @@ EOF
+ if is_enabled CONFIG_MODULES; then
+ cat <<EOF >> debian/control
+ 
+-Package: linux-headers-$version
++Package: linux-headers-$FORK
++Provides:$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-headers-&/g')
+ Architecture: $debarch
+ Description: Linux kernel headers for $version on $debarch
+  This package provides kernel header files for $version on $debarch
+@@ -209,8 +211,9 @@ fi
+ if is_enabled CONFIG_DEBUG_INFO; then
+ cat <<EOF >> debian/control
+ 
+-Package: linux-image-$version-dbg
++Package: linux-image-dbg-$FORK
+ Section: debug
++Provides:$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-image-dbg-&/g')
+ Architecture: $debarch
+ Description: Linux kernel debugging symbols for $version
+  This package will come in handy if you need to debug the kernel. It provides
+-- 
+2.35.1
+

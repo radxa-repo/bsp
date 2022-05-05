@@ -1,0 +1,225 @@
+#!/bin/bash
+
+ARCH="arm64"
+CROSS_COMPILE="aarch64-linux-gnu-"
+DPKG_FLAGS="-d"
+LINUX_GIT=
+LINUX_TAG=
+LINUX_DEFCONFIG=
+LINUX_COMMIT=
+LINUX_BRANCH=
+PKG_REVISION="1"
+
+NO_PREPARE_SOURCE=
+
+EXIT_SUCCESS=0
+EXIT_UNKNOWN_OPTION=1
+EXIT_TOO_FEW_ARGUMENTS=2
+EXIT_UNSUPPORTED_OPTION=3
+
+error() {
+    case "$1" in
+        $EXIT_SUCCESS)
+            ;;
+        $EXIT_UNKNOWN_OPTION)
+            echo "Unknown option: '$2'." >&2
+            ;;
+        $EXIT_TOO_FEW_ARGUMENTS)
+            echo "Too few arguments." >&2
+            ;;
+        $EXIT_UNSUPPORTED_OPTION)
+            echo "Option '$2' is not supported." >&2
+            ;;
+        *)
+            echo "Unknown exit code." >&2
+            ;;
+    esac
+    
+    exit "$1"
+}
+
+usage() {
+    cat >&2 << EOF
+Radxa Linux Kernel Build Tool
+usage: $(basename "$0") [options] <fork>
+
+Supported package generation options:
+    -r, --revision [num]
+                        Specify custom revision number, default=1
+    --no-prepare-source Allow building against locally modified repos
+
+Alternative functionalities
+    --json [catagory]   Print supported options in json format
+                        Available catagories: $(get_supported_infos)
+    -h, --help          Show this help message
+
+Supported fork:
+$(printf_array "    %s\n" "$(get_supported_forks)")
+EOF
+    exit "$1"
+}
+
+printf_array() {
+    local FORMAT="$1"
+    shift
+    local ARRAY=("$@")
+
+    if [[ $FORMAT == "json" ]]
+    then
+        jq --compact-output --null-input '$ARGS.positional' --args -- "${ARRAY[@]}"
+    else
+        for i in ${ARRAY[@]}
+        do
+            printf "$FORMAT" "$i"
+        done
+    fi
+}
+
+get_supported_forks() {
+    local FORKS=()
+    for f in $(ls $SCRIPT_DIR/forks)
+    do
+        FORKS+="$f "
+    done
+    echo "${FORKS[@]}"
+}
+
+get_supported_infos() {
+    local INFOS=("forks")
+    echo "${INFOS[@]}"
+}
+
+in_array() {
+    local ITEM="$1"
+    shift
+    local ARRAY=("$@")
+    if [[ " ${ARRAY[*]} " =~ " $ITEM " ]]
+    then
+        true
+    else
+        false
+    fi
+}
+
+json() {
+    local ARRAY=($(get_supported_infos))
+    if ! in_array "$1" "${ARRAY[@]}"
+    then
+        error $EXIT_UNKNOWN_OPTION "$1"
+    fi
+
+    printf_array "json" $(get_supported_$1)
+    exit 0
+}
+
+prepare_source() {
+    mkdir -p "$SCRIPT_DIR/.src"
+
+    if ! [[ -e "$SCRIPT_DIR/.src/linux" ]]
+    then
+        mkdir -p "$SCRIPT_DIR/.src/linux"
+        pushd "$SCRIPT_DIR/.src/linux"
+            git init
+        popd
+    fi
+
+    pushd "$SCRIPT_DIR/.src/linux"
+
+        local ORIGIN=$(sha1sum <(echo "$LINUX_GIT") | cut -d' ' -f1)
+        git remote add $ORIGIN $LINUX_GIT 2>/dev/null && true
+
+        if [[ -n $LINUX_COMMIT ]]
+        then
+            git fetch --depth 1 $ORIGIN $LINUX_COMMIT
+            git checkout $LINUX_COMMIT
+        elif [[ -n $LINUX_BRANCH ]]
+        then
+            # Tag is more precise than branch and should be preferred.
+            # However, since we are defaulting with upstream Linux,
+            # we will always have non empty $LINUX_TAG.
+            # As such check $LINUX_BRANCH first.
+            git fetch --depth 1 $ORIGIN $LINUX_BRANCH
+            git checkout $LINUX_BRANCH
+            git reset --hard $ORIGIN/$LINUX_BRANCH
+        elif [[ -n $LINUX_TAG ]]
+        then
+            git fetch --depth 1 $ORIGIN tag $LINUX_TAG
+            git checkout tags/$LINUX_TAG
+        fi
+
+        git reset FETCH_HEAD
+        git restore .
+        git config --get user.name >/dev/null || git config user.name "lbuild"
+        git config --get user.email >/dev/null || git config user.email "lbuild@invalid.email"
+
+        if ls $SCRIPT_DIR/forks/$FORK/common/*.patch &>/dev/null
+        then
+            git am --reject --whitespace=fix $(ls $SCRIPT_DIR/forks/$FORK/common/*.patch)
+        fi
+
+        if ls $SCRIPT_DIR/forks/$FORK/*.patch &>/dev/null
+        then
+            git am --reject --whitespace=fix $(ls $SCRIPT_DIR/forks/$FORK/*.patch)
+        fi
+    popd
+}
+
+build() {
+    if (( $# == 0 ))
+    then
+        usage 0
+    fi
+
+    while (( $# > 0 ))
+    do
+        case "$1" in
+            -r | --revision)
+                PKG_REVISION="$2"
+                shift 2
+                ;;
+            --no-prepare-source)
+                NO_PREPARE_SOURCE="y"
+                shift
+                ;;
+            --json)
+                json "$2"
+                ;;
+            -h | --help)
+                usage 0
+                ;;
+            -*)
+                error $EXIT_UNKNOWN_OPTION "$1"
+                ;;
+            *) break ;;
+        esac
+    done
+
+    if ! source "$SCRIPT_DIR/forks/$1/fork.conf" 2>/dev/null
+    then
+        error $EXIT_UNKNOWN_OPTION "$1"
+    fi
+
+    local FORK=$1
+
+    [[ $NO_PREPARE_SOURCE != "y" ]] && prepare_source
+    
+    # Get Linux version
+    source <(cat $SCRIPT_DIR/.src/linux/Makefile | head -n 10 | tr -d ' ')
+    LINUX_VERSION=$VERSION
+    if [[ -n $PATCHLEVEL ]]; then LINUX_VERSION=$LINUX_VERSION.$PATCHLEVEL; fi
+    if [[ -n $SUBLEVEL ]]; then LINUX_VERSION=$LINUX_VERSION.$SUBLEVEL; fi
+    if [[ -n $EXTRAVERSION ]]; then LINUX_VERSION=$LINUX_VERSION.$EXTRAVERSION; fi
+    echo $(( $PKG_REVISION - 1 )) > $SCRIPT_DIR/.src/linux/.version
+
+    make -C "$SCRIPT_DIR/.src/linux" -j$(nproc) \
+        ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
+        KERNELRELEASE=$LINUX_VERSION DPKG_FLAGS=$DPKG_FLAGS \
+        FORK=$FORK SUPPORTED_BOARDS=$SUPPORTED_BOARDS \
+        $LINUX_DEFCONFIG all bindeb-pkg
+}
+
+set -e
+
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+
+build "$@"
