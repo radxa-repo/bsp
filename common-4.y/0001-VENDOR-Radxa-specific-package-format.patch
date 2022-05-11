@@ -1,20 +1,19 @@
-From 06846f6fb721a77bef1c3841f13e90187297402a Mon Sep 17 00:00:00 2001
+From 16448e20803b20ac917770dd027be565646d8a0f Mon Sep 17 00:00:00 2001
 From: Yuntian Zhang <yt@radxa.com>
 Date: Fri, 29 Apr 2022 16:32:28 +0800
 Subject: [PATCH] VENDOR: Radxa specific package format
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
- scripts/package/Makefile |  8 ++++++--
- scripts/package/builddeb |  8 ++++----
- scripts/package/mkdebian | 13 ++++++++-----
- 3 files changed, 18 insertions(+), 11 deletions(-)
+ scripts/package/Makefile | 6 ++++--
+ scripts/package/mkdebian | 5 ++++-
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
 diff --git a/scripts/package/Makefile b/scripts/package/Makefile
-index 73503ebce632..7b57ce77d1ea 100644
+index 73503ebce632..5bd5da793ad0 100644
 --- a/scripts/package/Makefile
 +++ b/scripts/package/Makefile
-@@ -73,12 +73,16 @@ deb-pkg: FORCE
+@@ -73,11 +73,13 @@ deb-pkg: FORCE
  	$(call cmd,src_tar,$(KDEB_SOURCENAME))
  	origversion=$$(dpkg-parsechangelog -SVersion |sed 's/-[^-]*$$//');\
  		mv $(KDEB_SOURCENAME).tar.gz ../$(KDEB_SOURCENAME)_$${origversion}.orig.tar.gz
@@ -28,70 +27,33 @@ index 73503ebce632..7b57ce77d1ea 100644
 -	+dpkg-buildpackage -r$(KBUILD_PKG_ROOTCMD) -a$$(cat debian/arch) -b -nc -uc
 +	+dpkg-buildpackage -r$(KBUILD_PKG_ROOTCMD) -a$$(cat debian/arch) $(DPKG_FLAGS) -b -nc -uc
  
-+intdeb-pkg: export FORK = $(FORK)
-+intdeb-pkg: export SUPPORTED_BOARDS = $(SUPPORTED_BOARDS)
  intdeb-pkg: FORCE
  	+$(CONFIG_SHELL) $(srctree)/scripts/package/builddeb
- 
-diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-index 4c2b8413269e..e78d868ace15 100755
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -39,10 +39,10 @@ tmpdir="$objtree/debian/tmp"
- kernel_headers_dir="$objtree/debian/hdrtmp"
- libc_headers_dir="$objtree/debian/headertmp"
- dbg_dir="$objtree/debian/dbgtmp"
--packagename=linux-image-$version
--kernel_headers_packagename=linux-headers-$version
--libc_headers_packagename=linux-libc-dev
--dbg_packagename=$packagename-dbg
-+packagename=linux-image-$FORK
-+kernel_headers_packagename=linux-headers-$FORK
-+libc_headers_packagename=linux-libc-dev-$FORK
-+dbg_packagename=linux-image-dbg-$FORK
- 
- if [ "$ARCH" = "um" ] ; then
- 	packagename=user-mode-linux-$version
 diff --git a/scripts/package/mkdebian b/scripts/package/mkdebian
-index edcad61fe3cd..07b17635a81c 100755
+index edcad61fe3cd..1f492bec5c5b 100755
 --- a/scripts/package/mkdebian
 +++ b/scripts/package/mkdebian
-@@ -94,9 +94,9 @@ else
- 	packageversion=$version-$revision
- fi
- sourcename=$KDEB_SOURCENAME
--packagename=linux-image-$version
--kernel_headers_packagename=linux-headers-$version
--dbg_packagename=$packagename-dbg
-+packagename="linux-image-$FORK"
-+kernel_headers_packagename="linux-headers-$FORK"
-+dbg_packagename="linux-image-dbg-$FORK"
- debarch=
- set_debarch
- 
-@@ -174,21 +174,23 @@ Build-Depends: bc, kmod, cpio
+@@ -174,12 +174,14 @@ Build-Depends: bc, kmod, cpio
  Homepage: http://www.kernel.org/
  
  Package: $packagename
-+Provides:$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-image-&/g')
++Provides: linux-image-$FORK,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-image-&/g')
  Architecture: $debarch
  Description: Linux kernel, version $version
   This package contains the Linux kernel, modules and corresponding other
   files, version: $version.
  
  Package: $kernel_headers_packagename
-+Provides:$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-headers-&/g')
++Provides: linux-headers-$FORK,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-headers-&/g')
  Architecture: $debarch
  Description: Linux kernel headers for $version on $debarch
   This package provides kernel header files for $version on $debarch
-  .
-  This is useful for people who need to build external modules
+@@ -188,7 +190,7 @@ Description: Linux kernel headers for $version on $debarch
  
--Package: linux-libc-dev
-+Package: linux-libc-dev-$FORK
+ Package: linux-libc-dev
  Section: devel
 -Provides: linux-kernel-headers
-+Provides: linux-kernel-headers,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-kernel-headers-&/g')
++Provides: linux-kernel-headers, linux-libc-dev-$FORK, linux-kernel-headers-$FORK,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-kernel-headers-&/g')
  Architecture: $debarch
  Description: Linux support headers for userspace development
   This package provides userspaces headers from the Linux kernel.  These headers
@@ -99,7 +61,7 @@ index edcad61fe3cd..07b17635a81c 100755
  
  Package: $dbg_packagename
  Section: debug
-+Provides:$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-image-dbg-&/g')
++Provides: linux-image-dbg-$FORK,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-image-dbg-&/g')
  Architecture: $debarch
  Description: Linux kernel debugging symbols for $version
   This package will come in handy if you need to debug the kernel. It provides
