@@ -1,17 +1,18 @@
-From 0589306292252f0720abee220df137db28fc1a11 Mon Sep 17 00:00:00 2001
+From c62362ccccdaf72e4b85919b71c00f78a7696658 Mon Sep 17 00:00:00 2001
 From: Yuntian Zhang <yt@radxa.com>
 Date: Wed, 27 Apr 2022 11:25:53 +0800
-Subject: [PATCH 2/2] rockchip: Add initial ROCK 5A dts
+Subject: [PATCH 2/2] rockchip: Add initial ROCK 5A support
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
  arch/arm64/boot/dts/rockchip/Makefile         |   1 +
- .../boot/dts/rockchip/rk3588s-rock-5a.dts     | 640 ++++++++++++++++++
- 2 files changed, 641 insertions(+)
+ .../boot/dts/rockchip/rk3588s-rock-5a.dts     | 690 ++++++++++++++++++
+ arch/arm64/configs/rockchip_linux_defconfig   |   3 +
+ 3 files changed, 694 insertions(+)
  create mode 100644 arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
 
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
-index dc27562c2..d10458759 100644
+index dc27562c2a9c..d10458759665 100644
 --- a/arch/arm64/boot/dts/rockchip/Makefile
 +++ b/arch/arm64/boot/dts/rockchip/Makefile
 @@ -127,5 +127,6 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb3-lp4x-v10-rk630-bt656-to-cvbs.dtb
@@ -23,10 +24,10 @@ index dc27562c2..d10458759 100644
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-v10.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
 new file mode 100644
-index 000000000..7feec5483
+index 000000000000..f2597b958a59
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
-@@ -0,0 +1,640 @@
+@@ -0,0 +1,690 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2022 Rockchip Electronics Co., Ltd.
@@ -151,15 +152,27 @@ index 000000000..7feec5483
 +		vin-supply = <&vcc5v0_sys>;
 +	};
 +
-+	wifi_enable: wifi-enable {
++	fg6252b_pwr: fg6252b-pwr {
 +		compatible = "regulator-fixed";
-+		regulator-name = "wifi_enable";
++		regulator-name = "fg6252b_pwr";
++		regulator-always-on;
++		regulator-boot-on;
++		gpios = <&gpio3 RK_PC0 GPIO_ACTIVE_LOW>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&fg6252b_pwr_pin>;
++	};
++
++	fg6252b_enable: fg6252b-enable {
++		compatible = "regulator-fixed";
++		regulator-name = "fg6252b_enable";
 +		regulator-always-on;
 +		regulator-boot-on;
 +		enable-active-high;
-+		gpios = <&gpio3 RK_PC0 GPIO_ACTIVE_HIGH>;
++		gpios = <&gpio0 RK_PD0 GPIO_ACTIVE_HIGH>,
++				<&gpio0 RK_PD4 GPIO_ACTIVE_HIGH>,
++				<&gpio0 RK_PD5 GPIO_ACTIVE_HIGH>;
 +		pinctrl-names = "default";
-+		pinctrl-0 = <&wifi_enable_h>;
++		pinctrl-0 = <&fg6252b_enable_pin>;
 +	};
 +
 +	leds: leds {
@@ -450,7 +463,7 @@ index 000000000..7feec5483
 +			logo,kernel = "logo_kernel.bmp";
 +			logo,mode = "center";
 +			charge_logo,mode = "center";
-+			connect = <&vp1_out_dp0>;
++			connect = <&vp2_out_dp0>;
 +		};
 +	};
 +};
@@ -596,6 +609,39 @@ index 000000000..7feec5483
 +	vpcie3v3-supply = <&vcc3v3_pcie>;
 +};
 +
++/* Ethernet */
++
++&mdio1 {
++	rgmii_phy1: phy@1 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <0x1>;
++	};
++};
++
++&gmac1 {
++	status = "okay";
++	// Use rgmii-rxid mode to disable rx delay inside Soc
++	phy-mode = "rgmii-rxid";
++	clock_in_out = "output";
++
++	snps,reset-gpio = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
++	snps,reset-active-low;
++	// Reset time is 20ms, 100ms for rtl8211f
++	snps,reset-delays-us = <0 100000 100000>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&gmac1_miim
++		     &gmac1_tx_bus2
++		     &gmac1_rx_bus2
++		     &gmac1_rgmii_clk
++		     &gmac1_rgmii_bus>;
++
++	// tx_delay = <0x45>;
++	// rx_delay = <0x3f>;
++
++	phy-handle = <&rgmii_phy1>;
++};
++
 +/* I2C */
 +
 +&i2c5 {
@@ -642,16 +688,21 @@ index 000000000..7feec5483
 +};
 +
 +&pinctrl {
-+
 +	usb {
 +		vcc5v0_host_en: vcc5v0-host-en {
 +			rockchip,pins = <4 RK_PA3 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
 +	};
 +
-+	wifi {
-+		wifi_enable_h: wifi-enable-h {
-+		       rockchip,pins = <3 RK_PC0 RK_FUNC_GPIO &pcfg_pull_none>;
++	wireless {
++		fg6252b_pwr_pin: fg6252b-pwr-pin {
++			rockchip,pins = <3 RK_PC0 RK_FUNC_GPIO &pcfg_pull_down>;	// WIFI_PWR
++	    };
++
++		fg6252b_enable_pin: fg6252b-enable-pin {
++			rockchip,pins = <0 RK_PD0 RK_FUNC_GPIO &pcfg_pull_up>,		// RESET
++							<0 RK_PD4 RK_FUNC_GPIO &pcfg_pull_up>,		// BT_DISn
++							<0 RK_PD5 RK_FUNC_GPIO &pcfg_pull_up>;		// WIFI_DISn
 +	    };
 +	};
 +
@@ -667,6 +718,20 @@ index 000000000..7feec5483
 +		};
 +	};
 +};
+diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
+index a7955b16e2b0..922f2ff82907 100644
+--- a/arch/arm64/configs/rockchip_linux_defconfig
++++ b/arch/arm64/configs/rockchip_linux_defconfig
+@@ -557,6 +557,9 @@ CONFIG_USB_SIERRA_NET=m
+ CONFIG_USB_VL600=m
+ CONFIG_USB_NET_CH9200=m
+ CONFIG_AT76C50X_USB=m
++CONFIG_BRCMFMAC=m
++# CONFIG_BRCMFMAC_SDIO is not set
++CONFIG_BRCMFMAC_USB=y
+ CONFIG_IWLWIFI=m
+ CONFIG_IWLDVM=m
+ CONFIG_IWLMVM=m
 -- 
 2.35.1
 
