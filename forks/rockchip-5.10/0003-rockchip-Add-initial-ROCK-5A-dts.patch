@@ -1,14 +1,13 @@
-From c62362ccccdaf72e4b85919b71c00f78a7696658 Mon Sep 17 00:00:00 2001
+From 2e994f4dd37db5a29c9303721144e05220a095c6 Mon Sep 17 00:00:00 2001
 From: Yuntian Zhang <yt@radxa.com>
 Date: Wed, 27 Apr 2022 11:25:53 +0800
-Subject: [PATCH 2/2] rockchip: Add initial ROCK 5A support
+Subject: [PATCH 3/3] rockchip: Add initial ROCK 5A dts
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
  arch/arm64/boot/dts/rockchip/Makefile         |   1 +
  .../boot/dts/rockchip/rk3588s-rock-5a.dts     | 690 ++++++++++++++++++
- arch/arm64/configs/rockchip_linux_defconfig   |   3 +
- 3 files changed, 694 insertions(+)
+ 2 files changed, 691 insertions(+)
  create mode 100644 arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
 
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
@@ -718,20 +717,6 @@ index 000000000000..f2597b958a59
 +		};
 +	};
 +};
-diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
-index a7955b16e2b0..922f2ff82907 100644
---- a/arch/arm64/configs/rockchip_linux_defconfig
-+++ b/arch/arm64/configs/rockchip_linux_defconfig
-@@ -557,6 +557,9 @@ CONFIG_USB_SIERRA_NET=m
- CONFIG_USB_VL600=m
- CONFIG_USB_NET_CH9200=m
- CONFIG_AT76C50X_USB=m
-+CONFIG_BRCMFMAC=m
-+# CONFIG_BRCMFMAC_SDIO is not set
-+CONFIG_BRCMFMAC_USB=y
- CONFIG_IWLWIFI=m
- CONFIG_IWLDVM=m
- CONFIG_IWLMVM=m
 -- 
 2.35.1
 
