@@ -112,18 +112,39 @@ json() {
     exit 0
 }
 
-prepare_source() {
-    mkdir -p "$SCRIPT_DIR/.src"
+git_source() {
+    local GIT_URL="$1"
+    local GIT_BRANCH="$2"
+    local FOLDER="$(basename $GIT_URL)"
+    FOLDER="${FOLDER%.*}"
 
-    if ! [[ -e "$SCRIPT_DIR/.src/linux" ]]
+    if [[ -n $GIT_BRANCH ]]
     then
-        mkdir -p "$SCRIPT_DIR/.src/linux"
-        pushd "$SCRIPT_DIR/.src/linux"
+        GIT_BRANCH="--branch $GIT_BRANCH"
+    fi
+
+    if ! [[ -e "$SRC_DIR/$FOLDER" ]]
+    then
+        git clone --depth 1 $GIT_BRANCH "$GIT_URL" "$SRC_DIR/$FOLDER"
+    fi
+}
+
+prepare_source() {
+    local SRC_DIR="$SCRIPT_DIR/.src"
+    local LINUX_DIR="$SRC_DIR/linux"
+    local FORK_DIR="$SCRIPT_DIR/forks/$FORK"
+
+    mkdir -p "$SRC_DIR"
+
+    if ! [[ -e "$LINUX_DIR" ]]
+    then
+        mkdir -p "$LINUX_DIR"
+        pushd "$LINUX_DIR"
             git init
         popd
     fi
 
-    pushd "$SCRIPT_DIR/.src/linux"
+    pushd "$LINUX_DIR"
 
         local ORIGIN=$(sha1sum <(echo "$LINUX_GIT") | cut -d' ' -f1)
         git remote add $ORIGIN $LINUX_GIT 2>/dev/null && true
@@ -140,26 +161,40 @@ prepare_source() {
             # As such check $LINUX_BRANCH first.
             git fetch --depth 1 $ORIGIN $LINUX_BRANCH
             git checkout $LINUX_BRANCH
-            git reset --hard $ORIGIN/$LINUX_BRANCH
         elif [[ -n $LINUX_TAG ]]
         then
             git fetch --depth 1 $ORIGIN tag $LINUX_TAG
             git checkout tags/$LINUX_TAG
         fi
 
-        git reset FETCH_HEAD
-        git restore .
+        git reset --hard FETCH_HEAD
+        git clean -ffd
         git config --get user.name >/dev/null || git config user.name "lbuild"
         git config --get user.email >/dev/null || git config user.email "lbuild@invalid.email"
 
-        if ls $SCRIPT_DIR/forks/$FORK/common/*.patch &>/dev/null
+        for f in $(find -L $FORK_DIR/*.sh -type f)
+        do
+            if [[ $(type -t custom_source_action) == function ]]
+            then
+                unset -f custom_source_action
+            fi
+
+            source $f
+
+            if [[ $(type -t custom_source_action) == function ]]
+            then
+                custom_source_action
+            fi
+        done
+
+        if ls $FORK_DIR/common/*.patch &>/dev/null
         then
-            git am --reject --whitespace=fix $(ls $SCRIPT_DIR/forks/$FORK/common/*.patch)
+            git am --reject --whitespace=fix $(ls $FORK_DIR/common/*.patch)
         fi
 
-        if ls $SCRIPT_DIR/forks/$FORK/*.patch &>/dev/null
+        if ls $FORK_DIR/*.patch &>/dev/null
         then
-            git am --reject --whitespace=fix $(ls $SCRIPT_DIR/forks/$FORK/*.patch)
+            git am --reject --whitespace=fix $(ls $FORK_DIR/*.patch)
         fi
     popd
 }
@@ -205,10 +240,12 @@ build() {
     
     # Get Linux version
     source <(cat $SCRIPT_DIR/.src/linux/Makefile | head -n 10 | tr -d ' ')
-    LINUX_VERSION=$VERSION
-    if [[ -n $PATCHLEVEL ]]; then LINUX_VERSION=$LINUX_VERSION.$PATCHLEVEL; fi
-    if [[ -n $SUBLEVEL ]]; then LINUX_VERSION=$LINUX_VERSION.$SUBLEVEL; fi
-    if [[ -n $EXTRAVERSION ]]; then LINUX_VERSION=$LINUX_VERSION.$EXTRAVERSION; fi
+    local LINUX_VERSION="$VERSION"
+    if [[ -n $PATCHLEVEL ]]; then LINUX_VERSION+=".$PATCHLEVEL"; fi
+    if [[ -n $SUBLEVEL ]]; then LINUX_VERSION+=".$SUBLEVEL"; fi
+    if [[ -n $EXTRAVERSION ]]; then LINUX_VERSION+=".$EXTRAVERSION"; fi
+    LINUX_VERSION+="-$FORK"
+
     echo $(( $PKG_REVISION - 1 )) > $SCRIPT_DIR/.src/linux/.version
 
     make -C "$SCRIPT_DIR/.src/linux" -j$(nproc) \
