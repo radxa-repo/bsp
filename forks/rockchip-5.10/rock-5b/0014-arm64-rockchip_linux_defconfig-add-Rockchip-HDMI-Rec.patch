@@ -1,0 +1,27 @@
+From 4ea1adb7554500ff06eca10d46556e0fcd6c7577 Mon Sep 17 00:00:00 2001
+From: Stephen <stephen@vamrs.com>
+Date: Sat, 19 Feb 2022 21:00:41 +0800
+Subject: [PATCH 14/21] arm64: rockchip_linux_defconfig: add Rockchip HDMI
+ Receiver
+
+Signed-off-by: Stephen <stephen@vamrs.com>
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ arch/arm64/configs/rockchip_linux_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
+index d744cc84f14b..98b14434bbb9 100644
+--- a/arch/arm64/configs/rockchip_linux_defconfig
++++ b/arch/arm64/configs/rockchip_linux_defconfig
+@@ -701,6 +701,7 @@ CONFIG_V4L_PLATFORM_DRIVERS=y
+ CONFIG_VIDEO_ROCKCHIP_CIF=y
+ CONFIG_VIDEO_ROCKCHIP_ISP=y
+ CONFIG_VIDEO_ROCKCHIP_ISPP=y
++CONFIG_VIDEO_ROCKCHIP_HDMIRX=y
+ CONFIG_V4L_MEM2MEM_DRIVERS=y
+ CONFIG_VIDEO_ROCKCHIP_RGA=y
+ CONFIG_VIDEO_LT6911UXC=y
+-- 
+2.36.1
+

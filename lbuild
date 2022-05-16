@@ -148,6 +148,7 @@ prepare_source() {
 
         local ORIGIN=$(sha1sum <(echo "$LINUX_GIT") | cut -d' ' -f1)
         git remote add $ORIGIN $LINUX_GIT 2>/dev/null && true
+        git am --abort && true
 
         if [[ -n $LINUX_COMMIT ]]
         then

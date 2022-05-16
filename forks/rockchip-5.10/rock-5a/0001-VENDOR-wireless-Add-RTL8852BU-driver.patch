@@ -1,7 +1,7 @@
-From ef29a38a85f6a8b4481108eb4cfc8c0a9fed1c53 Mon Sep 17 00:00:00 2001
+From 43d464a510499270603c475151dc10a46484602c Mon Sep 17 00:00:00 2001
 From: Yuntian Zhang <yt@radxa.com>
 Date: Fri, 13 May 2022 10:37:05 +0800
-Subject: [PATCH 2/3] VENDOR: wireless: Add RTL8852BU driver
+Subject: [PATCH 1/2] VENDOR: wireless: Add RTL8852BU driver
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
@@ -11,17 +11,17 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  3 files changed, 4 insertions(+)
 
 diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
-index a7955b16e2b0..1ddf41279b60 100644
+index a510c4005c64..813b1a535de3 100644
 --- a/arch/arm64/configs/rockchip_linux_defconfig
 +++ b/arch/arm64/configs/rockchip_linux_defconfig
-@@ -580,6 +580,7 @@ CONFIG_WL_ROCKCHIP=y
+@@ -184,6 +184,7 @@ CONFIG_WL_ROCKCHIP=y
  CONFIG_WIFI_BUILD_MODULE=y
  CONFIG_AP6XXX=m
  CONFIG_BCMDHD_PCIE=y
 +CONFIG_RTL8852BU=m
- CONFIG_USB_NET_RNDIS_WLAN=y
- # CONFIG_IEEE802154_DRIVERS is not set
  CONFIG_INPUT_FF_MEMLESS=y
+ CONFIG_INPUT_EVDEV=y
+ CONFIG_KEYBOARD_ADC=y
 diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
 index 46f5cc40788a..d99c58c34501 100644
 --- a/drivers/net/wireless/Kconfig
@@ -46,5 +46,5 @@ index 5671364ae98d..1786e2a7bea1 100644
 +obj-$(CONFIG_RTL8852BU) += rtl8852bu/
 \ No newline at end of file
 -- 
-2.35.1
+2.36.1
 

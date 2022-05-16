@@ -1,20 +1,20 @@
-From 2e994f4dd37db5a29c9303721144e05220a095c6 Mon Sep 17 00:00:00 2001
+From ea298bc31786684ba80280f6959f50d85c3ecb8d Mon Sep 17 00:00:00 2001
 From: Yuntian Zhang <yt@radxa.com>
 Date: Wed, 27 Apr 2022 11:25:53 +0800
-Subject: [PATCH 3/3] rockchip: Add initial ROCK 5A dts
+Subject: [PATCH 2/2] rockchip: Add initial ROCK 5A dts
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
  arch/arm64/boot/dts/rockchip/Makefile         |   1 +
- .../boot/dts/rockchip/rk3588s-rock-5a.dts     | 690 ++++++++++++++++++
- 2 files changed, 691 insertions(+)
+ .../boot/dts/rockchip/rk3588s-rock-5a.dts     | 676 ++++++++++++++++++
+ 2 files changed, 677 insertions(+)
  create mode 100644 arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
 
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
-index dc27562c2a9c..d10458759665 100644
+index 5f572aabced5..a281b0ee47a7 100644
 --- a/arch/arm64/boot/dts/rockchip/Makefile
 +++ b/arch/arm64/boot/dts/rockchip/Makefile
-@@ -127,5 +127,6 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb3-lp4x-v10-rk630-bt656-to-cvbs.dtb
+@@ -126,5 +126,6 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb3-lp4x-v10-rk630-bt656-to-cvbs.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb3-lp4x-v10-sii9022-bt1120-to-hdmi.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb4-lp4x-v10.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb4-lp4x-v10-linux.dtb
@@ -23,10 +23,10 @@ index dc27562c2a9c..d10458759665 100644
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-v10.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
 new file mode 100644
-index 000000000000..f2597b958a59
+index 000000000000..6088012b89c9
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
-@@ -0,0 +1,690 @@
+@@ -0,0 +1,676 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2022 Rockchip Electronics Co., Ltd.
@@ -444,29 +444,6 @@ index 000000000000..f2597b958a59
 +	status = "okay";
 +};
 +
-+/* Display */
-+&display_subsystem {
-+	route {
-+		route_hdmi0: route-hdmi0 {
-+			status = "okay";
-+			logo,uboot = "logo.bmp";
-+			logo,kernel = "logo_kernel.bmp";
-+			logo,mode = "center";
-+			charge_logo,mode = "center";
-+			connect = <&vp0_out_hdmi0>;
-+		};
-+
-+		route_dp0: route-dp0 {
-+			status = "okay";
-+			logo,uboot = "logo.bmp";
-+			logo,kernel = "logo_kernel.bmp";
-+			logo,mode = "center";
-+			charge_logo,mode = "center";
-+			connect = <&vp2_out_dp0>;
-+		};
-+	};
-+};
-+
 +/* HDMI */
 +
 +&hdmi0 {
@@ -474,6 +451,18 @@ index 000000000000..f2597b958a59
 +};
 +
 +&hdmi0_in_vp0 {
++	status = "okay";
++};
++
++&route_hdmi0 {
++	status = "okay";
++};
++
++&hdptxphy_hdmi0 {
++	status = "okay";
++};
++
++&i2s5_8ch {
 +	status = "okay";
 +};
 +
@@ -487,12 +476,9 @@ index 000000000000..f2597b958a59
 +	status = "okay";
 +};
 +
-+&hdptxphy_hdmi0 {
++&route_dp0 {
 +	status = "okay";
-+};
-+
-+&i2s5_8ch {
-+	status = "okay";
++	connect = <&vp2_out_dp0>;
 +};
 +
 +&spdif_tx2 {
@@ -718,5 +704,5 @@ index 000000000000..f2597b958a59
 +	};
 +};
 -- 
-2.35.1
+2.36.1
 

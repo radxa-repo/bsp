@@ -1,0 +1,30 @@
+From 8ef749ee37896101b3f680fc0c128ea9668b3581 Mon Sep 17 00:00:00 2001
+From: Stephen <stephen@vamrs.com>
+Date: Fri, 13 May 2022 20:12:37 +0800
+Subject: [PATCH 17/21] input: touchscreen: focaltech touch: change default max
+ coordinates
+
+Signed-off-by: Stephen <stephen@vamrs.com>
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ drivers/input/touchscreen/focaltech_touch/focaltech_core.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/input/touchscreen/focaltech_touch/focaltech_core.h b/drivers/input/touchscreen/focaltech_touch/focaltech_core.h
+index 6547719b94a9..f2184b67ad18 100644
+--- a/drivers/input/touchscreen/focaltech_touch/focaltech_core.h
++++ b/drivers/input/touchscreen/focaltech_touch/focaltech_core.h
+@@ -88,8 +88,8 @@
+ #define FTS_COORDS_ARR_SIZE                 4
+ #define FTS_X_MIN_DISPLAY_DEFAULT           0
+ #define FTS_Y_MIN_DISPLAY_DEFAULT           0
+-#define FTS_X_MAX_DISPLAY_DEFAULT           1600
+-#define FTS_Y_MAX_DISPLAY_DEFAULT           2176
++#define FTS_X_MAX_DISPLAY_DEFAULT           800
++#define FTS_Y_MAX_DISPLAY_DEFAULT           1280
+ 
+ #define FTS_TOUCH_DOWN                      0
+ #define FTS_TOUCH_UP                        1
+-- 
+2.36.1
+
