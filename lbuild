@@ -192,10 +192,14 @@ prepare_source() {
             git am --reject --whitespace=fix $(ls $FORK_DIR/common/*.patch)
         fi
 
-        if ls $FORK_DIR/*.patch &>/dev/null
-        then
-            git am --reject --whitespace=fix $(ls $FORK_DIR/*.patch)
-        fi
+        for d in $(find $FORK_DIR -type d)
+        do
+            if ls $d/*.patch &>/dev/null
+            then
+                git am --reject --whitespace=fix $(ls $d/*.patch)
+            fi
+        done
+        
     popd
 }
 
