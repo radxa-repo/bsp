@@ -1,4 +1,4 @@
-From 8ef749ee37896101b3f680fc0c128ea9668b3581 Mon Sep 17 00:00:00 2001
+From bae806863a5821ac9c3fb2e51a40f038adf6830e Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Fri, 13 May 2022 20:12:37 +0800
 Subject: [PATCH 17/21] input: touchscreen: focaltech touch: change default max

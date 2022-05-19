@@ -1,4 +1,4 @@
-From 83cc5c6c83fd5fed036ac2b3df223e40277516ed Mon Sep 17 00:00:00 2001
+From e5987031f2d77c012247c67fd57b03bea3c77d34 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Fri, 18 Feb 2022 09:28:25 +0800
 Subject: [PATCH 12/21] arm64: dts: rockchip: add more features for rock 5b

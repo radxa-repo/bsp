@@ -1,4 +1,4 @@
-From 9e0664f3ee71834f058d3ff7bb9824652bf2387f Mon Sep 17 00:00:00 2001
+From c6e00824d80859644973c04cbfbb08f31cf4f000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Wed, 15 Sep 2021 11:47:02 +0800
 Subject: [PATCH 07/21] arm64: rockchip_linux_defconfig: enable device drivers
@@ -11,7 +11,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  1 file changed, 231 insertions(+), 21 deletions(-)
 
 diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
-index ea4afcf7e5c3..4a4e3500e9b8 100644
+index 893ed6c2ae33..7a4c1d1ab876 100644
 --- a/arch/arm64/configs/rockchip_linux_defconfig
 +++ b/arch/arm64/configs/rockchip_linux_defconfig
 @@ -352,7 +352,6 @@ CONFIG_NET_ACT_SKBEDIT=m

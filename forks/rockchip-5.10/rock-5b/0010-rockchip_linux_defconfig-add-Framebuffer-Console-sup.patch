@@ -1,4 +1,4 @@
-From 3578aa9c6e6c3f5cbc43f37c92d576387e74bc01 Mon Sep 17 00:00:00 2001
+From dab0fae3d230d59f38e2951195b52c7f422ac85b Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Fri, 11 Feb 2022 14:46:50 +0800
 Subject: [PATCH 10/21] rockchip_linux_defconfig: add Framebuffer Console
@@ -11,7 +11,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  1 file changed, 2 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
-index 65f172a4510b..d744cc84f14b 100644
+index 85278e6ac110..e9105816fb5a 100644
 --- a/arch/arm64/configs/rockchip_linux_defconfig
 +++ b/arch/arm64/configs/rockchip_linux_defconfig
 @@ -608,7 +608,6 @@ CONFIG_INPUT_UINPUT=y

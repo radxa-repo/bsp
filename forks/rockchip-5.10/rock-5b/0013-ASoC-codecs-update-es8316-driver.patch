@@ -1,4 +1,4 @@
-From bc57421b3ab67ea4a2a2ab5dce6a6edd6b5992fc Mon Sep 17 00:00:00 2001
+From 723156465e93e9a0492f23f9025a24aa2d493e2f Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Fri, 18 Feb 2022 11:20:59 +0800
 Subject: [PATCH 13/21] ASoC: codecs: update es8316 driver

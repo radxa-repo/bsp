@@ -1,4 +1,4 @@
-From d80f3cbe6b9e043409e1baee34b8862baba54823 Mon Sep 17 00:00:00 2001
+From 70e4e8397e50e4e7d46b1f921f4e4532b22151da Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Thu, 20 Jan 2022 20:40:15 +0800
 Subject: [PATCH 03/21] drivers: net: ethernet: add r8125 driver

@@ -1,0 +1,55 @@
+From 9794273735a8fbd4a01f9c237d1512f2879dffaf Mon Sep 17 00:00:00 2001
+From: Yuntian Zhang <yt@radxa.com>
+Date: Thu, 19 May 2022 17:30:57 +0800
+Subject: [PATCH 1/3] VENDOR : bluetooth: Add RTL8852BU driver
+
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ arch/arm64/configs/rockchip_linux_defconfig | 2 +-
+ drivers/bluetooth/Kconfig                   | 2 ++
+ drivers/bluetooth/Makefile                  | 2 ++
+ 3 files changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
+index ff47d5865568..616c6cd9ab6f 100644
+--- a/arch/arm64/configs/rockchip_linux_defconfig
++++ b/arch/arm64/configs/rockchip_linux_defconfig
+@@ -93,13 +93,13 @@ CONFIG_IP_NF_MANGLE=y
+ CONFIG_BT=y
+ CONFIG_BT_RFCOMM=y
+ CONFIG_BT_HIDP=y
+-CONFIG_BT_HCIBTUSB=y
+ CONFIG_BT_HCIUART=y
+ CONFIG_BT_HCIUART_ATH3K=y
+ CONFIG_BT_HCIBFUSB=y
+ CONFIG_BT_HCIVHCI=y
+ CONFIG_BT_MRVL=y
+ CONFIG_BT_MRVL_SDIO=y
++CONFIG_RTKBT_USB=m
+ CONFIG_RFKILL=y
+ CONFIG_RFKILL_RK=y
+ CONFIG_PCI=y
+diff --git a/drivers/bluetooth/Kconfig b/drivers/bluetooth/Kconfig
+index 4e73a531b377..7821df5dfa10 100644
+--- a/drivers/bluetooth/Kconfig
++++ b/drivers/bluetooth/Kconfig
+@@ -425,4 +425,6 @@ config BT_HCIRSI
+ 	  Say Y here to compile support for HCI over Redpine into the
+ 	  kernel or say M to compile as a module.
+ 
++source "drivers/bluetooth/rtkbt/Kconfig"
++
+ endmenu
+diff --git a/drivers/bluetooth/Makefile b/drivers/bluetooth/Makefile
+index 1a58a3ae142c..b78c445966c0 100644
+--- a/drivers/bluetooth/Makefile
++++ b/drivers/bluetooth/Makefile
+@@ -46,3 +46,5 @@ hci_uart-$(CONFIG_BT_HCIUART_QCA)	+= hci_qca.o
+ hci_uart-$(CONFIG_BT_HCIUART_AG6XX)	+= hci_ag6xx.o
+ hci_uart-$(CONFIG_BT_HCIUART_MRVL)	+= hci_mrvl.o
+ hci_uart-objs				:= $(hci_uart-y)
++
++obj-y						+= rtkbt/
+-- 
+2.36.1
+

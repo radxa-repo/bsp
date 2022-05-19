@@ -1,4 +1,4 @@
-From 1d7d93cecc077ca906e115fe7eab51e2188648f0 Mon Sep 17 00:00:00 2001
+From 5603733f822c070bc5ddef413adf339c7698c543 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Wed, 15 Sep 2021 11:46:00 +0800
 Subject: [PATCH 05/21] arm64: rockchip_linux_defconfig: add general options
@@ -10,7 +10,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  1 file changed, 19 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
-index 37f3bfaea690..acd8bf0bde26 100644
+index 222582c877c9..eddef1a15118 100644
 --- a/arch/arm64/configs/rockchip_linux_defconfig
 +++ b/arch/arm64/configs/rockchip_linux_defconfig
 @@ -1,23 +1,36 @@

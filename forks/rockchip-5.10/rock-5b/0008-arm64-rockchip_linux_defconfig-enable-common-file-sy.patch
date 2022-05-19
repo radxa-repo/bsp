@@ -1,4 +1,4 @@
-From 435bd829281d126528eabaae08e82c7a2bc21702 Mon Sep 17 00:00:00 2001
+From 41cba1e928d0e6b46aafc20bf69adebe1b561d56 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Wed, 15 Sep 2021 11:47:37 +0800
 Subject: [PATCH 08/21] arm64: rockchip_linux_defconfig: enable common file
@@ -11,7 +11,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  1 file changed, 60 insertions(+), 5 deletions(-)
 
 diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
-index 4a4e3500e9b8..cbf9a4a5134d 100644
+index 7a4c1d1ab876..2f6f3de10c19 100644
 --- a/arch/arm64/configs/rockchip_linux_defconfig
 +++ b/arch/arm64/configs/rockchip_linux_defconfig
 @@ -1039,22 +1039,60 @@ CONFIG_ROCKCHIP_RKNPU=y

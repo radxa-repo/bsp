@@ -1,4 +1,4 @@
-From 214e22e6ac16fcd1a853573b4851f81a8444d657 Mon Sep 17 00:00:00 2001
+From aa204e26e6e4513dc9ac5de2db9beb7b1ca4baf6 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Wed, 19 Jan 2022 19:10:49 +0800
 Subject: [PATCH 01/21] arm64: dts: rockchip: add ROCK 5B board
