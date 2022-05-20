@@ -135,20 +135,17 @@ prepare_source() {
     local FORK_DIR="$SCRIPT_DIR/forks/$FORK"
 
     mkdir -p "$SRC_DIR"
-
-    if ! [[ -e "$LINUX_DIR" ]]
-    then
-        mkdir -p "$LINUX_DIR"
-        pushd "$LINUX_DIR"
-            git init
-        popd
-    fi
+    mkdir -p "$LINUX_DIR"
 
     pushd "$LINUX_DIR"
 
+        git init
+        [[ -z $(git config --get user.name) ]] && git config user.name "lbuild"
+        [[ -z $(git config --get user.email) ]] && git config user.email "lbuild@invalid.email"
+        git am --abort && true
+
         local ORIGIN=$(sha1sum <(echo "$LINUX_GIT") | cut -d' ' -f1)
         git remote add $ORIGIN $LINUX_GIT 2>/dev/null && true
-        git am --abort && true
 
         if [[ -n $LINUX_COMMIT ]]
         then
@@ -170,8 +167,6 @@ prepare_source() {
 
         git reset --hard FETCH_HEAD
         git clean -ffd
-        git config --get user.name >/dev/null || git config user.name "lbuild"
-        git config --get user.email >/dev/null || git config user.email "lbuild@invalid.email"
 
         for f in $(find -L $FORK_DIR/*.sh -type f)
         do
