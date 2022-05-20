@@ -1,7 +1,7 @@
-From b5e6695368a78202dbe562c93ea0f826b73acd98 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Fri, 29 Apr 2022 17:01:17 +0800
-Subject: [PATCH 15/21] drivers: net: ethernet: update r8125 driver to version
+Subject: [PATCH] drivers: net: ethernet: update r8125 driver to version
  9.009.00
 
 Signed-off-by: Stephen <stephen@vamrs.com>

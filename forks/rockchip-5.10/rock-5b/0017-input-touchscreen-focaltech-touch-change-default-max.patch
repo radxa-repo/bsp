@@ -1,7 +1,7 @@
-From bae806863a5821ac9c3fb2e51a40f038adf6830e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Fri, 13 May 2022 20:12:37 +0800
-Subject: [PATCH 17/21] input: touchscreen: focaltech touch: change default max
+Subject: [PATCH] input: touchscreen: focaltech touch: change default max
  coordinates
 
 Signed-off-by: Stephen <stephen@vamrs.com>

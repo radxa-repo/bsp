@@ -1,7 +1,7 @@
-From f29f5449abf120aa1935f1770b20483942d19fe5 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Sun, 22 Aug 2021 15:50:32 +0800
-Subject: [PATCH 02/21] delete .scmversion
+Subject: [PATCH] delete .scmversion
 
 Signed-off-by: Stephen <stephen@vamrs.com>
 Signed-off-by: Yuntian Zhang <yt@radxa.com>

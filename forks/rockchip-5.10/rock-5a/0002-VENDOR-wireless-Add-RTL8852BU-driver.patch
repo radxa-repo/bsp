@@ -1,7 +1,7 @@
-From 333f96eed3aff01e46b4f2de76c96618a4cff484 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Yuntian Zhang <yt@radxa.com>
 Date: Fri, 13 May 2022 10:37:05 +0800
-Subject: [PATCH 2/3] VENDOR: wireless: Add RTL8852BU driver
+Subject: [PATCH] VENDOR: wireless: Add RTL8852BU driver
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
@@ -11,10 +11,10 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  3 files changed, 4 insertions(+)
 
 diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
-index 616c6cd9ab6f..a4a5ce5c5c4b 100644
+index 0633497fc0be..20644df2e19e 100644
 --- a/arch/arm64/configs/rockchip_linux_defconfig
 +++ b/arch/arm64/configs/rockchip_linux_defconfig
-@@ -184,6 +184,7 @@ CONFIG_WL_ROCKCHIP=y
+@@ -183,6 +183,7 @@ CONFIG_WL_ROCKCHIP=y
  CONFIG_WIFI_BUILD_MODULE=y
  CONFIG_AP6XXX=m
  CONFIG_BCMDHD_PCIE=y

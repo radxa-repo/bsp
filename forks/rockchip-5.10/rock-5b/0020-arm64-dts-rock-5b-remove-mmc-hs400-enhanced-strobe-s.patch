@@ -1,8 +1,7 @@
-From 5b5fbf9e47ab947a1b394e1178903889392e3145 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Mon, 16 May 2022 19:57:56 +0800
-Subject: [PATCH 20/21] arm64: dts: rock 5b: remove mmc-hs400-enhanced-strobe
- support
+Subject: [PATCH] arm64: dts: rock 5b: remove mmc-hs400-enhanced-strobe support
 
 Signed-off-by: Stephen <stephen@vamrs.com>
 Signed-off-by: Yuntian Zhang <yt@radxa.com>

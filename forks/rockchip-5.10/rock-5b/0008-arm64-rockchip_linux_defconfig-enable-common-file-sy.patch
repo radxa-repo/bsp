@@ -1,8 +1,7 @@
-From 41cba1e928d0e6b46aafc20bf69adebe1b561d56 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Wed, 15 Sep 2021 11:47:37 +0800
-Subject: [PATCH 08/21] arm64: rockchip_linux_defconfig: enable common file
- system
+Subject: [PATCH] arm64: rockchip_linux_defconfig: enable common file system
 
 Signed-off-by: Stephen <stephen@vamrs.com>
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
@@ -11,10 +10,10 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  1 file changed, 60 insertions(+), 5 deletions(-)
 
 diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
-index 7a4c1d1ab876..2f6f3de10c19 100644
+index 6185e18de447..df0546f39440 100644
 --- a/arch/arm64/configs/rockchip_linux_defconfig
 +++ b/arch/arm64/configs/rockchip_linux_defconfig
-@@ -1039,22 +1039,60 @@ CONFIG_ROCKCHIP_RKNPU=y
+@@ -1038,23 +1038,61 @@ CONFIG_ROCKCHIP_RKNPU=y
  CONFIG_EXT4_FS=y
  CONFIG_EXT4_FS_POSIX_ACL=y
  CONFIG_EXT4_FS_SECURITY=y
@@ -59,6 +58,7 @@ index 7a4c1d1ab876..2f6f3de10c19 100644
 +CONFIG_NTFS_RW=y
  CONFIG_TMPFS=y
  CONFIG_TMPFS_POSIX_ACL=y
+ CONFIG_EFIVAR_FS=y
 -CONFIG_JFFS2_FS=y
 -CONFIG_UBIFS_FS=y
 +CONFIG_CONFIGFS_FS=y

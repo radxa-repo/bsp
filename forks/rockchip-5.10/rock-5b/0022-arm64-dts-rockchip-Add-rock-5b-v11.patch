@@ -1,39 +1,79 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
-Date: Fri, 18 Feb 2022 09:28:25 +0800
-Subject: [PATCH] arm64: dts: rockchip: add more features for rock 5b
-
-Add features:
-  *) usb
-  *) hdmi tx/rx
-  *) pcie
-  *) headphone
-  *) sdcard
+Date: Thu, 19 May 2022 11:01:15 +0800
+Subject: [PATCH] arm64: dts: rockchip: Add rock 5b v11
 
 Signed-off-by: Stephen <stephen@vamrs.com>
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
- .../boot/dts/rockchip/rk3588-rock-5b.dts      | 506 +++++++++++++++++-
- 1 file changed, 504 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/rockchip/Makefile         |   1 +
+ .../boot/dts/rockchip/rk3588-rock-5b-v11.dts  | 679 ++++++++++++++++++
+ 2 files changed, 680 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3588-rock-5b-v11.dts
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
-index 946ba3e577f0..6c10c9080287 100644
---- a/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
-@@ -22,6 +22,8 @@ / {
- 	model = "Radxa ROCK 5B";
- 	compatible = "radxa,rock-5b", "rockchip,rk3588";
- 
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+index ec7e7424e7f4..4a1b9ffeb4a3 100644
+--- a/arch/arm64/boot/dts/rockchip/Makefile
++++ b/arch/arm64/boot/dts/rockchip/Makefile
+@@ -114,6 +114,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-nvr-demo1-v21.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-nvr-demo3-v10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-nvr-demo3-v10-android.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-rock-5b.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-rock-5b-v11.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-toybrick-x0-android.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-toybrick-x0-linux.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588-vehicle-evb-v10.dtb
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588-rock-5b-v11.dts b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b-v11.dts
+new file mode 100644
+index 000000000000..912c175ad02b
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b-v11.dts
+@@ -0,0 +1,679 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2022 Rockchip Electronics Co., Ltd.
++ * Copyright (c) 2022 Radxa Limited
++ *
++ */
++
++/dts-v1/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/pwm/pwm.h>
++#include <dt-bindings/pinctrl/rockchip.h>
++#include <dt-bindings/input/rk-input.h>
++#include <dt-bindings/display/drm_mipi_dsi.h>
++#include <dt-bindings/display/rockchip_vop.h>
++#include <dt-bindings/sensor-dev.h>
++#include "rk3588.dtsi"
++#include "rk3588-rk806-dual.dtsi"
++#include "rk3588-linux.dtsi"
++
++/ {
++	model = "Radxa ROCK 5B";
++	compatible = "radxa,rock-5b", "rockchip,rk3588";
++
 +	/delete-node/ chosen;
 +
- 	vcc12v_dcin: vcc12v-dcin {
- 		compatible = "regulator-fixed";
- 		regulator-name = "vcc12v_dcin";
-@@ -41,8 +43,165 @@ vcc5v0_sys: vcc5v0-sys {
- 		vin-supply = <&vcc12v_dcin>;
- 	};
- 
--};
++	vcc12v_dcin: vcc12v-dcin {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc12v_dcin";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <12000000>;
++		regulator-max-microvolt = <12000000>;
++	};
++
++	vcc5v0_sys: vcc5v0-sys {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_sys";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&vcc12v_dcin>;
++	};
++
 +	hdmi0_sound: hdmi0-sound {
 +		status = "okay";
 +		compatible = "rockchip,hdmi";
@@ -74,7 +114,7 @@ index 946ba3e577f0..6c10c9080287 100644
 +	rk_headset: rk-headset {
 +		status = "okay";
 +		compatible = "rockchip_headset";
-+		headset_gpio = <&gpio1 RK_PB7 GPIO_ACTIVE_HIGH>;
++		headset_gpio = <&gpio4 RK_PC5 GPIO_ACTIVE_HIGH>;
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&hp_det>;
 +		io-channels = <&saradc 3>;
@@ -88,7 +128,7 @@ index 946ba3e577f0..6c10c9080287 100644
 +		regulator-min-microvolt = <5000000>;
 +		regulator-max-microvolt = <5000000>;
 +		enable-active-high;
-+		gpio = <&gpio1 RK_PA2 GPIO_ACTIVE_HIGH>;
++		gpio = <&gpio4 RK_PC2 GPIO_ACTIVE_HIGH>;
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&vcc5v0_host_en>;
 +		vin-supply = <&vcc5v0_sys>;
@@ -100,7 +140,7 @@ index 946ba3e577f0..6c10c9080287 100644
 +		regulator-min-microvolt = <5000000>;
 +		regulator-max-microvolt = <5000000>;
 +		enable-active-high;
-+		gpio = <&gpio1 RK_PA1 GPIO_ACTIVE_HIGH>;
++		gpio = <&gpio2 RK_PC5 GPIO_ACTIVE_HIGH>;
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&vcc5v0_otg_en>;
 +		vin-supply = <&vcc5v0_sys>;
@@ -121,33 +161,20 @@ index 946ba3e577f0..6c10c9080287 100644
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
 +		enable-active-high;
-+		gpios = <&gpio1 RK_PA3 GPIO_ACTIVE_HIGH>;
++		gpios = <&gpio4 RK_PC4 GPIO_ACTIVE_HIGH>;
 +		startup-delay-us = <50000>;
 +		vin-supply = <&vcc12v_dcin>;
 +	};
- 
++
 +	vcc3v3_pcie30: vcc3v3-pcie30 {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcc3v3_pcie30";
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
 +		enable-active-high;
-+		gpios = <&gpio1 RK_PA0 GPIO_ACTIVE_HIGH>;
++		gpios = <&gpio2 RK_PC4 GPIO_ACTIVE_HIGH>;
 +		startup-delay-us = <5000>;
 +		vin-supply = <&vcc12v_dcin>;
-+	};
-+
-+	wifi_enable: wifi-enable {
-+		compatible = "regulator-fixed";
-+		regulator-name = "wifi_enable";
-+		regulator-always-on;
-+		regulator-boot-on;
-+		clocks = <&hym8563>;
-+		clock-names = "ext_clock";
-+		enable-active-high;
-+		gpios = <&gpio3 RK_PA5 GPIO_ACTIVE_HIGH>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&wifi_enable_h>;
 +	};
 +
 +	leds: leds {
@@ -193,13 +220,148 @@ index 946ba3e577f0..6c10c9080287 100644
 +		};
 +	};
 +};
- 
- &cpu_l0 {
- 	cpu-supply = <&vdd_cpu_lit_s0>;
-@@ -185,7 +344,350 @@ &sdhci {
- 	status = "okay";
- };
- 
++
++&cpu_l0 {
++	cpu-supply = <&vdd_cpu_lit_s0>;
++	mem-supply = <&vdd_cpu_lit_mem_s0>;
++};
++
++&cpu_b0 {
++	cpu-supply = <&vdd_cpu_big0_s0>;
++	mem-supply = <&vdd_cpu_big0_mem_s0>;
++};
++
++&cpu_b2 {
++	cpu-supply = <&vdd_cpu_big1_s0>;
++	mem-supply = <&vdd_cpu_big1_mem_s0>;
++};
++
++&gpu {
++	mali-supply = <&vdd_gpu_s0>;
++	mem-supply = <&vdd_gpu_mem_s0>;
++	status = "okay";
++};
++
++&iep {
++	status = "okay";
++};
++
++&iep_mmu {
++	status = "okay";
++};
++
++&jpegd {
++	status = "okay";
++};
++
++&jpegd_mmu {
++	status = "okay";
++};
++
++&jpege_ccu {
++	status = "okay";
++};
++
++&jpege0 {
++	status = "okay";
++};
++
++&jpege0_mmu {
++	status = "okay";
++};
++
++&jpege1 {
++	status = "okay";
++};
++
++&jpege1_mmu {
++	status = "okay";
++};
++
++&jpege2 {
++	status = "okay";
++};
++
++&jpege2_mmu {
++	status = "okay";
++};
++
++&jpege3 {
++	status = "okay";
++};
++
++&jpege3_mmu {
++	status = "okay";
++};
++
++&mpp_srv {
++	status = "okay";
++};
++
++&rga3_core0 {
++	status = "okay";
++};
++
++&rga3_0_mmu {
++	status = "okay";
++};
++
++&rga3_core1 {
++	status = "okay";
++};
++
++&rga3_1_mmu {
++	status = "okay";
++};
++
++&rga2 {
++	status = "okay";
++};
++
++&rkvdec0 {
++	status = "okay";
++};
++
++&rkvdec0_mmu {
++	status = "okay";
++};
++
++&rkvenc_ccu {
++	status = "okay";
++};
++
++&rkvenc0 {
++	status = "okay";
++};
++
++&rkvenc0_mmu {
++	status = "okay";
++};
++
++&rkvenc1 {
++	status = "okay";
++};
++
++&rkvenc1_mmu {
++	status = "okay";
++};
++
++&saradc {
++	status = "okay";
++	vref-supply = <&vcc_1v8_s0>;
++};
++
++&sdhci {
++	bus-width = <8>;
++	no-sdio;
++	no-sd;
++	non-removable;
++	max-frequency = <200000000>;
++	mmc-hs400-1_8v;
++	//mmc-hs400-enhanced-strobe;
++	status = "okay";
++};
++
 +&sdmmc {
 +	max-frequency = <150000000>;
 +	no-sdio;
@@ -215,11 +377,9 @@ index 946ba3e577f0..6c10c9080287 100644
 +	pinctrl-0 = <&sdmmc_bus4 &sdmmc_clk &sdmmc_cmd &sdmmc_det>;
 +	status = "okay";
 +};
- 
- &tsadc {
- 	status = "okay";
--};
-\ No newline at end of file
++
++&tsadc {
++	status = "okay";
 +};
 +
 +&display_subsystem {
@@ -253,7 +413,7 @@ index 946ba3e577f0..6c10c9080287 100644
 +};
 +
 +&hdmi0_in_vp1 {
-+	status = "disabled";
++	status = "okay";
 +};
 +
 +&hdmi0_in_vp2 {
@@ -266,6 +426,8 @@ index 946ba3e577f0..6c10c9080287 100644
 +
 +&hdmi1 {
 +	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&hdmim1_tx1_cec &hdmim0_tx1_hpd &hdmim1_tx1_scl &hdmim1_tx1_sda>;
 +};
 +
 +&hdmi1_in_vp0 {
@@ -273,11 +435,11 @@ index 946ba3e577f0..6c10c9080287 100644
 +};
 +
 +&hdmi1_in_vp1 {
-+	status = "okay";
++	status = "disabled";
 +};
 +
 +&hdmi1_in_vp2 {
-+	status = "disabled";
++	status = "okay";
 +};
 +
 +&hdmi1_sound {
@@ -291,6 +453,9 @@ index 946ba3e577f0..6c10c9080287 100644
 +	/* Effective level used to trigger HPD: 0-low, 1-high */
 +	hpd-trigger-level = <1>;
 +	hdmirx-det-gpios = <&gpio2 RK_PB5 GPIO_ACTIVE_LOW>;
++
++	pinctrl-0 = <&hdmim2_rx_cec &hdmim1_rx_hpdin &hdmim1_rx_scl &hdmim1_rx_sda>;
++	pinctrl-names = "default";
 +};
 +
 +&hdptxphy_hdmi0 {
@@ -440,7 +605,7 @@ index 946ba3e577f0..6c10c9080287 100644
 +};
 +
 +&pcie2x1l2 {
-+	reset-gpios = <&gpio4 RK_PA5 GPIO_ACTIVE_HIGH>;
++	reset-gpios = <&gpio3 RK_PD1 GPIO_ACTIVE_HIGH>;
 +	vpcie3v3-supply = <&vcc3v3_pcie2x1l2>;
 +	status = "okay";
 +};
@@ -450,7 +615,7 @@ index 946ba3e577f0..6c10c9080287 100644
 +};
 +
 +&pcie2x1l1 {
-+	reset-gpios = <&gpio3 RK_PD5 GPIO_ACTIVE_HIGH>;
++	reset-gpios = <&gpio4 RK_PA2 GPIO_ACTIVE_HIGH>;
 +	vpcie3v3-supply = <&vcc3v3_pcie2x1l1>;
 +	status = "okay";
 +};
@@ -523,18 +688,12 @@ index 946ba3e577f0..6c10c9080287 100644
 +
 +	usb {
 +		vcc5v0_host_en: vcc5v0-host-en {
-+			rockchip,pins = <1 RK_PA2 RK_FUNC_GPIO &pcfg_pull_none>;
++			rockchip,pins = <4 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
 +
 +		vcc5v0_otg_en: vcc5v0-otg-en {
-+			rockchip,pins = <1 RK_PA1 RK_FUNC_GPIO &pcfg_pull_none>;
++			rockchip,pins = <2 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
-+	};
-+
-+	wifi {
-+		wifi_enable_h: wifi-enable-h {
-+		       rockchip,pins = <3 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
-+	    };
 +	};
 +
 +	hym8563 {
@@ -545,7 +704,7 @@ index 946ba3e577f0..6c10c9080287 100644
 +
 +	headphone {
 +		hp_det: hp-det {
-+			rockchip,pins = <1 RK_PB7 RK_FUNC_GPIO &pcfg_pull_up>;
++			rockchip,pins = <4 RK_PC5 RK_FUNC_GPIO &pcfg_pull_up>;
 +		};
 +	};
 +};

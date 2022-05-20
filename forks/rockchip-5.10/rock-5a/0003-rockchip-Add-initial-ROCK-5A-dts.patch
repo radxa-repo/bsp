@@ -1,7 +1,7 @@
-From 13441a93c30b7ac4cf8ce6f7a648427f79adb744 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Yuntian Zhang <yt@radxa.com>
 Date: Wed, 27 Apr 2022 11:25:53 +0800
-Subject: [PATCH 3/3] rockchip: Add initial ROCK 5A dts
+Subject: [PATCH] rockchip: Add initial ROCK 5A dts
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---

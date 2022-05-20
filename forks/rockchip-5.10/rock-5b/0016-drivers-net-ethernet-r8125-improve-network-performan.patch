@@ -1,8 +1,7 @@
-From dc4f64dfd26b8e7cae8990b65a3b2bff5db722b0 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Wed, 11 May 2022 15:04:57 +0800
-Subject: [PATCH 16/21] drivers: net: ethernet: r8125: improve network
- performance
+Subject: [PATCH] drivers: net: ethernet: r8125: improve network performance
 
 Signed-off-by: Stephen <stephen@vamrs.com>
 Signed-off-by: Yuntian Zhang <yt@radxa.com>

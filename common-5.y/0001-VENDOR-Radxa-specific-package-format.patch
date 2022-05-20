@@ -1,4 +1,4 @@
-From 969980afb47e0c2614ae2914ffc349eb9ad0a392 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Yuntian Zhang <yt@radxa.com>
 Date: Tue, 26 Apr 2022 20:06:38 +0800
 Subject: [PATCH] VENDOR: Radxa specific package format

@@ -1,7 +1,7 @@
-From b7889c3dfbb8d23d0ccdd588d3f0789251c543a9 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Fri, 21 Jan 2022 09:55:04 +0800
-Subject: [PATCH 04/21] arm64: rockchip_linux_defconfig: enable R8125
+Subject: [PATCH] arm64: rockchip_linux_defconfig: enable R8125
 
 Signed-off-by: Stephen <stephen@vamrs.com>
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
@@ -10,10 +10,10 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/arm64/configs/rockchip_linux_defconfig b/arch/arm64/configs/rockchip_linux_defconfig
-index a4a5ce5c5c4b..222582c877c9 100644
+index 20644df2e19e..6e464237e38d 100644
 --- a/arch/arm64/configs/rockchip_linux_defconfig
 +++ b/arch/arm64/configs/rockchip_linux_defconfig
-@@ -162,7 +162,7 @@ CONFIG_NETDEVICES=y
+@@ -161,7 +161,7 @@ CONFIG_NETDEVICES=y
  # CONFIG_NET_VENDOR_QLOGIC is not set
  # CONFIG_NET_VENDOR_QUALCOMM is not set
  # CONFIG_NET_VENDOR_RDC is not set

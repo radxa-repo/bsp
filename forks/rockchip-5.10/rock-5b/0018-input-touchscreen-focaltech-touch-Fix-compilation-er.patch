@@ -1,8 +1,7 @@
-From 79450a29bb4d060fab6dc977e642f0e8a8a2e029 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Stephen <stephen@vamrs.com>
 Date: Fri, 13 May 2022 20:27:56 +0800
-Subject: [PATCH 18/21] input: touchscreen: focaltech touch: Fix compilation
- error
+Subject: [PATCH] input: touchscreen: focaltech touch: Fix compilation error
 
 It fixes the issue with the following logs.
 
