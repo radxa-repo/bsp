@@ -60,7 +60,7 @@ index e3bb6df42..5e3dc0134 100644
  };
  
 +&i2c3 {
-+   pinctrl-0 = <&i2c3_sda_a_pins>, <&i2c3_sck_a_pins>;
++	pinctrl-0 = <&i2c3_sda_a_pins>, <&i2c3_sck_a_pins>;
 +	pinctrl-names = "default";
 +	status = "okay";
 +
