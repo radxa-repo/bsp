@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Yuntian Zhang <yt@radxa.com>
+Date: Wed, 25 May 2022 10:20:35 +0800
+Subject: [PATCH] VENDOR: Enable gpio-keys-polled driver
+
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 50aa3d75a..3be0cba5d 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -398,6 +398,7 @@ CONFIG_WLCORE_SDIO=m
+ CONFIG_INPUT_EVDEV=y
+ CONFIG_KEYBOARD_ADC=m
+ CONFIG_KEYBOARD_GPIO=y
++CONFIG_KEYBOARD_GPIO_POLLED=m
+ CONFIG_KEYBOARD_SNVS_PWRKEY=m
+ CONFIG_KEYBOARD_IMX_SC_KEY=m
+ CONFIG_KEYBOARD_CROS_EC=y
+-- 
+2.36.1
+
