@@ -1,0 +1,187 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Stephen <stephen@vamrs.com>
+Date: Thu, 2 Jun 2022 21:06:35 +0800
+Subject: [PATCH] arm64: dts: rockchip: rock 5a: Add camera imx415 support
+
+Signed-off-by: Stephen <stephen@vamrs.com>
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ .../dts/rockchip/rk3588s-rock-5a-imx415.dtsi  | 153 ++++++++++++++++++
+ .../boot/dts/rockchip/rk3588s-rock-5a.dts     |   1 +
+ 2 files changed, 154 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3588s-rock-5a-imx415.dtsi
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a-imx415.dtsi b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a-imx415.dtsi
+new file mode 100644
+index 000000000000..37f00255b2d9
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a-imx415.dtsi
+@@ -0,0 +1,153 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2022 Rockchip Electronics Co., Ltd.
++ *
++ */
++
++/ {
++	compatible = "radxa,rock-5a", "rockchip,rk3588";
++};
++
++&i2c3 {
++	status = "disabled";
++
++	imx415: imx415@1a {
++		status = "disabled";
++		compatible = "sony,imx415";
++		reg = <0x1a>;
++		clocks = <&cru CLK_MIPI_CAMARAOUT_M2>;
++		clock-names = "xvclk";
++		pinctrl-names = "default";
++		pinctrl-0 = <&mipim0_camera2_clk>;
++		power-domains = <&power RK3588_PD_VI>;
++		pwdn-gpios = <&gpio1 RK_PD5 GPIO_ACTIVE_HIGH>;
++		reset-gpios = <&gpio4 RK_PD2 GPIO_ACTIVE_LOW>;
++		rockchip,camera-module-index = <0>;
++		rockchip,camera-module-facing = "back";
++		rockchip,camera-module-name = "CMK-OT2022-PX1";
++		rockchip,camera-module-lens-name = "IR0147-50IRC-8M-F20";
++		port {
++			imx415_out0: endpoint {
++				remote-endpoint = <&mipidphy0_in_ucam0>;
++				data-lanes = <1 2 3 4>;
++			};
++		};
++	};
++};
++
++&csi2_dphy0_hw {
++	status = "disabled";
++};
++
++&csi2_dphy0 {
++	status = "disabled";
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@0 {
++			reg = <0>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			mipidphy0_in_ucam0: endpoint@1 {
++				reg = <1>;
++				remote-endpoint = <&imx415_out0>;
++				data-lanes = <1 2 3 4>;
++			};
++		};
++
++		port@1 {
++			reg = <1>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			csidphy0_out: endpoint@0 {
++				reg = <0>;
++				remote-endpoint = <&mipi2_csi2_input>;
++			};
++		};
++	};
++};
++
++&mipi2_csi2 {
++	status = "disabled";
++
++	ports {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		port@0 {
++			reg = <0>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			mipi2_csi2_input: endpoint@1 {
++				reg = <1>;
++				remote-endpoint = <&csidphy0_out>;
++			};
++		};
++
++		port@1 {
++			reg = <1>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			mipi2_csi2_output: endpoint@0 {
++				reg = <0>;
++				remote-endpoint = <&cif_mipi2_in0>;
++			};
++		};
++	};
++};
++
++&rkcif {
++	status = "disabled";
++};
++
++&rkcif_mipi_lvds2 {
++	status = "disabled";
++
++	port {
++		cif_mipi2_in0: endpoint {
++			remote-endpoint = <&mipi2_csi2_output>;
++		};
++	};
++};
++
++&rkcif_mipi_lvds2_sditf {
++	status = "disabled";
++
++	port {
++		mipi_lvds2_sditf: endpoint {
++			remote-endpoint = <&isp0_vir0>;
++		};
++	};
++};
++
++&rkcif_mmu {
++	status = "disabled";
++};
++
++&rkisp0 {
++	status = "disabled";
++};
++
++&isp0_mmu {
++	status = "disabled";
++};
++
++&rkisp0_vir0 {
++	status = "disabled";
++
++	port {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		isp0_vir0: endpoint@0 {
++			reg = <0>;
++			remote-endpoint = <&mipi_lvds2_sditf>;
++		};
++	};
++};
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
+index 7b5046f327ac..291df741d07d 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
+@@ -17,6 +17,7 @@
+ #include "rk3588s.dtsi"
+ #include "rk3588-rk806-single.dtsi"
+ #include "rk3588-linux.dtsi"
++#include "rk3588s-rock-5a-imx415.dtsi"
+ 
+ / {
+ 	model = "Radxa ROCK 5A";
+-- 
+2.36.1
+
