@@ -249,6 +249,7 @@ build() {
     echo $(( $PKG_REVISION - 1 )) > $SCRIPT_DIR/.src/linux/.version
 
     make -C "$SCRIPT_DIR/.src/linux" -j$(nproc) \
+        KDEB_COMPRESS="xz" \
         ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
         KERNELRELEASE=$LINUX_VERSION DPKG_FLAGS=$DPKG_FLAGS \
         FORK=$FORK SUPPORTED_BOARDS=$SUPPORTED_BOARDS \
