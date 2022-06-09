@@ -1,0 +1,88 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Yuntian Zhang <yt@radxa.com>
+Date: Thu, 9 Jun 2022 16:38:44 +0800
+Subject: [PATCH] VENDOR: Radxa specific package format
+
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ scripts/package/Makefile |  2 ++
+ scripts/package/builddeb | 14 +++++++-------
+ 2 files changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/scripts/package/Makefile b/scripts/package/Makefile
+index 52917fb8e0..5779d58c55 100644
+--- a/scripts/package/Makefile
++++ b/scripts/package/Makefile
+@@ -92,6 +92,8 @@ deb-pkg: FORCE
+ 	$(MAKE) KBUILD_SRC=
+ 	+$(call cmd,builddeb)
+ 
++bindeb-pkg: export FORK = $(FORK)
++bindeb-pkg: export SUPPORTED_BOARDS = $(SUPPORTED_BOARDS)
+ bindeb-pkg: FORCE
+ 	$(MAKE) KBUILD_SRC=
+ 	+$(call cmd,builddeb)
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index 19942d25d8..72a08fc7ff 100755
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -50,7 +50,7 @@ set_debarch() {
+ 	mips*)
+ 		debarch=mips$(grep -q CPU_LITTLE_ENDIAN=y $KCONFIG_CONFIG && echo el || true) ;;
+ 	arm64)
+-		debarch=all ;;
++		debarch=arm64 ;;
+ 	arm*)
+ 		if grep -q CONFIG_AEABI=y $KCONFIG_CONFIG; then
+ 		    if grep -q CONFIG_VFP=y $KCONFIG_CONFIG; then
+@@ -310,7 +310,7 @@ else
+ 	cat <<EOF >> debian/control
+ 
+ Package: $packagename
+-Provides: linux-image, linux-image-2.6, linux-modules-$version
++Provides: linux-image-$FORK,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-image-&/g')
+ Suggests: $fwpackagename
+ Architecture: any
+ Description: Linux kernel, version $version
+@@ -338,7 +338,7 @@ rm -f "$objtree/debian/hdrsrcfiles" "$objtree/debian/hdrobjfiles"
+ cat <<EOF >> debian/control
+ 
+ Package: $kernel_headers_packagename
+-Provides: linux-headers, linux-headers-2.6
++Provides: linux-headers-$FORK,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-headers-&/g')
+ Architecture: any
+ Description: Linux kernel headers for $KERNELRELEASE on \${kernel:debarch}
+  This package provides kernel header files for $KERNELRELEASE on \${kernel:debarch}
+@@ -366,7 +366,7 @@ cat <<EOF >> debian/control
+ 
+ Package: $libc_headers_packagename
+ Section: devel
+-Provides: linux-kernel-headers
++Provides: linux-kernel-headers, linux-libc-dev-$FORK, linux-kernel-headers-$FORK,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-kernel-headers-&/g')
+ Architecture: any
+ Description: Linux support headers for userspace development
+  This package provides userspaces headers from the Linux kernel.  These headers
+@@ -396,7 +396,7 @@ if [ -n "$BUILD_DEBUG" ] ; then
+ 
+ Package: $dbg_packagename
+ Section: debug
+-Provides: linux-debug, linux-debug-$version
++Provides: linux-image-dbg-$FORK,$(echo $SUPPORTED_BOARDS | sed -e 's/[^,]*/ linux-image-dbg-&/g')
+ Architecture: any
+ Description: Linux kernel debugging symbols for $version
+  This package will come in handy if you need to debug the kernel. It provides
+@@ -430,9 +430,9 @@ EOF
+ 	dpkg-source -cdebian/control -ldebian/changelog --format="3.0 (custom)" --target-format="3.0 (quilt)" \
+ 		-b / ../${sourcename}_${version}.orig.tar.gz  ../${sourcename}_${packageversion}.debian.tar.gz
+ 	mv ${sourcename}_${packageversion}*dsc ..
+-	dpkg-genchanges > ../${sourcename}_${packageversion}_${debarch}.changes
++	dpkg-genchanges -Vkernel:debarch="${debarch}" > ../${sourcename}_${packageversion}_${debarch}.changes
+ else
+-	dpkg-genchanges -b > ../${sourcename}_${packageversion}_${debarch}.changes
++	dpkg-genchanges -Vkernel:debarch="${debarch}" -b > ../${sourcename}_${packageversion}_${debarch}.changes
+ fi
+ 
+ exit 0
+-- 
+2.36.1
+
