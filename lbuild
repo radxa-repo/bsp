@@ -143,6 +143,7 @@ prepare_source() {
         [[ -z $(git config --get user.name) ]] && git config user.name "lbuild"
         [[ -z $(git config --get user.email) ]] && git config user.email "lbuild@invalid.email"
         git am --abort && true
+        [[ -n $(git status -s) ]] && git reset --hard FETCH_HEAD
 
         local ORIGIN=$(sha1sum <(echo "$LINUX_GIT") | cut -d' ' -f1)
         git remote add $ORIGIN $LINUX_GIT 2>/dev/null && true
