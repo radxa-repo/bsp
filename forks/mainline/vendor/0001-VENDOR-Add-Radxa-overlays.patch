@@ -11,7 +11,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  3 files changed, 17 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/Makefile
-index e6e93e89a..d8bce9576 100644
+index e6e93e89ab..d8bce95769 100644
 --- a/arch/arm64/boot/dts/amlogic/Makefile
 +++ b/arch/arm64/boot/dts/amlogic/Makefile
 @@ -65,3 +65,5 @@ dtb-$(CONFIG_ARCH_MESON) += meson-sm1-x96-air.dtb
@@ -22,7 +22,7 @@ index e6e93e89a..d8bce9576 100644
 +subdir-y += overlays
 \ No newline at end of file
 diff --git a/scripts/Makefile.dtbinst b/scripts/Makefile.dtbinst
-index 190d781e8..8744bb077 100644
+index 190d781e84..8744bb0777 100644
 --- a/scripts/Makefile.dtbinst
 +++ b/scripts/Makefile.dtbinst
 @@ -18,9 +18,11 @@ include $(srctree)/scripts/Kbuild.include
@@ -52,7 +52,7 @@ index 190d781e8..8744bb077 100644
  $(subdirs):
  	$(Q)$(MAKE) $(dtbinst)=$@ dst=$(patsubst $(obj)/%,$(dst)/%,$@)
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 9f69ecdd7..9683bb53f 100644
+index 9f69ecdd79..9683bb53f2 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
 @@ -441,6 +441,12 @@ quiet_cmd_uimage = UIMAGE  $@
