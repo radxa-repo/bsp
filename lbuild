@@ -195,6 +195,40 @@ prepare_source() {
     popd
 }
 
+kconfig() {
+    while IFS="" read -r k || [ -n "$k" ]
+    do
+        if echo "$k" | grep "^# CONFIG_.* is not set$"
+        then
+            local CONFIG=$(echo $k | cut -d ' ' -f 2)
+            local SWITCH="--undefine"
+        elif echo "$k" | grep "^CONFIG_.*=[ynm]$"
+        then
+            local CONFIG=$(echo $k | cut -d '=' -f 1)
+            case "$(echo $k | cut -d'=' -f 2)" in
+                y)
+                    local SWITCH="--enable"
+                    ;;
+                n)
+                    local SWITCH="--disable"
+                    ;;
+                m)
+                    local SWITCH="--module"
+                    ;;
+            esac
+        elif echo "$k" | grep "^#"
+        then
+            continue
+        elif [[ -z "$k" ]]
+        then
+            continue
+        else
+            error $EXIT_UNKNOWN_OPTION "$k"
+        fi
+        "$SCRIPT_DIR/.src/linux/scripts/config" --file "$SCRIPT_DIR/.src/linux/.config" $SWITCH $CONFIG
+    done < "$1"
+}
+
 build() {
     if (( $# == 0 ))
     then
@@ -249,7 +283,19 @@ build() {
         ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
         KERNELRELEASE=$LINUX_VERSION DPKG_FLAGS=$DPKG_FLAGS \
         FORK=$FORK SUPPORTED_BOARDS=$SUPPORTED_BOARDS \
-        $LINUX_DEFCONFIG all bindeb-pkg | tee .src/build.log
+        $LINUX_DEFCONFIG 2>&1 | tee "$SCRIPT_DIR/.src/build.log"
+    
+    if [[ -e "$SCRIPT_DIR/forks/$FORK/kconfig.conf" ]]
+    then
+        kconfig "$SCRIPT_DIR/forks/$FORK/kconfig.conf"
+    fi
+
+    make -C "$SCRIPT_DIR/.src/linux" -j$(nproc) \
+        KDEB_COMPRESS="xz" \
+        ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
+        KERNELRELEASE=$LINUX_VERSION DPKG_FLAGS=$DPKG_FLAGS \
+        FORK=$FORK SUPPORTED_BOARDS=$SUPPORTED_BOARDS \
+        olddefconfig all bindeb-pkg 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
 }
 
 set -e
