@@ -11,7 +11,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  2 files changed, 1090 insertions(+), 662 deletions(-)
 
 diff --git a/sound/soc/codecs/es8316.c b/sound/soc/codecs/es8316.c
-index 609459077f9d..1b9a94f8cad9 100644
+index 609459077f..1b9a94f8ca 100644
 --- a/sound/soc/codecs/es8316.c
 +++ b/sound/soc/codecs/es8316.c
 @@ -1,190 +1,283 @@
@@ -1810,7 +1810,7 @@ index 609459077f9d..1b9a94f8cad9 100644
 +MODULE_AUTHOR("Will <will@everset-semi.com>");
 +MODULE_LICENSE("GPL");
 diff --git a/sound/soc/codecs/es8316.h b/sound/soc/codecs/es8316.h
-index c335138e2837..007a2129b468 100644
+index c335138e28..007a2129b4 100644
 --- a/sound/soc/codecs/es8316.h
 +++ b/sound/soc/codecs/es8316.h
 @@ -1,132 +1,160 @@

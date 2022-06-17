@@ -24,7 +24,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  14 files changed, 1114 insertions(+), 496 deletions(-)
 
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125.h b/drivers/net/ethernet/realtek/r8125/r8125.h
-index 4875ccca4e40..81ded2ee09fb 100755
+index 4875ccca4e..81ded2ee09 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125.h
 +++ b/drivers/net/ethernet/realtek/r8125/r8125.h
 @@ -5,7 +5,7 @@
@@ -231,7 +231,7 @@ index 4875ccca4e40..81ded2ee09fb 100755
  #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,34)
  #define netdev_mc_count(dev) ((dev)->mc_count)
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_dash.h b/drivers/net/ethernet/realtek/r8125/r8125_dash.h
-index f86d4255aa33..6819370dfc77 100755
+index f86d4255aa..6819370dfc 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_dash.h
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_dash.h
 @@ -5,7 +5,7 @@
@@ -244,7 +244,7 @@ index f86d4255aa33..6819370dfc77 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_firmware.c b/drivers/net/ethernet/realtek/r8125/r8125_firmware.c
-index ac4ea626b908..61b92d11cfe6 100755
+index ac4ea626b9..61b92d11cf 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_firmware.c
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_firmware.c
 @@ -5,7 +5,7 @@
@@ -257,7 +257,7 @@ index ac4ea626b908..61b92d11cfe6 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_firmware.h b/drivers/net/ethernet/realtek/r8125/r8125_firmware.h
-index 1961be5d553a..df97bf9b14fa 100755
+index 1961be5d55..df97bf9b14 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_firmware.h
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_firmware.h
 @@ -5,7 +5,7 @@
@@ -270,7 +270,7 @@ index 1961be5d553a..df97bf9b14fa 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_n.c b/drivers/net/ethernet/realtek/r8125/r8125_n.c
-index fd96e8f8e462..218ff12841e6 100755
+index fd96e8f8e4..218ff12841 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_n.c
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_n.c
 @@ -5,7 +5,7 @@
@@ -3290,7 +3290,7 @@ index fd96e8f8e462..218ff12841e6 100755
  #endif
  
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_ptp.c b/drivers/net/ethernet/realtek/r8125/r8125_ptp.c
-index e1102b76d852..6010a1809cd3 100755
+index e1102b76d8..6010a1809c 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_ptp.c
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_ptp.c
 @@ -5,7 +5,7 @@
@@ -3303,7 +3303,7 @@ index e1102b76d852..6010a1809cd3 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_ptp.h b/drivers/net/ethernet/realtek/r8125/r8125_ptp.h
-index a324ff38279a..7a1fe83b9ac1 100755
+index a324ff3827..7a1fe83b9a 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_ptp.h
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_ptp.h
 @@ -5,7 +5,7 @@
@@ -3316,7 +3316,7 @@ index a324ff38279a..7a1fe83b9ac1 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_realwow.h b/drivers/net/ethernet/realtek/r8125/r8125_realwow.h
-index 352e3270fa0e..e5e9b46d61a0 100755
+index 352e3270fa..e5e9b46d61 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_realwow.h
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_realwow.h
 @@ -5,7 +5,7 @@
@@ -3329,7 +3329,7 @@ index 352e3270fa0e..e5e9b46d61a0 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_rss.c b/drivers/net/ethernet/realtek/r8125/r8125_rss.c
-index 78e53f51489e..1f55c4477e1f 100755
+index 78e53f5148..1f55c4477e 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_rss.c
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_rss.c
 @@ -5,7 +5,7 @@
@@ -3342,7 +3342,7 @@ index 78e53f51489e..1f55c4477e1f 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_rss.h b/drivers/net/ethernet/realtek/r8125/r8125_rss.h
-index 90e2809027f2..8864139509f6 100755
+index 90e2809027..8864139509 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_rss.h
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_rss.h
 @@ -5,7 +5,7 @@
@@ -3355,7 +3355,7 @@ index 90e2809027f2..8864139509f6 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/rtl_eeprom.c b/drivers/net/ethernet/realtek/r8125/rtl_eeprom.c
-index 866ae5f33760..03660ddaf1e8 100755
+index 866ae5f337..03660ddaf1 100755
 --- a/drivers/net/ethernet/realtek/r8125/rtl_eeprom.c
 +++ b/drivers/net/ethernet/realtek/r8125/rtl_eeprom.c
 @@ -5,7 +5,7 @@
@@ -3368,7 +3368,7 @@ index 866ae5f33760..03660ddaf1e8 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/rtl_eeprom.h b/drivers/net/ethernet/realtek/r8125/rtl_eeprom.h
-index b0c4a050bdf0..8faed17cf2ef 100755
+index b0c4a050bd..8faed17cf2 100755
 --- a/drivers/net/ethernet/realtek/r8125/rtl_eeprom.h
 +++ b/drivers/net/ethernet/realtek/r8125/rtl_eeprom.h
 @@ -5,7 +5,7 @@
@@ -3381,7 +3381,7 @@ index b0c4a050bdf0..8faed17cf2ef 100755
  # This program is free software; you can redistribute it and/or modify it
  # under the terms of the GNU General Public License as published by the Free
 diff --git a/drivers/net/ethernet/realtek/r8125/rtltool.c b/drivers/net/ethernet/realtek/r8125/rtltool.c
-index ace717bde346..f40df6fe387b 100755
+index ace717bde3..f40df6fe38 100755
 --- a/drivers/net/ethernet/realtek/r8125/rtltool.c
 +++ b/drivers/net/ethernet/realtek/r8125/rtltool.c
 @@ -5,7 +5,7 @@
@@ -3579,7 +3579,7 @@ index ace717bde346..f40df6fe387b 100755
                  break;
  
 diff --git a/drivers/net/ethernet/realtek/r8125/rtltool.h b/drivers/net/ethernet/realtek/r8125/rtltool.h
-index fc8a10ca80f7..a54f8e6abd22 100755
+index fc8a10ca80..a54f8e6abd 100755
 --- a/drivers/net/ethernet/realtek/r8125/rtltool.h
 +++ b/drivers/net/ethernet/realtek/r8125/rtltool.h
 @@ -5,7 +5,7 @@

@@ -43,7 +43,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  create mode 100755 drivers/net/ethernet/realtek/r8125/rtltool.h
 
 diff --git a/drivers/net/ethernet/realtek/Kconfig b/drivers/net/ethernet/realtek/Kconfig
-index 1192ae46ffa7..ac1533e915fe 100644
+index 1192ae46ff..ac1533e915 100644
 --- a/drivers/net/ethernet/realtek/Kconfig
 +++ b/drivers/net/ethernet/realtek/Kconfig
 @@ -126,4 +126,14 @@ config R8169
@@ -62,7 +62,7 @@ index 1192ae46ffa7..ac1533e915fe 100644
 +
  endif # NET_VENDOR_REALTEK
 diff --git a/drivers/net/ethernet/realtek/Makefile b/drivers/net/ethernet/realtek/Makefile
-index e8598b468b7c..b2af130d2ff0 100644
+index e8598b468b..b2af130d2f 100644
 --- a/drivers/net/ethernet/realtek/Makefile
 +++ b/drivers/net/ethernet/realtek/Makefile
 @@ -9,3 +9,5 @@ obj-$(CONFIG_ATP) += atp.o
@@ -73,7 +73,7 @@ index e8598b468b7c..b2af130d2ff0 100644
 +obj-${CONFIG_R8125} += r8125/
 diff --git a/drivers/net/ethernet/realtek/r8125/Makefile b/drivers/net/ethernet/realtek/r8125/Makefile
 new file mode 100755
-index 000000000000..e02bc5490a76
+index 0000000000..e02bc5490a
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/Makefile
 @@ -0,0 +1,121 @@
@@ -200,7 +200,7 @@ index 000000000000..e02bc5490a76
 +endif
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125.h b/drivers/net/ethernet/realtek/r8125/r8125.h
 new file mode 100755
-index 000000000000..4875ccca4e40
+index 0000000000..4875ccca4e
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125.h
 @@ -0,0 +1,2508 @@
@@ -2714,7 +2714,7 @@ index 000000000000..4875ccca4e40
 +#endif /* __R8125_H */
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_dash.h b/drivers/net/ethernet/realtek/r8125/r8125_dash.h
 new file mode 100755
-index 000000000000..f86d4255aa33
+index 0000000000..f86d4255aa
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_dash.h
 @@ -0,0 +1,261 @@
@@ -2981,7 +2981,7 @@ index 000000000000..f86d4255aa33
 +#endif /* _LINUX_R8125_DASH_H */
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_firmware.c b/drivers/net/ethernet/realtek/r8125/r8125_firmware.c
 new file mode 100755
-index 000000000000..ac4ea626b908
+index 0000000000..ac4ea626b9
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_firmware.c
 @@ -0,0 +1,264 @@
@@ -3251,7 +3251,7 @@ index 000000000000..ac4ea626b908
 +}
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_firmware.h b/drivers/net/ethernet/realtek/r8125/r8125_firmware.h
 new file mode 100755
-index 000000000000..1961be5d553a
+index 0000000000..1961be5d55
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_firmware.h
 @@ -0,0 +1,68 @@
@@ -3325,7 +3325,7 @@ index 000000000000..1961be5d553a
 +#endif /* _LINUX_rtl8125_FIRMWARE_H */
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_n.c b/drivers/net/ethernet/realtek/r8125/r8125_n.c
 new file mode 100755
-index 000000000000..fd96e8f8e462
+index 0000000000..fd96e8f8e4
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_n.c
 @@ -0,0 +1,15150 @@
@@ -18481,7 +18481,7 @@ index 000000000000..fd96e8f8e462
 +module_exit(rtl8125_cleanup_module);
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_ptp.c b/drivers/net/ethernet/realtek/r8125/r8125_ptp.c
 new file mode 100755
-index 000000000000..e1102b76d852
+index 0000000000..e1102b76d8
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_ptp.c
 @@ -0,0 +1,594 @@
@@ -19081,7 +19081,7 @@ index 000000000000..e1102b76d852
 +}
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_ptp.h b/drivers/net/ethernet/realtek/r8125/r8125_ptp.h
 new file mode 100755
-index 000000000000..a324ff38279a
+index 0000000000..a324ff3827
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_ptp.h
 @@ -0,0 +1,81 @@
@@ -19168,7 +19168,7 @@ index 000000000000..a324ff38279a
 +#endif /* _LINUX_rtl8125_PTP_H */
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_realwow.h b/drivers/net/ethernet/realtek/r8125/r8125_realwow.h
 new file mode 100755
-index 000000000000..352e3270fa0e
+index 0000000000..352e3270fa
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_realwow.h
 @@ -0,0 +1,118 @@
@@ -19292,7 +19292,7 @@ index 000000000000..352e3270fa0e
 +#endif /* _LINUX_R8125_REALWOW_H */
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_rss.c b/drivers/net/ethernet/realtek/r8125/r8125_rss.c
 new file mode 100755
-index 000000000000..78e53f51489e
+index 0000000000..78e53f5148
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_rss.c
 @@ -0,0 +1,481 @@
@@ -19779,7 +19779,7 @@ index 000000000000..78e53f51489e
 +}
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_rss.h b/drivers/net/ethernet/realtek/r8125/r8125_rss.h
 new file mode 100755
-index 000000000000..90e2809027f2
+index 0000000000..90e2809027
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_rss.h
 @@ -0,0 +1,69 @@
@@ -19854,7 +19854,7 @@ index 000000000000..90e2809027f2
 +#endif /* _LINUX_rtl8125_RSS_H */
 diff --git a/drivers/net/ethernet/realtek/r8125/rtl_eeprom.c b/drivers/net/ethernet/realtek/r8125/rtl_eeprom.c
 new file mode 100755
-index 000000000000..866ae5f33760
+index 0000000000..866ae5f337
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/rtl_eeprom.c
 @@ -0,0 +1,289 @@
@@ -20149,7 +20149,7 @@ index 000000000000..866ae5f33760
 +}
 diff --git a/drivers/net/ethernet/realtek/r8125/rtl_eeprom.h b/drivers/net/ethernet/realtek/r8125/rtl_eeprom.h
 new file mode 100755
-index 000000000000..b0c4a050bdf0
+index 0000000000..b0c4a050bd
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/rtl_eeprom.h
 @@ -0,0 +1,53 @@
@@ -20208,7 +20208,7 @@ index 000000000000..b0c4a050bdf0
 +void rtl8125_set_eeprom_sel_low(struct rtl8125_private *tp);
 diff --git a/drivers/net/ethernet/realtek/r8125/rtltool.c b/drivers/net/ethernet/realtek/r8125/rtltool.c
 new file mode 100755
-index 000000000000..ace717bde346
+index 0000000000..ace717bde3
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/rtltool.c
 @@ -0,0 +1,320 @@
@@ -20534,7 +20534,7 @@ index 000000000000..ace717bde346
 +}
 diff --git a/drivers/net/ethernet/realtek/r8125/rtltool.h b/drivers/net/ethernet/realtek/r8125/rtltool.h
 new file mode 100755
-index 000000000000..fc8a10ca80f7
+index 0000000000..fc8a10ca80
 --- /dev/null
 +++ b/drivers/net/ethernet/realtek/r8125/rtltool.h
 @@ -0,0 +1,86 @@

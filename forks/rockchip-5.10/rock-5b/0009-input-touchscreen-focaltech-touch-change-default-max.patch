@@ -11,7 +11,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/input/touchscreen/focaltech_touch/focaltech_core.h b/drivers/input/touchscreen/focaltech_touch/focaltech_core.h
-index 6547719b94a9..f2184b67ad18 100644
+index 6547719b94..f2184b67ad 100644
 --- a/drivers/input/touchscreen/focaltech_touch/focaltech_core.h
 +++ b/drivers/input/touchscreen/focaltech_touch/focaltech_core.h
 @@ -88,8 +88,8 @@

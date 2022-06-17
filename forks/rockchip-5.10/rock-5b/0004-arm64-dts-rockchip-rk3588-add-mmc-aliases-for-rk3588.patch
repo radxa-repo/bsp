@@ -10,7 +10,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  1 file changed, 3 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/rockchip/rk3588s.dtsi b/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
-index 627d8e7969db..df65ac7f75ce 100644
+index 8fddd31055..890c65d32f 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
 +++ b/arch/arm64/boot/dts/rockchip/rk3588s.dtsi
 @@ -69,6 +69,9 @@ aliases {

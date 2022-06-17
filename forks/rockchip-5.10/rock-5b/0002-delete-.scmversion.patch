@@ -12,7 +12,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
 
 diff --git a/.scmversion b/.scmversion
 deleted file mode 100644
-index e69de29bb2d1..000000000000
+index e69de29bb2..0000000000
 -- 
 2.36.1
 

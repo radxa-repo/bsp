@@ -11,7 +11,7 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  2 files changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/net/ethernet/realtek/r8125/Makefile b/drivers/net/ethernet/realtek/r8125/Makefile
-index e02bc5490a76..637d9f828bdc 100755
+index e02bc5490a..637d9f828b 100755
 --- a/drivers/net/ethernet/realtek/r8125/Makefile
 +++ b/drivers/net/ethernet/realtek/r8125/Makefile
 @@ -38,13 +38,13 @@ CONFIG_DOWN_SPEED_100 = n
@@ -32,7 +32,7 @@ index e02bc5490a76..637d9f828bdc 100755
  ENABLE_USE_FIRMWARE_FILE = n
  DISABLE_PM_SUPPORT = n
 diff --git a/drivers/net/ethernet/realtek/r8125/r8125_n.c b/drivers/net/ethernet/realtek/r8125/r8125_n.c
-index 218ff12841e6..51d9842718e0 100755
+index 218ff12841..51d9842718 100755
 --- a/drivers/net/ethernet/realtek/r8125/r8125_n.c
 +++ b/drivers/net/ethernet/realtek/r8125/r8125_n.c
 @@ -12699,11 +12699,12 @@ rtl8125_init_one(struct pci_dev *pdev,
