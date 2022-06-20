@@ -5,34 +5,32 @@ Subject: [PATCH] VENDOR: Add Radxa overlays
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
- arch/arm64/boot/dts/amlogic/Makefile  |  2 ++
- arch/arm64/boot/dts/rockchip/Makefile |  2 ++
+ arch/arm64/boot/dts/amlogic/Makefile  |  1 +
+ arch/arm64/boot/dts/rockchip/Makefile |  1 +
  scripts/Makefile.dtbinst              | 10 +++++++++-
  scripts/Makefile.lib                  |  6 ++++++
- 3 files changed, 17 insertions(+), 1 deletion(-)
+ 4 files changed, 17 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/Makefile
-index e6e93e89ab..d8bce95769 100644
+index f231280cd8..f9e467edff 100644
 --- a/arch/arm64/boot/dts/amlogic/Makefile
 +++ b/arch/arm64/boot/dts/amlogic/Makefile
-@@ -65,3 +65,5 @@ dtb-$(CONFIG_ARCH_MESON) += meson-sm1-sei610.dtb
- dtb-$(CONFIG_ARCH_MESON) += meson-sm1-khadas-vim3l.dtb
- dtb-$(CONFIG_ARCH_MESON) += meson-sm1-odroid-c4.dtb
- dtb-$(CONFIG_ARCH_MESON) += meson-a1-ad401.dtb
-+
+@@ -1,4 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
 +subdir-y += overlays
-\ No newline at end of file
+ dtb-$(CONFIG_ARCH_MESON) += meson-a1-ad401.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-axg-jethome-jethub-j100.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-axg-s400.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
-index e6e93e89ab..d8bce95769 100644
+index 7cccbd7c6e..69399d2d41 100644
 --- a/arch/arm64/boot/dts/rockchip/Makefile
 +++ b/arch/arm64/boot/dts/rockchip/Makefile
-@@ -65,3 +65,5 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire-excavator.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399pro-rock-pi-n10.dtb
-+
+@@ -1,4 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
 +subdir-y += overlays
-\ No newline at end of file
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-evb.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-engicam-px30-core-ctouch2.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-engicam-px30-core-ctouch2-of10.dtb
 diff --git a/scripts/Makefile.dtbinst b/scripts/Makefile.dtbinst
 index 190d781e84..8744bb0777 100644
 --- a/scripts/Makefile.dtbinst
@@ -64,10 +62,10 @@ index 190d781e84..8744bb0777 100644
  $(subdirs):
  	$(Q)$(MAKE) $(dtbinst)=$@ dst=$(patsubst $(obj)/%,$(dst)/%,$@)
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 9f69ecdd79..9683bb53f2 100644
+index d142577866..f48d411b65 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
-@@ -441,6 +441,12 @@ quiet_cmd_uimage = UIMAGE  $@
+@@ -460,6 +460,12 @@ quiet_cmd_uimage = UIMAGE  $@
  			-a $(UIMAGE_LOADADDR) -e $(UIMAGE_ENTRYADDR) \
  			-n $(UIMAGE_NAME) -d $< $@
  
