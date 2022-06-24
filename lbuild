@@ -296,6 +296,8 @@ build() {
         KERNELRELEASE=$LINUX_VERSION DPKG_FLAGS=$DPKG_FLAGS \
         FORK=$FORK SUPPORTED_BOARDS=$SUPPORTED_BOARDS \
         olddefconfig all bindeb-pkg 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    
+    mv $SCRIPT_DIR/.src/*.deb ./
 }
 
 set -e
