@@ -5,8 +5,8 @@ Subject: [PATCH] VENDOR: Add Radxa overlays
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
- arch/arm64/boot/dts/amlogic/Makefile  |  1 +
- arch/arm64/boot/dts/rockchip/Makefile |  1 +
+ arch/arm64/boot/dts/amlogic/Makefile  |  5 +++++
+ arch/arm64/boot/dts/rockchip/Makefile | 14 +++++++++++++
  scripts/Makefile.dtbinst              | 10 +++++++++-
  scripts/Makefile.lib                  |  6 ++++++
  4 files changed, 17 insertions(+), 1 deletion(-)
@@ -15,9 +15,13 @@ diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/
 index f231280cd8..f9e467edff 100644
 --- a/arch/arm64/boot/dts/amlogic/Makefile
 +++ b/arch/arm64/boot/dts/amlogic/Makefile
-@@ -1,4 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0
+@@ -1,4 +1,9 @@
++DTC_FLAGS_meson-g12a-radxa-zero := -@
++DTC_FLAGS_meson-g12b-radxa-zero2 := -@
++
 +subdir-y += overlays
++
+ # SPDX-License-Identifier: GPL-2.0
  dtb-$(CONFIG_ARCH_MESON) += meson-axg-s400.dtb
  dtb-$(CONFIG_ARCH_MESON) += meson-g12a-sei510.dtb
  dtb-$(CONFIG_ARCH_MESON) += meson-g12a-u200.dtb
@@ -25,9 +29,22 @@ diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchi
 index 7cccbd7c6e..69399d2d41 100644
 --- a/arch/arm64/boot/dts/rockchip/Makefile
 +++ b/arch/arm64/boot/dts/rockchip/Makefile
-@@ -1,4 +1,5 @@
- # SPDX-License-Identifier: GPL-2.0
+@@ -1,4 +1,18 @@
++DTC_FLAGS_rk3328-rock-pi-e := -@
++DTC_FLAGS_rk3399-rock-pi-4a-plus := -@
++DTC_FLAGS_rk3399-rock-pi-4a := -@
++DTC_FLAGS_rk3399-rock-pi-4b-plus := -@
++DTC_FLAGS_rk3399-rock-pi-4b := -@
++DTC_FLAGS_rk3399-rock-pi-4c-plus := -@
++DTC_FLAGS_rk3399-rock-pi-4c := -@
++DTC_FLAGS_rk3568-rock-3a := -@
++DTC_FLAGS_rk3588-rock-5a := -@
++DTC_FLAGS_rk3588-rock-5b-v11 := -@
++DTC_FLAGS_rk3588-rock-5b := -@
++
 +subdir-y += overlays
++
+ # SPDX-License-Identifier: GPL-2.0
  dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-evb.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3308-evb.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3308-roc-cc.dtb

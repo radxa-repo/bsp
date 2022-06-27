@@ -25,16 +25,17 @@ index 3341788d10..6e6f523d5d 100644
            - const: amlogic,g12a
  
 diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/Makefile
-index 91af076cdf..9fcc22c805 100644
+index 8da30c9418..f3db46fd39 100644
 --- a/arch/arm64/boot/dts/amlogic/Makefile
 +++ b/arch/arm64/boot/dts/amlogic/Makefile
-@@ -1,5 +1,6 @@
+@@ -5,6 +5,7 @@ subdir-y += overlays
+ 
  # SPDX-License-Identifier: GPL-2.0
- subdir-y += overlays
  dtb-$(CONFIG_ARCH_MESON) += meson-axg-s400.dtb
 +dtb-$(CONFIG_ARCH_MESON) += meson-g12a-radxa-zero.dtb
  dtb-$(CONFIG_ARCH_MESON) += meson-g12a-sei510.dtb
  dtb-$(CONFIG_ARCH_MESON) += meson-g12a-u200.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12a-x96-max.dtb
 diff --git a/arch/arm64/boot/dts/amlogic/meson-g12a-radxa-zero.dts b/arch/arm64/boot/dts/amlogic/meson-g12a-radxa-zero.dts
 new file mode 100644
 index 0000000000..d44d3881d9
