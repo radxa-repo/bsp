@@ -267,22 +267,13 @@ build() {
     local FORK=$1
 
     [[ $NO_PREPARE_SOURCE != "y" ]] && prepare_source
-    
-    # Get Linux version
-    source <(cat $SCRIPT_DIR/.src/linux/Makefile | head -n 10 | tr -d ' ')
-    local LINUX_VERSION="$VERSION"
-    if [[ -n $PATCHLEVEL ]]; then LINUX_VERSION+=".$PATCHLEVEL"; fi
-    if [[ -n $SUBLEVEL ]]; then LINUX_VERSION+=".$SUBLEVEL"; fi
-    if [[ -n $EXTRAVERSION ]]; then LINUX_VERSION+=".$EXTRAVERSION"; fi
-    LINUX_VERSION+="-$FORK"
 
-    echo $(( $PKG_REVISION - 1 )) > $SCRIPT_DIR/.src/linux/.version
+    local LINUX_VERSION=$(make -C "$SCRIPT_DIR/.src/linux" -s kernelversion)
 
     make -C "$SCRIPT_DIR/.src/linux" -j$(nproc) \
-        KDEB_COMPRESS="xz" \
         ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
-        KERNELRELEASE=$LINUX_VERSION DPKG_FLAGS=$DPKG_FLAGS \
-        FORK=$FORK SUPPORTED_BOARDS=$SUPPORTED_BOARDS \
+        KDEB_COMPRESS="xz" DPKG_FLAGS=$DPKG_FLAGS \
+        LOCALVERSION=-$FORK KERNELRELEASE=$LINUX_VERSION-$FORK KDEB_PKGVERSION=$LINUX_VERSION-$FORK-$PKG_REVISION \
         $LINUX_DEFCONFIG 2>&1 | tee "$SCRIPT_DIR/.src/build.log"
     
     if [[ -e "$SCRIPT_DIR/forks/$FORK/kconfig.conf" ]]
@@ -291,13 +282,35 @@ build() {
     fi
 
     make -C "$SCRIPT_DIR/.src/linux" -j$(nproc) \
-        KDEB_COMPRESS="xz" \
         ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
-        KERNELRELEASE=$LINUX_VERSION DPKG_FLAGS=$DPKG_FLAGS \
-        FORK=$FORK SUPPORTED_BOARDS=$SUPPORTED_BOARDS \
+        KDEB_COMPRESS="xz" DPKG_FLAGS=$DPKG_FLAGS \
+        LOCALVERSION=-$FORK KERNELRELEASE=$LINUX_VERSION-$FORK KDEB_PKGVERSION=$LINUX_VERSION-$FORK-$PKG_REVISION \
         olddefconfig all bindeb-pkg 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
     
     mv $SCRIPT_DIR/.src/*.deb ./
+    for BOARD in ${SUPPORTED_BOARDS[@]}
+    do
+        local NAMES=("linux-image-$BOARD" "linux-headers-$BOARD")
+        local DESCRIPTIONS=("Radxa Linux kernel image for $BOARD" "Radxa Linux header for $BOARD")
+        local DEPENDS=("linux-image-$LINUX_VERSION-$FORK" "linux-headers-$LINUX_VERSION-$FORK")
+        for i in {0..1}
+        do
+            local NAME=${NAMES[$i]}
+            local VERSION="$LINUX_VERSION-$FORK-$PKG_REVISION"
+            local URL="https://github.com/radxa-pkg/linux-image-$FORK"
+            local DESCRIPTION=${DESCRIPTIONS[$i]}
+            local DEPEND=${DEPENDS[$i]}
+            fpm -s empty -t deb -n "$NAME" -v "$VERSION" \
+                --deb-compression xz \
+                --depends "$DEPEND" \
+                --url "$URL" \
+                --description "$DESCRIPTION" \
+                --license "GPL-2+" \
+                -m "Radxa <dev@radxa.com>" \
+                --vendor "Radxa" \
+                --force
+        done
+    done
 }
 
 set -e
