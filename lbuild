@@ -169,19 +169,25 @@ prepare_source() {
         git reset --hard FETCH_HEAD
         git clean -ffd
 
-        for f in $(find -L $FORK_DIR/*.sh -type f)
+        for d in $(find -L $FORK_DIR -type d | sort -r)
         do
-            if [[ $(type -t custom_source_action) == function ]]
-            then
-                unset -f custom_source_action
-            fi
+            shopt -s nullglob
+            for f in $d/*.sh
+            do
+                if [[ $(type -t custom_source_action) == function ]]
+                then
+                    unset -f custom_source_action
+                fi
 
-            source $f
+                source $f
 
-            if [[ $(type -t custom_source_action) == function ]]
-            then
-                custom_source_action
-            fi
+                if [[ $(type -t custom_source_action) == function ]]
+                then
+                    echo "Running custom_source_action from $f"
+                    custom_source_action "$SCRIPT_DIR" "$UBOOT_DIR"
+                fi
+            done
+            shopt -u nullglob
         done
 
         for d in $(find -L $FORK_DIR -type d | sort)
@@ -198,25 +204,36 @@ prepare_source() {
 kconfig() {
     while IFS="" read -r k || [ -n "$k" ]
     do
-        if echo "$k" | grep "^# CONFIG_.* is not set$"
+        local CONFIG=
+        local OPTION=
+        local SWITCH=
+        if grep -q "^# CONFIG_.* is not set$" <<< $k
         then
-            local CONFIG=$(echo $k | cut -d ' ' -f 2)
-            local SWITCH="--undefine"
-        elif echo "$k" | grep "^CONFIG_.*=[ynm]$"
+            CONFIG=$(cut -d ' ' -f 2 <<< $k)
+            SWITCH="--undefine"
+        elif grep -q "^CONFIG_.*=[ynm]$" <<< $k
         then
-            local CONFIG=$(echo $k | cut -d '=' -f 1)
+            CONFIG=$(echo $k | cut -d '=' -f 1)
             case "$(echo $k | cut -d'=' -f 2)" in
                 y)
-                    local SWITCH="--enable"
+                    SWITCH="--enable"
                     ;;
                 n)
-                    local SWITCH="--disable"
+                    SWITCH="--disable"
                     ;;
                 m)
-                    local SWITCH="--module"
+                    SWITCH="--module"
                     ;;
             esac
-        elif echo "$k" | grep "^#"
+        elif grep -q "^CONFIG_.*=\".*\"$" <<< $k
+        then
+            IFS='=' read -r CONFIG OPTION <<< $k
+            SWITCH="--set-val"
+        elif grep -q "^CONFIG_.*=.*$" <<< $k
+        then
+            IFS='=' read -r CONFIG OPTION <<< $k
+            SWITCH="--set-val"
+        elif grep -q "^#" <<< $k
         then
             continue
         elif [[ -z "$k" ]]
@@ -225,7 +242,7 @@ kconfig() {
         else
             error $EXIT_UNKNOWN_OPTION "$k"
         fi
-        "$SCRIPT_DIR/.src/linux/scripts/config" --file "$SCRIPT_DIR/.src/linux/.config" $SWITCH $CONFIG
+        "$SCRIPT_DIR/.src/linux/scripts/config" --file "$SCRIPT_DIR/.src/linux/.config" $SWITCH $CONFIG "$OPTION"
     done < "$1"
 }
 
@@ -276,10 +293,14 @@ build() {
         LOCALVERSION=-$FORK KERNELRELEASE=$LINUX_VERSION-$FORK KDEB_PKGVERSION=$LINUX_VERSION-$FORK-$PKG_REVISION \
         $LINUX_DEFCONFIG 2>&1 | tee "$SCRIPT_DIR/.src/build.log"
     
-    if [[ -e "$SCRIPT_DIR/forks/$FORK/kconfig.conf" ]]
-    then
-        kconfig "$SCRIPT_DIR/forks/$FORK/kconfig.conf"
-    fi
+    for d in $(find -L "$SCRIPT_DIR/forks/$FORK" -type d | sort -r)
+    do
+        if [[ -e "$d/kconfig.conf" ]]
+        then
+            echo "Apply kconfig from $d/kconfig.conf"
+            kconfig "$d/kconfig.conf"
+        fi
+    done
 
     make -C "$SCRIPT_DIR/.src/linux" -j$(nproc) \
         ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
