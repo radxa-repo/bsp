@@ -355,6 +355,10 @@ build() {
 
 set -e
 
+LC_ALL="C"
+LANG="C"
+LANGUAGE="C"
+
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
 build "$@"
