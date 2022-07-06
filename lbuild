@@ -202,6 +202,14 @@ prepare_source() {
 }
 
 kconfig() {
+    local MODE="config"
+    if [[ $1 == "-v" ]]
+    then
+        MODE="verify"
+        shift
+    fi
+    local FILE="$1"
+
     while IFS="" read -r k || [ -n "$k" ]
     do
         local CONFIG=
@@ -242,8 +250,18 @@ kconfig() {
         else
             error $EXIT_UNKNOWN_OPTION "$k"
         fi
-        "$SCRIPT_DIR/.src/linux/scripts/config" --file "$SCRIPT_DIR/.src/linux/.config" $SWITCH $CONFIG "$OPTION"
-    done < "$1"
+        case $MODE in
+            config)
+                "$SCRIPT_DIR/.src/linux/scripts/config" --file "$SCRIPT_DIR/.src/linux/.config" $SWITCH $CONFIG "$OPTION"
+                ;;
+            verify)
+                if ! grep -q "$k" "$SCRIPT_DIR/.src/linux/.config"
+                then
+                    echo "kconfig: Mismatch: $k" >&2
+                fi
+                ;;
+        esac
+    done < "$FILE"
 }
 
 build() {
@@ -299,6 +317,7 @@ build() {
         then
             echo "Apply kconfig from $d/kconfig.conf"
             kconfig "$d/kconfig.conf"
+            kconfig -v "$d/kconfig.conf"
         fi
     done
 
