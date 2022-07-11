@@ -1,7 +1,7 @@
-From 32b9598034a0e5e2efc932a1a8144fb958cc2dcb Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Yuntian Zhang <yt@radxa.com>
 Date: Wed, 27 Apr 2022 09:55:34 +0800
-Subject: [PATCH 1/2] Fix -Wmisleading-indentation
+Subject: [PATCH] Fix -Wmisleading-indentation
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
@@ -10,10 +10,10 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  2 files changed, 5 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/media/platform/rockchip/cif/capture.c b/drivers/media/platform/rockchip/cif/capture.c
-index 778b4ac428f2..2e71c498eab6 100644
+index 1224740f12..d90557c1ab 100644
 --- a/drivers/media/platform/rockchip/cif/capture.c
 +++ b/drivers/media/platform/rockchip/cif/capture.c
-@@ -5790,7 +5790,8 @@ static int rkcif_dvp_g_ch_id(struct v4l2_device *v4l2_dev,
+@@ -6238,7 +6238,8 @@ static int rkcif_dvp_g_ch_id(struct v4l2_device *v4l2_dev,
  		if ((frm_stat & DVP_CHANNEL2_FRM_READ) ==
  		    DVP_CHANNEL2_FRM_READ)
  			v4l2_warn(v4l2_dev, "frame0/1 trigger simultaneously in DVP ID2\n");
@@ -23,7 +23,7 @@ index 778b4ac428f2..2e71c498eab6 100644
  		return RKCIF_STREAM_MIPI_ID2;
  	}
  
-@@ -5798,7 +5799,8 @@ static int rkcif_dvp_g_ch_id(struct v4l2_device *v4l2_dev,
+@@ -6246,7 +6247,8 @@ static int rkcif_dvp_g_ch_id(struct v4l2_device *v4l2_dev,
  		if ((frm_stat & DVP_CHANNEL3_FRM_READ) ==
  		    DVP_CHANNEL3_FRM_READ)
  			v4l2_warn(v4l2_dev, "frame0/1 trigger simultaneously in DVP ID3\n");
@@ -34,11 +34,11 @@ index 778b4ac428f2..2e71c498eab6 100644
  	}
  
 diff --git a/drivers/video/rockchip/rga3/rga_policy.c b/drivers/video/rockchip/rga3/rga_policy.c
-index 2c2f5e203caf..daecbd61d619 100644
+index 493083655f..6caef1f3c5 100644
 --- a/drivers/video/rockchip/rga3/rga_policy.c
 +++ b/drivers/video/rockchip/rga3/rga_policy.c
-@@ -243,7 +243,7 @@ int rga_job_assign(struct rga_job *job)
- 		    job->flags & RGA_JOB_UNSUPPORT_RGA2) {
+@@ -242,7 +242,7 @@ int rga_job_assign(struct rga_job *job)
+ 		    job->flags & RGA_JOB_UNSUPPORT_RGA_MMU) {
  			if (DEBUGGER_EN(MSG))
  				pr_info("RGA2 only support under 4G memory!\n");
 -				continue;
@@ -47,5 +47,5 @@ index 2c2f5e203caf..daecbd61d619 100644
  
  		if (feature > 0) {
 -- 
-2.36.1
+2.37.0
 

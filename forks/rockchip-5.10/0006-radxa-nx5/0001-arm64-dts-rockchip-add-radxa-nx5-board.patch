@@ -1,0 +1,417 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Stephen <stephen@radxa.com>
+Date: Wed, 6 Jul 2022 17:08:22 +0800
+Subject: [PATCH] arm64: dts: rockchip: add radxa nx5 board
+
+Signed-off-by: Stephen <stephen@radxa.com>
+Signed-off-by: Radxa <dev@radxa.com>
+---
+ arch/arm64/boot/dts/rockchip/Makefile         |   1 +
+ .../rockchip/rk3588s-radxa-nx5-module.dtsi    | 341 ++++++++++++++++++
+ .../boot/dts/rockchip/rk3588s-radxa-nx5.dts   |  33 ++
+ 3 files changed, 375 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5-module.dtsi
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5.dts
+
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+index ebf796f7a192..d3d7388ebf46 100644
+--- a/arch/arm64/boot/dts/rockchip/Makefile
++++ b/arch/arm64/boot/dts/rockchip/Makefile
+@@ -134,6 +134,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb3-lp4x-v10-sii9022-bt1120-to-hdmi.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb4-lp4x-v10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb4-lp4x-v10-linux.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-evb8-lp4x-v10.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-radxa-nx5.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-rock-5a.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-rk806-single-v10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-v10.dtb
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5-module.dtsi b/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5-module.dtsi
+new file mode 100644
+index 000000000000..5cbcd373f37b
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5-module.dtsi
+@@ -0,0 +1,341 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2022 Rockchip Electronics Co., Ltd.
++ * Copyright (c) 2022 Radxa Limited
++ *
++ */
++
++/dts-v1/;
++
++#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/pwm/pwm.h>
++#include <dt-bindings/pinctrl/rockchip.h>
++#include <dt-bindings/input/rk-input.h>
++#include <dt-bindings/display/drm_mipi_dsi.h>
++#include <dt-bindings/display/rockchip_vop.h>
++#include <dt-bindings/sensor-dev.h>
++#include "rk3588s.dtsi"
++#include "rk3588-rk806-single.dtsi"
++#include "rk3588-linux.dtsi"
++
++/ {
++	model = "Radxa NX5 Module";
++	compatible = "radxa,nx5-module", "rockchip,rk3588";
++
++	/delete-node/ chosen;
++
++	vcc12v_dcin: vcc12v-dcin {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc12v_dcin";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <12000000>;
++		regulator-max-microvolt = <12000000>;
++	};
++
++	vcc5v0_sys: vcc5v0-sys {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc5v0_sys";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&vcc12v_dcin>;
++	};
++
++	vcc_1v1_nldo_s3: vcc-1v1-nldo-s3 {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc_1v1_nldo_s3";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <1100000>;
++		regulator-max-microvolt = <1100000>;
++		vin-supply = <&vcc5v0_sys>;
++	};
++};
++
++&i2c0 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c0m2_xfer>;
++
++	vdd_cpu_big0_s0: vdd_cpu_big0_mem_s0: rk8602@42 {
++		compatible = "rockchip,rk8602";
++		reg = <0x42>;
++		vin-supply = <&vcc5v0_sys>;
++		regulator-compatible = "rk860x-reg";
++		regulator-name = "vdd_cpu_big0_s0";
++		regulator-min-microvolt = <550000>;
++		regulator-max-microvolt = <1050000>;
++		regulator-ramp-delay = <2300>;
++		rockchip,suspend-voltage-selector = <1>;
++		regulator-boot-on;
++		regulator-always-on;
++		regulator-state-mem {
++			regulator-off-in-suspend;
++		};
++	};
++
++	vdd_cpu_big1_s0: vdd_cpu_big1_mem_s0: rk8603@43 {
++		compatible = "rockchip,rk8603";
++		reg = <0x43>;
++		vin-supply = <&vcc5v0_sys>;
++		regulator-compatible = "rk860x-reg";
++		regulator-name = "vdd_cpu_big1_s0";
++		regulator-min-microvolt = <550000>;
++		regulator-max-microvolt = <1050000>;
++		regulator-ramp-delay = <2300>;
++		rockchip,suspend-voltage-selector = <1>;
++		regulator-boot-on;
++		regulator-always-on;
++		regulator-state-mem {
++			regulator-off-in-suspend;
++		};
++	};
++};
++
++&i2c2 {
++	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&i2c2m0_xfer>;
++
++	vdd_npu_s0: vdd_npu_mem_s0: rk8602@42 {
++		compatible = "rockchip,rk8602";
++		reg = <0x42>;
++		vin-supply = <&vcc5v0_sys>;
++		regulator-compatible = "rk860x-reg";
++		regulator-name = "vdd_npu_s0";
++		regulator-min-microvolt = <550000>;
++		regulator-max-microvolt = <950000>;
++		regulator-ramp-delay = <2300>;
++		rockchip,suspend-voltage-selector = <1>;
++		regulator-boot-on;
++		regulator-always-on;
++		regulator-state-mem {
++			regulator-off-in-suspend;
++		};
++	};
++};
++
++&cpu_l0 {
++	cpu-supply = <&vdd_cpu_lit_s0>;
++	mem-supply = <&vdd_cpu_lit_mem_s0>;
++};
++
++&cpu_b0 {
++	cpu-supply = <&vdd_cpu_big0_s0>;
++	mem-supply = <&vdd_cpu_big0_mem_s0>;
++};
++
++&cpu_b2 {
++	cpu-supply = <&vdd_cpu_big1_s0>;
++	mem-supply = <&vdd_cpu_big1_mem_s0>;
++};
++
++&gpu {
++	mali-supply = <&vdd_gpu_s0>;
++	mem-supply = <&vdd_gpu_mem_s0>;
++	status = "okay";
++};
++
++&rknpu {
++	rknpu-supply = <&vdd_npu_s0>;
++	mem-supply = <&vdd_npu_mem_s0>;
++	status = "okay";
++};
++
++&rknpu_mmu {
++	status = "okay";
++};
++
++&iep {
++	status = "okay";
++};
++
++&iep_mmu {
++	status = "okay";
++};
++
++&jpegd {
++	status = "okay";
++};
++
++&jpegd_mmu {
++	status = "okay";
++};
++
++&jpege_ccu {
++	status = "okay";
++};
++
++&jpege0 {
++	status = "okay";
++};
++
++&jpege0_mmu {
++	status = "okay";
++};
++
++&jpege1 {
++	status = "okay";
++};
++
++&jpege1_mmu {
++	status = "okay";
++};
++
++&jpege2 {
++	status = "okay";
++};
++
++&jpege2_mmu {
++	status = "okay";
++};
++
++&jpege3 {
++	status = "okay";
++};
++
++&jpege3_mmu {
++	status = "okay";
++};
++
++&mpp_srv {
++	status = "okay";
++};
++
++&rga3_core0 {
++	status = "okay";
++};
++
++&rga3_0_mmu {
++	status = "okay";
++};
++
++&rga3_core1 {
++	status = "okay";
++};
++
++&rga3_1_mmu {
++	status = "okay";
++};
++
++&rga2 {
++	status = "okay";
++};
++
++&rkvdec_ccu {
++	status = "okay";
++};
++
++&rkvdec0 {
++	status = "okay";
++};
++
++&rkvdec0_mmu {
++	status = "okay";
++};
++
++&rkvdec1 {
++	status = "okay";
++};
++
++&rkvdec1_mmu {
++	status = "okay";
++};
++
++&rkvenc_ccu {
++	status = "okay";
++};
++
++&rkvenc0 {
++	status = "okay";
++};
++
++&rkvenc0_mmu {
++	status = "okay";
++};
++
++&rkvenc1 {
++	status = "okay";
++};
++
++&rkvenc1_mmu {
++	status = "okay";
++};
++
++&saradc {
++	status = "okay";
++	vref-supply = <&vcc_1v8_s0>;
++};
++
++&tsadc {
++	status = "okay";
++};
++
++&sdhci {
++	bus-width = <8>;
++	no-sdio;
++	no-sd;
++	non-removable;
++	max-frequency = <200000000>;
++	mmc-hs400-1_8v;
++	status = "okay";
++};
++
++&mdio1 {
++	rgmii_phy1: phy@1 {
++		compatible = "ethernet-phy-ieee802.3-c22";
++		reg = <0x1>;
++	};
++};
++
++&gmac1 {
++	status = "okay";
++	// Use rgmii-rxid mode to disable rx delay inside Soc
++	phy-mode = "rgmii-rxid";
++	clock_in_out = "output";
++
++	snps,reset-gpio = <&gpio0 RK_PD3 GPIO_ACTIVE_LOW>;
++	snps,reset-active-low;
++	// Reset time is 20ms, 100ms for rtl8211f
++	snps,reset-delays-us = <0 200000 100000>;
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&gmac1_miim
++		&gmac1_tx_bus2
++		&gmac1_rx_bus2
++		&gmac1_rgmii_clk
++		&gmac1_rgmii_bus>;
++
++	tx_delay = <0x43>;
++	//rx_delay = <0x3e>;
++
++	phy-handle = <&rgmii_phy1>;
++};
++
++&i2c4 {
++	status = "okay";
++	pinctrl-0 = <&i2c4m3_xfer>;
++
++	hym8563: hym8563@51 {
++		compatible = "haoyu,hym8563";
++		reg = <0x51>;
++		#clock-cells = <0>;
++		clock-frequency = <32768>;
++		clock-output-names = "hym8563";
++		pinctrl-names = "default";
++		pinctrl-0 = <&rtc_int>;
++		interrupt-parent = <&gpio0>;
++		interrupts = <RK_PB0 IRQ_TYPE_LEVEL_LOW>;
++	};
++};
++
++&pinctrl {
++
++	hym8563 {
++		rtc_int: rtc-int {
++			rockchip,pins = <0 RK_PB0 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++};
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5.dts b/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5.dts
+new file mode 100644
+index 000000000000..e738fd27e305
+--- /dev/null
++++ b/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5.dts
+@@ -0,0 +1,33 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2022 Rockchip Electronics Co., Ltd.
++ * Copyright (c) 2022 Radxa Limited
++ *
++ */
++
++/dts-v1/;
++
++#include "rk3588s-radxa-nx5-module.dtsi"
++
++/ {
++    model = "Radxa NX5";
++    compatible = "radxa,nx5", "rockchip,rk3588";
++};
++
++&combphy0_ps {
++	status = "okay";
++};
++
++&pcie2x1l2 {
++	reset-gpios = <&gpio3 RK_PD1 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
++
++&combphy2_psu {
++	status = "okay";
++};
++
++&pcie2x1l1 {
++	reset-gpios = <&gpio3 RK_PC6 GPIO_ACTIVE_HIGH>;
++	status = "okay";
++};
+-- 
+2.25.1
+

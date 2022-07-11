@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Stephen <stephen@vamrs.com>
+Date: Wed, 22 Jun 2022 18:46:45 +0800
+Subject: [PATCH] arm64: dts: rockchip: rock 5b: fix pdwn gpio for imx415
+
+Signed-off-by: Stephen <stephen@vamrs.com>
+Signed-off-by: Radxa <dev@radxa.com>
+---
+ arch/arm64/boot/dts/rockchip/rk3588-rock-5b-imx415.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588-rock-5b-imx415.dtsi b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b-imx415.dtsi
+index 1ccfdc9854a9..1da7503bc4f8 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588-rock-5b-imx415.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b-imx415.dtsi
+@@ -20,7 +20,7 @@ imx415: imx415@1a {
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&mipim0_camera3_clk>;
+ 		power-domains = <&power RK3588_PD_VI>;
+-		pwdn-gpios = <&gpio1 RK_PA7 GPIO_ACTIVE_HIGH>;
++		pwdn-gpios = <&gpio1 RK_PB0 GPIO_ACTIVE_HIGH>;
+ 		reset-gpios = <&gpio4 RK_PA0 GPIO_ACTIVE_LOW>;
+ 		rockchip,camera-module-index = <0>;
+ 		rockchip,camera-module-facing = "back";
+-- 
+2.25.1
+

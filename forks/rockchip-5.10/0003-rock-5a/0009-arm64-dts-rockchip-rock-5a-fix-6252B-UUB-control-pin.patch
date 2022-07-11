@@ -1,0 +1,98 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Stephen <stephen@radxa.com>
+Date: Thu, 7 Jul 2022 15:06:54 +0800
+Subject: [PATCH] arm64: dts: rockchip: rock 5a: fix 6252B-UUB control pin
+
+Signed-off-by: Stephen <stephen@radxa.com>
+Signed-off-by: Radxa <dev@radxa.com>
+---
+ .../boot/dts/rockchip/rk3588s-rock-5a.dts     | 50 ++++++++++---------
+ 1 file changed, 27 insertions(+), 23 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
+index 291df741d07d..09c89bacd329 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
+@@ -137,27 +137,15 @@ vcc3v3_pcie: vcc3v3-pcie {
+ 		vin-supply = <&vcc5v0_sys>;
+ 	};
+ 
+-	fg6252b_pwr: fg6252b-pwr {
++	usbwifibt_6252b_pwr: usbwifibt-6252b-pwr {
+ 		compatible = "regulator-fixed";
+-		regulator-name = "fg6252b_pwr";
++		regulator-name = "usbwifibt_6252b_pwr";
+ 		regulator-always-on;
+ 		regulator-boot-on;
++		enable-active-low;
+ 		gpios = <&gpio3 RK_PC0 GPIO_ACTIVE_LOW>;
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&fg6252b_pwr_pin>;
+-	};
+-
+-	fg6252b_enable: fg6252b-enable {
+-		compatible = "regulator-fixed";
+-		regulator-name = "fg6252b_enable";
+-		regulator-always-on;
+-		regulator-boot-on;
+-		enable-active-high;
+-		gpios = <&gpio0 RK_PD0 GPIO_ACTIVE_HIGH>,
+-				<&gpio0 RK_PD4 GPIO_ACTIVE_HIGH>,
+-				<&gpio0 RK_PD5 GPIO_ACTIVE_HIGH>;
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&fg6252b_enable_pin>;
++		pinctrl-0 = <&usbwifibt_6252b_drv>;
+ 	};
+ 
+ 	leds: leds {
+@@ -524,6 +512,8 @@ &u2phy2_host {
+ 
+ &usb_host0_ehci {
+ 	status = "okay";
++	pinctrl-names = "default";
++	pinctrl-0 = <&wl_reset &wl_dis &wl_wake_host &bt_dis &bt_wake_host>;
+ };
+ 
+ &usb_host0_ohci {
+@@ -681,17 +671,31 @@ usb {
+ 		vcc5v0_host_en: vcc5v0-host-en {
+ 			rockchip,pins = <4 RK_PB5 RK_FUNC_GPIO &pcfg_pull_none>;
+ 		};
++
++		usbwifibt_6252b_drv: fg6252b-pwr-pin {
++			rockchip,pins = <3 RK_PC0 RK_FUNC_GPIO &pcfg_pull_none>;
++	    };
+ 	};
+ 
+-	wireless {
+-		fg6252b_pwr_pin: fg6252b-pwr-pin {
+-			rockchip,pins = <3 RK_PC0 RK_FUNC_GPIO &pcfg_pull_down>;	// WIFI_PWR
++	wifibt {
++		wl_reset: wl-reset {
++			rockchip,pins = <0 RK_PD0 RK_FUNC_GPIO &pcfg_pull_up>;
++	    };
++
++		wl_dis: wl-dis {
++			rockchip,pins = <0 RK_PD5 RK_FUNC_GPIO &pcfg_output_high>;
++	    };
++
++		wl_wake_host: wl-wake-host {
++			rockchip,pins = <0 RK_PC7 RK_FUNC_GPIO &pcfg_pull_up>;
++	    };
++
++		bt_dis: bt-dis {
++			rockchip,pins = <0 RK_PD4 RK_FUNC_GPIO &pcfg_output_high>;
+ 	    };
+ 
+-		fg6252b_enable_pin: fg6252b-enable-pin {
+-			rockchip,pins = <0 RK_PD0 RK_FUNC_GPIO &pcfg_pull_up>,		// RESET
+-							<0 RK_PD4 RK_FUNC_GPIO &pcfg_pull_up>,		// BT_DISn
+-							<0 RK_PD5 RK_FUNC_GPIO &pcfg_pull_up>;		// WIFI_DISn
++		bt_wake_host: bt-wake-host {
++			rockchip,pins = <0 RK_PC5 RK_FUNC_GPIO &pcfg_pull_up>;
+ 	    };
+ 	};
+ 
+-- 
+2.25.1
+

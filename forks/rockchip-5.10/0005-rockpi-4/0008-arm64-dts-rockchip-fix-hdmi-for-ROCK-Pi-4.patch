@@ -1,0 +1,144 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Stephen <stephen@radxa.com>
+Date: Sat, 2 Jul 2022 16:04:30 +0800
+Subject: [PATCH] arm64: dts: rockchip: fix hdmi for ROCK Pi 4
+
+Signed-off-by: Stephen <stephen@radxa.com>
+Signed-off-by: Radxa <dev@radxa.com>
+---
+ .../boot/dts/rockchip/rk3399-rock-pi-4.dtsi   | 78 +++++++++++++++++--
+ 1 file changed, 70 insertions(+), 8 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi
+index 8a84011acb2d..30f4faf8553f 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi
++++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi
+@@ -12,6 +12,31 @@
+ #include "rk3399-vop-clk-set.dtsi"
+ 
+ / {
++	reserved-memory {
++		#address-cells = <2>;
++		#size-cells = <2>;
++		ranges;
++
++		drm_logo: drm-logo@00000000 {
++			compatible = "rockchip,drm-logo";
++			reg = <0x0 0x0 0x0 0x0>;
++		};
++
++		ramoops_mem: region@110000 {
++			reg = <0x0 0x110000 0x0 0xf0000>;
++			reg-names = "ramoops_mem";
++		};
++	};
++
++	ramoops: ramoops {
++		compatible = "ramoops";
++		record-size = <0x0 0x40000>;
++		console-size = <0x0 0x80000>;
++		ftrace-size = <0x0 0x00000>;
++		pmsg-size = <0x0 0x00000>;
++		memory-region = <&ramoops_mem>;
++	};
++
+ 	clkin_gmac: external-gmac-clock {
+ 		compatible = "fixed-clock";
+ 		clock-frequency = <125000000>;
+@@ -28,6 +53,21 @@ sdio_pwrseq: sdio-pwrseq {
+ 		reset-gpios = <&gpio0 RK_PB2 GPIO_ACTIVE_LOW>;
+ 	};
+ 
++	hdmi_sound: hdmi-sound {
++		status = "disabled";
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,mclk-fs = <256>;
++		simple-audio-card,name = "rockchip,hdmi";
++
++		simple-audio-card,cpu {
++			sound-dai = <&i2s2>;
++		};
++		simple-audio-card,codec {
++			sound-dai = <&hdmi>;
++		};
++	};
++
+ 	es8316_sound: es8316-sound {
+ 		status = "okay";
+ 		compatible = "simple-audio-card";
+@@ -217,12 +257,18 @@ &gpu {
+ };
+ 
+ &hdmi {
+-	ddc-i2c-bus = <&i2c3>;
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&hdmi_cec>;
++	pinctrl-0 = <&hdmi_i2c_xfer>, <&hdmi_cec>;
++	#address-cells = <1>;
++	#size-cells = <0>;
++	#sound-dai-cells = <0>;
+ 	status = "okay";
+ };
+ 
++&hdmi_in_vopl {
++	status = "disabled";
++};
++
+ &hdmi_sound {
+ 	status = "okay";
+ };
+@@ -475,12 +521,6 @@ es8316: es8316@11 {
+ 	};
+ };
+ 
+-&i2c3 {
+-	i2c-scl-rising-time-ns = <450>;
+-	i2c-scl-falling-time-ns = <15>;
+-	status = "okay";
+-};
+-
+ &i2c4 {
+ 	i2c-scl-rising-time-ns = <600>;
+ 	i2c-scl-falling-time-ns = <20>;
+@@ -771,6 +811,8 @@ &usbdrd_dwc3_1 {
+ 
+ &vopb {
+ 	status = "okay";
++	assigned-clocks = <&cru DCLK_VOP0_DIV>;
++	assigned-clock-parents = <&cru PLL_CPLL>;
+ };
+ 
+ &vopb_mmu {
+@@ -779,8 +821,28 @@ &vopb_mmu {
+ 
+ &vopl {
+ 	status = "okay";
++	assigned-clocks = <&cru DCLK_VOP1_DIV>;
++	assigned-clock-parents = <&cru PLL_VPLL>;
+ };
+ 
+ &vopl_mmu {
+ 	status = "okay";
+ };
++
++&display_subsystem {
++	status = "okay";
++
++	ports = <&vopb_out>, <&vopl_out>;
++	logo-memory-region = <&drm_logo>;
++
++	route {
++		route_hdmi: route-hdmi {
++			status = "okay";
++			logo,uboot = "logo.bmp";
++			logo,kernel = "logo_kernel.bmp";
++			logo,mode = "center";
++			charge_logo,mode = "center";
++			connect = <&vopb_out_hdmi>;
++		};
++	};
++};
+-- 
+2.25.1
+
