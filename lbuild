@@ -152,6 +152,7 @@ prepare_source() {
         then
             git fetch --depth 1 $ORIGIN $LINUX_COMMIT
             git checkout $LINUX_COMMIT
+            git update-ref refs/tags/$LINUX_COMMIT $LINUX_COMMIT
         elif [[ -n $LINUX_BRANCH ]]
         then
             # Tag is more precise than branch and should be preferred.
