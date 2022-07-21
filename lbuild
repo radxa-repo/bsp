@@ -316,9 +316,9 @@ build() {
     do
         if [[ -e "$d/kconfig.conf" ]]
         then
-            echo "Apply kconfig from $d/kconfig.conf"
+            tee -a "$SCRIPT_DIR/.src/build.log" <<< "Apply kconfig from $d/kconfig.conf"
             kconfig "$d/kconfig.conf"
-            kconfig -v "$d/kconfig.conf"
+            kconfig -v "$d/kconfig.conf" | tee -a "$SCRIPT_DIR/.src/build.log"
         fi
     done
 
