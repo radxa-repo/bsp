@@ -312,7 +312,7 @@ build() {
         LOCALVERSION=-$FORK KERNELRELEASE=$LINUX_VERSION-$FORK KDEB_PKGVERSION=$LINUX_VERSION-$FORK-$PKG_REVISION \
         $LINUX_DEFCONFIG 2>&1 | tee "$SCRIPT_DIR/.src/build.log"
     
-    for d in $(find -L "$SCRIPT_DIR/forks/$FORK" -type d | sort -r)
+    for d in $(find -L "$SCRIPT_DIR/forks/$FORK" -type d | sort)
     do
         if [[ -e "$d/kconfig.conf" ]]
         then
@@ -327,7 +327,7 @@ build() {
         KDEB_COMPRESS="xz" DPKG_FLAGS=$DPKG_FLAGS \
         LOCALVERSION=-$FORK KERNELRELEASE=$LINUX_VERSION-$FORK KDEB_PKGVERSION=$LINUX_VERSION-$FORK-$PKG_REVISION \
         olddefconfig all bindeb-pkg 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
-    
+
     mv $SCRIPT_DIR/.src/*.deb ./
     for BOARD in ${SUPPORTED_BOARDS[@]}
     do
