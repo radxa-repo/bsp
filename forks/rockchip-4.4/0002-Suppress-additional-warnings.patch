@@ -6,14 +6,14 @@ Subject: [PATCH] Suppress additional warnings
 Signed-off-by: Stephen <stephen@vamrs.com>
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
- Makefile | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ Makefile | 18 +++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
 diff --git a/Makefile b/Makefile
 index c033e03a5a..4056068436 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -651,6 +651,23 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
+@@ -651,6 +651,24 @@ KBUILD_CFLAGS	+= $(call cc-disable-warning, format-truncation)
  KBUILD_CFLAGS	+= $(call cc-disable-warning, format-overflow)
  KBUILD_CFLAGS	+= $(call cc-disable-warning, int-in-bool-context)
  KBUILD_CFLAGS	+= $(call cc-disable-warning, attribute-alias)
@@ -34,6 +34,7 @@ index c033e03a5a..4056068436 100644
 +KBUILD_CFLAGS	+= $(call cc-disable-warning, array-parameter)
 +KBUILD_CFLAGS	+= $(call cc-disable-warning, dangling-pointer)
 +KBUILD_CFLAGS	+= $(call cc-disable-warning, misleading-indentation)
++KBUILD_CFLAGS	+= $(call cc-disable-warning, maybe-uninitialized)
  
  ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
  KBUILD_CFLAGS	+= $(call cc-option,-Oz,-Os)
