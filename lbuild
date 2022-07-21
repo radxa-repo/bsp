@@ -355,6 +355,7 @@ build() {
 }
 
 set -e
+set -o pipefail
 
 LC_ALL="C"
 LANG="C"
