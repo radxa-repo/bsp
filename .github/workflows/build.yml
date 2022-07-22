@@ -23,7 +23,7 @@ jobs:
       - name: Query available board configs
         id: query
         run: |
-          echo "::set-output name=forks::$(./lbuild --json forks)"
+          echo "::set-output name=forks::$(./bsp --json forks)"
   build:
     needs: query
     runs-on: ubuntu-latest
@@ -32,6 +32,6 @@ jobs:
         forks: ${{fromJSON(needs.query.outputs.forks)}}
     steps:
       - name: Build
-        uses: radxa-repo/lbuild@main
+        uses: radxa-repo/bsp@main
         with:
           fork: ${{ matrix.forks }}

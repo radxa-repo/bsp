@@ -140,8 +140,8 @@ prepare_source() {
     pushd "$LINUX_DIR"
 
         git init
-        [[ -z $(git config --get user.name) ]] && git config user.name "lbuild"
-        [[ -z $(git config --get user.email) ]] && git config user.email "lbuild@invalid.email"
+        [[ -z $(git config --get user.name) ]] && git config user.name "bsp"
+        [[ -z $(git config --get user.email) ]] && git config user.email "bsp@radxa.com"
         git am --abort && true
         [[ -n $(git status -s) ]] && git reset --hard HEAD
 

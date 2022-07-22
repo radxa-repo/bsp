@@ -1,5 +1,5 @@
-name: lbuild
-description: Radxa Linux Kernel Build Tool
+name: bsp
+description: Radxa BSP Build Tool
 inputs:
   fork:
     required: true
@@ -16,7 +16,7 @@ runs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        repository: radxa-repo/lbuild
+        repository: radxa-repo/bsp
     - name: Install dependency
       shell: bash
       run: |
@@ -27,7 +27,7 @@ runs:
       run: |
         mkdir .output
         pushd .output
-        ../lbuild -r ${{ inputs.revision }} ${{ inputs.fork }}
+        ../bsp -r ${{ inputs.revision }} ${{ inputs.fork }}
         popd
     - name: Upload
       if: inputs.release-id != '' && inputs.github-token != ''
