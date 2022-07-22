@@ -25,7 +25,10 @@ runs:
     - name: Build
       shell: bash
       run: |
-        ./lbuild -r ${{ inputs.revision }} ${{ inputs.fork }}
+        mkdir .output
+        pushd .output
+        ../lbuild -r ${{ inputs.revision }} ${{ inputs.fork }}
+        popd
     - name: Upload
       if: inputs.release-id != '' && inputs.github-token != ''
       uses: xresloader/upload-to-github-release@v1
@@ -33,7 +36,7 @@ runs:
           GITHUB_TOKEN: ${{ inputs.github-token }}
       with:
         release_id: ${{ inputs.release-id }}
-        file: .src/*.deb
+        file: .output/*
         draft: false
     - name: Rollback release
       if: failure() && inputs.release-id != '' && inputs.github-token != ''
