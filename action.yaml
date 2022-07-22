@@ -1,7 +1,9 @@
 name: bsp
 description: Radxa BSP Build Tool
 inputs:
-  fork:
+  target:
+    required: true
+  edition:
     required: true
   revision:
     retuired: false
@@ -27,7 +29,7 @@ runs:
       run: |
         mkdir .output
         pushd .output
-        ../bsp -r ${{ inputs.revision }} ${{ inputs.fork }}
+        ../bsp -r ${{ inputs.revision }} ${{ inputs.target }} ${{ inputs.edition }}
         popd
     - name: Upload
       if: inputs.release-id != '' && inputs.github-token != ''

@@ -18,36 +18,44 @@ Alternative functionalities
                         Available catagories: $(get_supported_infos)
     -h, --help          Show this help message
 
-Supported fork:
-$(printf_array "    %s\n" "$(get_supported_forks)")
+Supported Linux edition:
+$(printf_array "    %s\n" "$(get_supported_edition linux)")
 EOF
-    exit "$1"
 }
 
+get_supported_edition() {
+    if [[ ! -d "$SCRIPT_DIR/$1" ]] || [[ -z "$1" ]]
+    then
+        error $EXIT_UNSUPPORTED_OPTION "$1"
+    fi
 
-get_supported_forks() {
-    local FORKS=()
-    for f in $(ls $SCRIPT_DIR/forks)
+    local editions=()
+    for f in $(ls $SCRIPT_DIR/$1)
     do
-        FORKS+="$f "
+        editions+="$f "
     done
-    echo "${FORKS[@]}"
+    echo "${editions[@]}"
 }
 
 get_supported_infos() {
-    local INFOS=("forks")
-    echo "${INFOS[@]}"
+    local infos=("edition linux")
+    echo "${infos[@]}"
 }
 
 json() {
-    local ARRAY=($(get_supported_infos))
-    if ! in_array "$1" "${ARRAY[@]}"
+    local array=( "$(get_supported_infos)" )
+    if ! in_array "$@" "${array[@]}"
     then
         error $EXIT_UNKNOWN_OPTION "$1"
     fi
 
-    printf_array "json" $(get_supported_$1)
-    exit 0
+    local output
+    output=( $(get_supported_$@) )
+    if (( $? != 0 ))
+    then
+        return 1
+    fi
+    printf_array "json" "${output[@]}"
 }
 
 build() {
@@ -55,16 +63,15 @@ build() {
     then
         error $EXIT_UNKNOWN_OPTION "$1"
     fi
+    local TARGET=$1
 
-    if ! source "$SCRIPT_DIR/forks/$2/fork.conf" 2>/dev/null
+    if ! source "$SCRIPT_DIR/$TARGET/$2/fork.conf" 2>/dev/null
     then
         error $EXIT_UNKNOWN_OPTION "$2"
     fi
-
-    local TARGET=$1
     local FORK=$2
 
-    [[ $NO_PREPARE_SOURCE != "yes" ]] && prepare_source
+    [[ $NO_PREPARE_SOURCE != "yes" ]] && prepare_source "$TARGET"
 
     local LINUX_VERSION=$(make -C "$SCRIPT_DIR/.src/linux" -s kernelversion)
 
@@ -74,7 +81,7 @@ build() {
         LOCALVERSION=-$FORK KERNELRELEASE=$LINUX_VERSION-$FORK KDEB_PKGVERSION=$LINUX_VERSION-$FORK-$PKG_REVISION \
         $LINUX_DEFCONFIG 2>&1 | tee "$SCRIPT_DIR/.src/build.log"
     
-    for d in $(find -L "$SCRIPT_DIR/forks/$FORK" -type d | sort)
+    for d in $(find -L "$SCRIPT_DIR/$TARGET/$FORK" -type d | sort)
     do
         if [[ -e "$d/kconfig.conf" ]]
         then
@@ -132,10 +139,13 @@ main() {
                 shift
                 ;;
             --json)
-                json "$2"
+                shift
+                json "$@"
+                return
                 ;;
             -h | --help)
-                usage 0
+                usage
+                return
                 ;;
             -*)
                 error $EXIT_UNKNOWN_OPTION "$1"
@@ -147,7 +157,8 @@ main() {
             *)  break ;;
         esac
     done
-    usage 1
+    usage
+    return 1
 }
 
 main "$@"

@@ -2,4 +2,4 @@
 .src/
 .root/
 .vscode/
-forks/**/0500-private/
+**/0500-private/

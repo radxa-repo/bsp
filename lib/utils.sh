@@ -79,14 +79,15 @@ git_source() {
 }
 
 prepare_source() {
+    local TARGET="$1"
     local SRC_DIR="$SCRIPT_DIR/.src"
-    local LINUX_DIR="$SRC_DIR/linux"
-    local FORK_DIR="$SCRIPT_DIR/forks/$FORK"
+    local TARGET_DIR="$SRC_DIR/$TARGET"
+    local FORK_DIR="$SCRIPT_DIR/$TARGET/$FORK"
 
     mkdir -p "$SRC_DIR"
-    mkdir -p "$LINUX_DIR"
+    mkdir -p "$TARGET_DIR"
 
-    pushd "$LINUX_DIR"
+    pushd "$TARGET_DIR"
 
         git init
         [[ -z $(git config --get user.name) ]] && git config user.name "bsp"
