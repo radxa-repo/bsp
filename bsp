@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ARCH="arm64"
+LINUX_ARCH="arm64"
 CROSS_COMPILE="aarch64-linux-gnu-"
 DPKG_FLAGS="-d"
 LINUX_GIT=
@@ -307,7 +307,7 @@ build() {
     local LINUX_VERSION=$(make -C "$SCRIPT_DIR/.src/linux" -s kernelversion)
 
     make -C "$SCRIPT_DIR/.src/linux" -j$(nproc) \
-        ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
+        ARCH=$LINUX_ARCH CROSS_COMPILE=$CROSS_COMPILE \
         KDEB_COMPRESS="xz" DPKG_FLAGS=$DPKG_FLAGS \
         LOCALVERSION=-$FORK KERNELRELEASE=$LINUX_VERSION-$FORK KDEB_PKGVERSION=$LINUX_VERSION-$FORK-$PKG_REVISION \
         $LINUX_DEFCONFIG 2>&1 | tee "$SCRIPT_DIR/.src/build.log"
@@ -323,7 +323,7 @@ build() {
     done
 
     make -C "$SCRIPT_DIR/.src/linux" -j$(nproc) \
-        ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE \
+        ARCH=$LINUX_ARCH CROSS_COMPILE=$CROSS_COMPILE \
         KDEB_COMPRESS="xz" DPKG_FLAGS=$DPKG_FLAGS \
         LOCALVERSION=-$FORK KERNELRELEASE=$LINUX_VERSION-$FORK KDEB_PKGVERSION=$LINUX_VERSION-$FORK-$PKG_REVISION \
         olddefconfig all bindeb-pkg 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
