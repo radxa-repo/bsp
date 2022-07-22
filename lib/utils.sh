@@ -17,16 +17,16 @@ error() {
         $EXIT_SUCCESS)
             ;;
         $EXIT_UNKNOWN_OPTION)
-            echo "Unknown option: '$2'." >&2
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Unknown option: '$2'." >&2
             ;;
         $EXIT_TOO_FEW_ARGUMENTS)
-            echo "Too few arguments." >&2
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Too few arguments." >&2
             ;;
         $EXIT_UNSUPPORTED_OPTION)
-            echo "Option '$2' is not supported." >&2
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Option '$2' is not supported." >&2
             ;;
         *)
-            echo "Unknown exit code." >&2
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Unknown exit code." >&2
             ;;
     esac
     
@@ -81,11 +81,15 @@ git_source() {
 prepare_source() {
     local TARGET="$1"
     local SRC_DIR="$SCRIPT_DIR/.src"
-    local TARGET_DIR="$SRC_DIR/$TARGET"
+    TARGET_DIR="$SRC_DIR/$TARGET"
     local FORK_DIR="$SCRIPT_DIR/$TARGET/$FORK"
 
-    mkdir -p "$SRC_DIR"
     mkdir -p "$TARGET_DIR"
+
+    if [[ $NO_PREPARE_SOURCE == "yes" ]]
+    then
+        return
+    fi
 
     pushd "$TARGET_DIR"
 
@@ -95,26 +99,26 @@ prepare_source() {
         git am --abort && true
         [[ -n $(git status -s) ]] && git reset --hard HEAD
 
-        local ORIGIN=$(sha1sum <(echo "$LINUX_GIT") | cut -d' ' -f1)
-        git remote add $ORIGIN $LINUX_GIT 2>/dev/null && true
+        local ORIGIN=$(sha1sum <(echo "$BSP_GIT") | cut -d' ' -f1)
+        git remote add $ORIGIN $BSP_GIT 2>/dev/null && true
 
-        if [[ -n $LINUX_COMMIT ]]
+        if [[ -n $BSP_COMMIT ]]
         then
-            git fetch --depth 1 $ORIGIN $LINUX_COMMIT
-            git checkout $LINUX_COMMIT
-            git update-ref refs/tags/$LINUX_COMMIT $LINUX_COMMIT
-        elif [[ -n $LINUX_BRANCH ]]
+            git fetch --depth 1 $ORIGIN $BSP_COMMIT
+            git checkout $BSP_COMMIT
+            git update-ref refs/tags/$BSP_COMMIT $BSP_COMMIT
+        elif [[ -n $BSP_BRANCH ]]
         then
             # Tag is more precise than branch and should be preferred.
             # However, since we are defaulting with upstream Linux,
-            # we will always have non empty $LINUX_TAG.
-            # As such check $LINUX_BRANCH first.
-            git fetch --depth 1 $ORIGIN $LINUX_BRANCH
-            git checkout $LINUX_BRANCH
-        elif [[ -n $LINUX_TAG ]]
+            # we will always have non empty $BSP_TAG.
+            # As such check $BSP_BRANCH first.
+            git fetch --depth 1 $ORIGIN $BSP_BRANCH
+            git checkout $BSP_BRANCH
+        elif [[ -n $BSP_TAG ]]
         then
-            git fetch --depth 1 $ORIGIN tag $LINUX_TAG
-            git checkout tags/$LINUX_TAG
+            git fetch --depth 1 $ORIGIN tag $BSP_TAG
+            git checkout tags/$BSP_TAG
         fi
 
         git reset --hard FETCH_HEAD
@@ -135,7 +139,7 @@ prepare_source() {
                 if [[ $(type -t custom_source_action) == function ]]
                 then
                     echo "Running custom_source_action from $f"
-                    custom_source_action "$SCRIPT_DIR" "$UBOOT_DIR"
+                    custom_source_action "$SCRIPT_DIR" "$TARGET_DIR"
                 fi
             done
             shopt -u nullglob
@@ -153,45 +157,45 @@ prepare_source() {
 }
 
 kconfig() {
-    local MODE="config"
+    local mode="config"
     if [[ $1 == "-v" ]]
     then
-        MODE="verify"
+        mode="verify"
         shift
     fi
-    local FILE="$1"
+    local file="$1"
 
     while IFS="" read -r k || [ -n "$k" ]
     do
-        local CONFIG=
-        local OPTION=
-        local SWITCH=
+        local config=
+        local option=
+        local switch=
         if grep -q "^# CONFIG_.* is not set$" <<< $k
         then
-            CONFIG=$(cut -d ' ' -f 2 <<< $k)
-            SWITCH="--undefine"
+            config=$(cut -d ' ' -f 2 <<< $k)
+            switch="--undefine"
         elif grep -q "^CONFIG_.*=[ynm]$" <<< $k
         then
-            CONFIG=$(echo $k | cut -d '=' -f 1)
+            config=$(echo $k | cut -d '=' -f 1)
             case "$(echo $k | cut -d'=' -f 2)" in
                 y)
-                    SWITCH="--enable"
+                    switch="--enable"
                     ;;
                 n)
-                    SWITCH="--disable"
+                    switch="--disable"
                     ;;
                 m)
-                    SWITCH="--module"
+                    switch="--module"
                     ;;
             esac
         elif grep -q "^CONFIG_.*=\".*\"$" <<< $k
         then
-            IFS='=' read -r CONFIG OPTION <<< $k
-            SWITCH="--set-val"
+            IFS='=' read -r config option <<< $k
+            switch="--set-val"
         elif grep -q "^CONFIG_.*=.*$" <<< $k
         then
-            IFS='=' read -r CONFIG OPTION <<< $k
-            SWITCH="--set-val"
+            IFS='=' read -r config option <<< $k
+            switch="--set-val"
         elif grep -q "^#" <<< $k
         then
             continue
@@ -201,16 +205,54 @@ kconfig() {
         else
             error $EXIT_UNKNOWN_OPTION "$k"
         fi
-        case $MODE in
+        case $mode in
             config)
-                "$SCRIPT_DIR/.src/linux/scripts/config" --file "$SCRIPT_DIR/.src/linux/.config" $SWITCH $CONFIG "$OPTION"
+                "$SCRIPT_DIR/common/config" --file "$TARGET_DIR/.config" $switch $config "$option"
                 ;;
             verify)
-                if ! grep -q "$k" "$SCRIPT_DIR/.src/linux/.config"
+                if ! grep -q "$k" "$TARGET_DIR/.config"
                 then
                     echo "kconfig: Mismatch: $k" >&2
                 fi
                 ;;
         esac
-    done < "$FILE"
+    done < "$file"
+}
+
+apply_kconfig() {
+    if [[ -e "$1" ]]
+    then
+        tee -a "$SCRIPT_DIR/.src/build.log" <<< "Apply kconfig from $1"
+        kconfig "$1"
+        kconfig -v "$1" | tee -a "$SCRIPT_DIR/.src/build.log"
+    fi
+}
+
+get_soc_family() {
+    case "$1" in
+        rk*)
+            echo rockchip
+            ;;
+        s905y2|a311d)
+            echo amlogic
+            ;;
+        *)
+            error $EXIT_UNSUPPORTED_OPTION "$1"
+            ;;
+    esac
+}
+
+load_edition() {
+    if ! source "$SCRIPT_DIR/lib/$1.sh" 2>/dev/null
+    then
+        error $EXIT_UNKNOWN_OPTION "$1"
+    fi
+    TARGET=$1
+    bsp_reset
+
+    if ! source "$SCRIPT_DIR/$TARGET/$2/fork.conf" 2>/dev/null
+    then
+        error $EXIT_UNKNOWN_OPTION "$2"
+    fi
+    FORK=$2
 }
