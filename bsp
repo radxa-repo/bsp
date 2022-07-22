@@ -1,0 +1,157 @@
+#!/bin/bash
+
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+source "$SCRIPT_DIR/lib/utils.sh"
+
+usage() {
+    cat >&2 << EOF
+Radxa BSP Build Tool
+usage: $(basename "$0") [options] <linux|u-boot> <edition> [product]
+
+When building u-boot, you can also provide 'product' argument,
+which will only build for that specific image.
+
+Supported package generation options:
+    -r, --revision [num]
+                        Specify custom revision number, default=1
+    --no-prepare-source Allow building against locally modified repos
+
+Alternative functionalities
+    --json [catagory]   Print supported options in json format
+                        Available catagories: $(get_supported_infos)
+    -h, --help          Show this help message
+
+Supported Linux edition:
+$(printf_array "    %s\n" "$(get_supported_edition linux)")
+
+Supported U-Boot edition:
+$(printf_array "    %s\n" "$(get_supported_edition u-boot)")
+EOF
+}
+
+get_supported_edition() {
+    if [[ ! -d "$SCRIPT_DIR/$1" ]] || [[ -z "$1" ]]
+    then
+        error $EXIT_UNSUPPORTED_OPTION "$1"
+    fi
+
+    local editions=()
+    for f in $(ls $SCRIPT_DIR/$1)
+    do
+        editions+="$f "
+    done
+    echo "${editions[@]}"
+}
+
+get_supported_infos() {
+    local infos=("edition linux" "edition u-boot")
+    echo "${infos[@]}"
+}
+
+json() {
+    local array=( "$(get_supported_infos)" )
+    if ! in_array "$@" "${array[@]}"
+    then
+        error $EXIT_UNKNOWN_OPTION "$1"
+    fi
+
+    local output
+    output=( $(get_supported_$@) )
+    if (( $? != 0 ))
+    then
+        return 1
+    fi
+    printf_array "json" "${output[@]}"
+}
+
+build() {
+    prepare_source "$TARGET"
+
+    bsp_prepare
+
+    bsp_make $BSP_DEFCONFIG 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    
+    for d in $(find -L "$SCRIPT_DIR/$TARGET/$FORK" -mindepth 1 -type d | sort)
+    do
+        apply_kconfig "$d/kconfig.conf"
+    done
+    apply_kconfig "$SCRIPT_DIR/$TARGET/$FORK/kconfig.conf"
+
+    bsp_make olddefconfig $BSP_MAKE_TARGETS 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+}
+
+main() {
+    local PKG_REVISION="1"
+    local NO_PREPARE_SOURCE=
+
+    if [[ -e "$SCRIPT_DIR/.src/build.log" ]]
+    then
+        rm "$SCRIPT_DIR/.src/build.log"
+    fi
+
+    while (( $# > 0 ))
+    do
+        case "$1" in
+            -r | --revision)
+                PKG_REVISION="$2"
+                shift 2
+                ;;
+            --no-prepare-source)
+                NO_PREPARE_SOURCE="yes"
+                shift
+                ;;
+            --json)
+                shift
+                json "$@"
+                return
+                ;;
+            -h | --help)
+                usage
+                return
+                ;;
+            -*)
+                error $EXIT_UNKNOWN_OPTION "$1"
+                ;;
+            linux)
+                load_edition "$1" "$2"
+                build
+                bsp_makedeb
+                return
+                ;;
+            u-boot)
+                load_edition "$1" "$2"
+
+                if [[ -n "$3" ]]
+                then
+                    if ! in_array "$3" "${SUPPORTED_BOARDS[@]}"
+                    then
+                        error $EXIT_UNKNOWN_OPTION "$1"
+                    fi
+                    local products=("$3")
+                else
+                    local products=("${SUPPORTED_BOARDS[@]}")
+                fi
+
+                rm -rf "$SCRIPT_DIR/.root"
+
+                for BOARD in "${products[@]}"
+                do
+                    load_edition "$1" "$2"
+                    bsp_$BOARD
+                    build
+                    bsp_preparedeb
+                    NO_PREPARE_SOURCE="yes"
+                done
+
+                SUPPORTED_BOARDS=("${products[@]}")
+                bsp_makedeb
+                return
+                ;;
+            *)  break ;;
+        esac
+    done
+    usage
+    return 1
+}
+
+main "$@"
