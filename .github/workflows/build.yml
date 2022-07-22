@@ -17,20 +17,28 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       linux: ${{ steps.query.outputs.linux }}
+      u-boot: ${{ steps.query.outputs.u-boot }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Query available board configs
         id: query
         run: |
-          echo "::set-output name=linux::$(./bsp --json 'edition linux')"
+          echo "::set-output name=linux::$(./bsp --json edition linux)"
+          echo "::set-output name=u-boot::$(./bsp --json edition u-boot)"
   build:
     needs: query
     runs-on: ubuntu-latest
     strategy:
       matrix:
         linux: ${{fromJSON(needs.query.outputs.linux)}}
+        u-boot: ${{fromJSON(needs.query.outputs.u-boot)}}
     steps:
+      - name: Build
+        uses: radxa-repo/bsp@main
+        with:
+          target: u-boot
+          edition: ${{ matrix.u-boot }}
       - name: Build
         uses: radxa-repo/bsp@main
         with:
