@@ -176,8 +176,8 @@ kconfig() {
             switch="--undefine"
         elif grep -q "^CONFIG_.*=[ynm]$" <<< $k
         then
-            config=$(echo $k | cut -d '=' -f 1)
-            case "$(echo $k | cut -d'=' -f 2)" in
+            config=$(cut -d '=' -f 1 <<< $k)
+            case "$(cut -d'=' -f 2 <<< $k)" in
                 y)
                     switch="--enable"
                     ;;
@@ -212,7 +212,10 @@ kconfig() {
             verify)
                 if ! grep -q "$k" "$TARGET_DIR/.config"
                 then
-                    echo "kconfig: Mismatch: $k" >&2
+                    if ! grep -q "^# CONFIG_.* is not set$" <<< $k || grep -q "$(cut -d ' ' -f 2 <<< $k)" "$TARGET_DIR/.config"
+                    then
+                        echo "kconfig: Mismatch: $k" >&2
+                    fi
                 fi
                 ;;
         esac
