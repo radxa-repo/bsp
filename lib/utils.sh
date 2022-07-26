@@ -61,6 +61,17 @@ in_array() {
     fi
 }
 
+git_repo_config() {
+    if [[ -z "$(git config --get user.name)" ]]
+    then
+        git config user.name "bsp"
+    fi
+    if [[ -z "$(git config --get user.email)" ]]
+    then
+        git config user.email "bsp@radxa.com"
+    fi
+}
+
 git_source() {
     local git_url="$1"
     __CUSTOM_SOURCE_FOLDER="$(basename $git_url)"
@@ -75,6 +86,9 @@ git_source() {
         fi
 
         git clone --depth 1 $git_branch "$git_url" "$SRC_DIR/$__CUSTOM_SOURCE_FOLDER"
+        pushd "$SRC_DIR/$__CUSTOM_SOURCE_FOLDER"
+        git_repo_config
+        popd
     else
         unset __CUSTOM_SOURCE_FOLDER
     fi
@@ -106,9 +120,8 @@ prepare_source() {
     pushd "$TARGET_DIR"
 
         git init
-        [[ -z $(git config --get user.name) ]] && git config user.name "bsp"
-        [[ -z $(git config --get user.email) ]] && git config user.email "bsp@radxa.com"
-        git am --abort && true
+        git_repo_config
+        git am --abort || true
         [[ -n $(git status -s) ]] && git reset --hard HEAD
 
         local ORIGIN=$(sha1sum <(echo "$BSP_GIT") | cut -d' ' -f1)
