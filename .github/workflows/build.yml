@@ -38,6 +38,11 @@ jobs:
         with:
           target: u-boot
           edition: ${{ matrix.u-boot }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: u-boot
+          path: .output
   build_linux:
     needs: query
     runs-on: ubuntu-latest
@@ -50,3 +55,9 @@ jobs:
         with:
           target: linux
           edition: ${{ matrix.linux }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux
+          path: .output
+  
