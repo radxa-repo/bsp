@@ -62,19 +62,31 @@ in_array() {
 }
 
 git_source() {
-    local GIT_URL="$1"
-    local GIT_BRANCH="$2"
-    local FOLDER="$(basename $GIT_URL)"
-    FOLDER="${FOLDER%.*}"
+    local git_url="$1"
+    __CUSTOM_SOURCE_FOLDER="$(basename $git_url)"
+    __CUSTOM_SOURCE_FOLDER="${__CUSTOM_SOURCE_FOLDER%.*}"
 
-    if [[ -n $GIT_BRANCH ]]
+    if ! [[ -e "$SRC_DIR/$__CUSTOM_SOURCE_FOLDER" ]]
     then
-        GIT_BRANCH="--branch $GIT_BRANCH"
+        local git_branch="$2"
+        if [[ -n $git_branch ]]
+        then
+            git_branch="--branch $git_branch"
+        fi
+
+        git clone --depth 1 $git_branch "$git_url" "$SRC_DIR/$__CUSTOM_SOURCE_FOLDER"
+    else
+        unset __CUSTOM_SOURCE_FOLDER
     fi
+}
 
-    if ! [[ -e "$SRC_DIR/$FOLDER" ]]
+git_am() {
+    if [[ -n "$__CUSTOM_SOURCE_FOLDER" ]]
     then
-        git clone --depth 1 $GIT_BRANCH "$GIT_URL" "$SRC_DIR/$FOLDER"
+        local patch="$(realpath "$1")"
+        pushd "$SRC_DIR/$__CUSTOM_SOURCE_FOLDER"
+        git am "$patch"
+        popd
     fi
 }
 

@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Yuntian Zhang <yt@radxa.com>
+Date: Tue, 26 Jul 2022 14:47:53 +0800
+Subject: [PATCH] Update rkbin
+
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ RKTRUST/RK3308TRUST.ini | 2 +-
+ RKTRUST/RK3328TRUST.ini | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/RKTRUST/RK3308TRUST.ini b/RKTRUST/RK3308TRUST.ini
+index 2de3395..e813530 100644
+--- a/RKTRUST/RK3308TRUST.ini
++++ b/RKTRUST/RK3308TRUST.ini
+@@ -5,7 +5,7 @@ MINOR=0
+ SEC=0
+ [BL31_OPTION]
+ SEC=1
+-PATH=bin/rk33/rk3308_bl31_v2.10.elf
++PATH=bin/rk33/rk3308_bl31_v2.24.elf
+ ADDR=0x00010000
+ [BL32_OPTION]
+ SEC=0
+diff --git a/RKTRUST/RK3328TRUST.ini b/RKTRUST/RK3328TRUST.ini
+index 6447479..e0cde3e 100644
+--- a/RKTRUST/RK3328TRUST.ini
++++ b/RKTRUST/RK3328TRUST.ini
+@@ -5,11 +5,11 @@ MINOR=2
+ SEC=0
+ [BL31_OPTION]
+ SEC=1
+-PATH=tools/rk_tools/bin/rk33/rk322xh_bl31_v1.40.elf
++PATH=bin/rk33/rk322xh_bl31_v1.42.elf
+ ADDR=0x10000
+ [BL32_OPTION]
+ SEC=1
+-PATH=tools/rk_tools/bin/rk33/rk322xh_bl32_v1.48.bin
++PATH=bin/rk33/rk322xh_bl32_v1.48.bin
+ ADDR=0x08400000
+ [BL33_OPTION]
+ SEC=0
+-- 
+2.37.1
+

@@ -11,10 +11,20 @@ update_bootloader() {
             ;;
         rockchip*)
             dd conv=notrunc if="$SCRIPT_DIR/idbloader.img" of=$DEVICE bs=512 seek=64
-            dd conv=notrunc if="$SCRIPT_DIR/u-boot.itb" of=$DEVICE bs=512 seek=16384
+            if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
+            then
+                dd conv=notrunc if="$SCRIPT_DIR/u-boot.itb" of=$DEVICE bs=512 seek=16384
+            elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
+            then
+                dd conv=notrunc if="$SCRIPT_DIR/uboot.img" of=$DEVICE bs=512 seek=16384
+                dd conv=notrunc if="$SCRIPT_DIR/trust.img" of=$DEVICE bs=512 seek=24576
+            else
+                echo "Missing U-Boot binary!" >&2
+                return 2
+            fi
             ;;
         *)
-            echo Unknown SOC. >&2
+            echo "Unknown SOC." >&2
             return 1
             ;;
     esac
@@ -32,12 +42,21 @@ update_spi() {
     case "$SOC" in
         rockchip*)
             cp "$SCRIPT_DIR/idbloader-spi.img" /tmp/spi.img
-            dd conv=notrunc if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=768
+            if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
+            then
+                dd conv=notrunc if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=512
+            elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
+            then
+                dd conv=notrunc if="$SCRIPT_DIR/uboot.img" of=/tmp/spi.img bs=512 seek=512
+            else
+                echo "Missing U-Boot binary!" >&2
+                return 2
+            fi
             dd conv=notrunc if=/tmp/spi.img of=/dev/mtdblock0 bs=4096
             rm /tmp/spi.img
             ;;
         *)
-            echo Unknown SOC. >&2
+            echo "Unknown SOC." >&2
             return 1
             ;;
     esac

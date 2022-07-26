@@ -67,6 +67,50 @@ bsp_make1() {
     exit 1
 }
 
+rkpack_idbloader() {
+    local flash_data=
+    if [[ -n $RKBIN ]]
+    then
+        local flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN} | sort | tail -n 1)"
+        if [[ -z $flash_data ]]
+        then
+            error $EXIT_UNKNOWN_OPTION "$RKBIN"
+        else
+            echo "Using rkbin $(basename $flash_data)"
+        fi
+    fi
+    if [[ -e "${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin" ]] && [[ "$1" == "spl" ]]
+    then
+        flash_data="${flash_data:+${flash_data}:}${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin"
+    fi
+
+    $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rksd -d "${flash_data}" "$TARGET_DIR/idbloader.img"
+    $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data}" "$TARGET_DIR/idbloader-spi.img"
+
+    if [[ "$1" == "rkminiloader" ]]
+    then
+        local flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER} | sort | tail -n 1)"
+        if [[ -z $flash_data ]]
+        then
+            error $EXIT_UNKNOWN_OPTION "$RKMINILOADER"
+        else
+            echo "Using rkminiloader $(basename $flash_data)"
+            cat "$flash_data" >> "$TARGET_DIR/idbloader.img"
+            cat "$flash_data" >> "$TARGET_DIR/idbloader-spi.img"
+        fi
+    fi
+}
+
+rkpack_rkminiloader() {
+    pushd $SCRIPT_DIR/.src/rkbin/
+    $SCRIPT_DIR/.src/rkbin/tools/trust_merger "$SCRIPT_DIR/.src/rkbin/RKTRUST/${BSP_SOC^^}TRUST.ini"
+    $SCRIPT_DIR/.src/rkbin/tools/loaderimage --pack --uboot "$TARGET_DIR/u-boot-dtb.bin" "$TARGET_DIR/uboot.img"
+    mv ./trust.img "$TARGET_DIR/trust.img"
+    popd
+
+    cp "$TARGET_DIR/uboot.img" "$TARGET_DIR/trust.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/"
+}
+
 bsp_preparedeb() {
     local SOC_FAMILY=$(get_soc_family $BSP_SOC)
     
@@ -81,39 +125,17 @@ bsp_preparedeb() {
             cp "$SCRIPT_DIR/.src/fip/$BOARD/u-boot.bin" "$SCRIPT_DIR/.src/fip/$BOARD/u-boot.bin.sd.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/"
             ;;
         rockchip)
-            local flash_data=
-            if [[ -n $RKBIN ]]
+            if [[ -f "$TARGET_DIR/u-boot.itb" ]]
             then
-                local flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN} | sort | tail -n 1)"
-                if [[ -z $flash_data ]]
-                then
-                    error $EXIT_UNKNOWN_OPTION "$RKBIN"
-                else
-                    echo "Using rkbin $(basename $flash_data)"
-                fi
+                echo "Found u-boot.itb, no need to repack U-Boot"
+                rkpack_idbloader "spl"
+                cp "$TARGET_DIR/u-boot.itb" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/"
+            else
+                echo "Packaging U-Boot with Rockchip Miniloader"
+                rkpack_idbloader "rkminiloader"
+                rkpack_rkminiloader
             fi
-            if [[ -e "${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin" ]] && [[ "$NO_UBOOT_SPL" != "yes" ]]
-            then
-                flash_data="${flash_data:+${flash_data}:}${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin"
-            fi
-
-            $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rksd -d "${flash_data}" "$TARGET_DIR/idbloader.img"
-            $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data}" "$TARGET_DIR/idbloader-spi.img"
-
-            if [[ -n $RKMINILOADER ]]
-            then
-                local flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER} | sort | tail -n 1)"
-                if [[ -z $flash_data ]]
-                then
-                    error $EXIT_UNKNOWN_OPTION "$RKMINILOADER"
-                else
-                    echo "Using rkminiloader $(basename $flash_data)"
-                    cat "$flash_data" >> "$TARGET_DIR/idbloader.img"
-                    cat "$flash_data" >> "$TARGET_DIR/idbloader-spi.img"
-                fi
-            fi
-
-            cp "$TARGET_DIR/u-boot.itb" "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/"
+            cp "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/"
             ;;
         *)
             error $EXIT_UNSUPPORTED_OPTION "$SOC_FAMILY"
