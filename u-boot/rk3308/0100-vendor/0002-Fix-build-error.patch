@@ -7,8 +7,8 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
  Makefile                              | 1 +
  arch/arm/mach-rockchip/resource_img.c | 3 +--
- scripts/Makefile.lib                  | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ scripts/Makefile.lib                  | 3 ++-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile b/Makefile
 index 7060da1c..cf3a4789 100644
@@ -37,15 +37,17 @@ index 8f084628..08b8def7 100755
  	}
  	debug("resource image header:\n");
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 12d1123a..7daed6a4 100644
+index 12d1123a..2ae03806 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
-@@ -308,7 +308,7 @@ quiet_cmd_dtc = DTC     $@
+@@ -307,8 +307,9 @@ $(obj)/%.dtb.S: $(obj)/%.dtb
+ quiet_cmd_dtc = DTC     $@
  # Modified for U-Boot
  # Bring in any U-Boot-specific include at the end of the file
++HASH := \#
  cmd_dtc = mkdir -p $(dir ${dtc-tmp}) ; \
 -	(cat $<; $(if $(u_boot_dtsi),echo '\#include "$(u_boot_dtsi)"')) > $(pre-tmp); \
-+	(cat $<; $(if $(u_boot_dtsi),echo '#include "$(u_boot_dtsi)"')) > $(pre-tmp); \
++	(cat $<; $(if $(u_boot_dtsi),echo '$(HASH)include "$(u_boot_dtsi)"')) > $(pre-tmp); \
  	$(CPP) $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $(pre-tmp) ; \
  	$(DTC) -O dtb -o $@ -b 0 \
  		-i $(dir $<) $(DTC_FLAGS) \
