@@ -139,7 +139,10 @@ prepare_source() {
                 if [[ $(type -t custom_source_action) == function ]]
                 then
                     echo "Running custom_source_action from $f"
+                    
+                    pushd "$(dirname "$f")"
                     custom_source_action "$SCRIPT_DIR" "$TARGET_DIR"
+                    popd
                 fi
             done
             shopt -u nullglob
