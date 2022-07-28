@@ -124,9 +124,9 @@ bsp_preparedeb() {
             cp "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin" "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin.sd.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
             ;;
         rockchip)
-            if [[ -f "$TARGET_DIR/u-boot.itb" ]]
+            if [[ -z "$RKMINILOADER" ]]
             then
-                echo "Found u-boot.itb, no need to repack U-Boot"
+                echo "No RKMINILOADER specified. Require prepacked u-boot.itb."
                 rkpack_idbloader "spl"
                 cp "$TARGET_DIR/u-boot.itb" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
             else
