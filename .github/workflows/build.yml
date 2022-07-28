@@ -41,7 +41,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: u-boot
+          name: u-boot-${{ matrix.u-boot }}
           path: .output
   build_linux:
     needs: query
@@ -58,6 +58,6 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: linux
+          name: linux-${{ matrix.linux }}
           path: .output
   
