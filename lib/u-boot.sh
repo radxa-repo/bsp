@@ -9,6 +9,7 @@ bsp_reset() {
     BSP_MAKE_TARGETS="all"
     BSP_SOC=
     BSP_SOC_OVERRIDE=
+    BSP_BOARD_OVERRIDE=
 }
 
 bsp_version() {
@@ -30,10 +31,8 @@ bsp_prepare() {
         esac
     fi
 
-    if [[ -z $BSP_SOC_OVERRIDE ]]
-    then
-        BSP_SOC_OVERRIDE=$BSP_SOC
-    fi
+    BSP_SOC_OVERRIDE="${BSP_SOC_OVERRIDE:="$BSP_SOC"}"
+    BSP_BOARD_OVERRIDE="${BSP_BOARD_OVERRIDE:="$BOARD"}"
 
     case "$SOC_FAMILY" in
         rockchip)
@@ -108,34 +107,34 @@ rkpack_rkminiloader() {
     mv ./trust.img "$TARGET_DIR/trust.img"
     popd
 
-    cp "$TARGET_DIR/uboot.img" "$TARGET_DIR/trust.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/"
+    cp "$TARGET_DIR/uboot.img" "$TARGET_DIR/trust.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
 }
 
 bsp_preparedeb() {
     local SOC_FAMILY=$(get_soc_family $BSP_SOC)
     
-    mkdir -p "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD"
-    cp "$SCRIPT_DIR/common/u-boot_setup.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/setup.sh"
+    mkdir -p "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE"
+    cp "$SCRIPT_DIR/common/u-boot_setup.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/setup.sh"
 
     case "$SOC_FAMILY" in
         amlogic)
             make -C "$SCRIPT_DIR/.src/fip" -j$(nproc) distclean
-            make -C "$SCRIPT_DIR/.src/fip" -j$(nproc) fip BOARD=$BOARD UBOOT_BIN="$TARGET_DIR/u-boot.bin"
+            make -C "$SCRIPT_DIR/.src/fip" -j$(nproc) fip BOARD=$BSP_BOARD_OVERRIDE UBOOT_BIN="$TARGET_DIR/u-boot.bin"
 
-            cp "$SCRIPT_DIR/.src/fip/$BOARD/u-boot.bin" "$SCRIPT_DIR/.src/fip/$BOARD/u-boot.bin.sd.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/"
+            cp "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin" "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin.sd.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
             ;;
         rockchip)
             if [[ -f "$TARGET_DIR/u-boot.itb" ]]
             then
                 echo "Found u-boot.itb, no need to repack U-Boot"
                 rkpack_idbloader "spl"
-                cp "$TARGET_DIR/u-boot.itb" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/"
+                cp "$TARGET_DIR/u-boot.itb" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
             else
                 echo "Packaging U-Boot with Rockchip Miniloader"
                 rkpack_idbloader "rkminiloader"
                 rkpack_rkminiloader
             fi
-            cp "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BOARD/"
+            cp "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
             ;;
         *)
             error $EXIT_UNSUPPORTED_OPTION "$SOC_FAMILY"
@@ -166,9 +165,15 @@ bsp_makedeb() {
         local NAME="u-boot-$BOARD"
         local DESCRIPTION="Radxa virtual U-Boot package for $BOARD"
         local DEPEND=u-boot-$FORK
+        local CONFLICT=
+        if [[ $BOARD != $BSP_BOARD_OVERRIDE ]]
+        then
+            CONFLICT="--conflicts u-boot-$BSP_BOARD_OVERRIDE"
+        fi
         fpm -s empty -t deb -n "$NAME" -v "$VERSION" \
             --deb-compression xz \
             --depends "$DEPEND" \
+            $CONFLICT \
             --url "$URL" \
             --description "$DESCRIPTION" \
             --license "GPL-2+" \
