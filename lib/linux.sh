@@ -19,26 +19,28 @@ bsp_prepare() {
 }
 
 bsp_make() {
-    local BSP_VERSION="$(bsp_version)"
+    local kernelversion="$(bsp_version)"
 
     make -C "$TARGET_DIR" -j$(nproc) \
         ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE \
         KDEB_COMPRESS="xz" DPKG_FLAGS=$BSP_DPKG_FLAGS \
-        LOCALVERSION=-$FORK KERNELRELEASE=$BSP_VERSION-$FORK KDEB_PKGVERSION=$BSP_VERSION-$FORK-$PKG_REVISION \
+        LOCALVERSION=-$FORK KERNELRELEASE=$kernelversion-$FORK KDEB_PKGVERSION=$kernelversion-$FORK-$PKG_REVISION \
         $@
 }
 
 bsp_makedeb() {
+    local kernelversion="$(bsp_version)"
+
     mv $SCRIPT_DIR/.src/*.deb ./
     for BOARD in ${SUPPORTED_BOARDS[@]}
     do
         local NAMES=("linux-image-$BOARD" "linux-headers-$BOARD")
         local DESCRIPTIONS=("Radxa virtual Linux package for $BOARD" "Radxa virtual Linux header package for $BOARD")
-        local DEPENDS=("linux-image-$BSP_VERSION-$FORK" "linux-headers-$BSP_VERSION-$FORK")
+        local DEPENDS=("linux-image-$kernelversion-$FORK" "linux-headers-$kernelversion-$FORK")
         for i in {0..1}
         do
             local NAME=${NAMES[$i]}
-            local VERSION="$BSP_VERSION-$FORK-$PKG_REVISION"
+            local VERSION="$kernelversion-$FORK-$PKG_REVISION"
             local URL="https://github.com/radxa-pkg/linux-image-$FORK"
             local DESCRIPTION=${DESCRIPTIONS[$i]}
             local DEPEND=${DEPENDS[$i]}
