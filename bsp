@@ -90,17 +90,17 @@ main() {
 
     while (( $# > 0 ))
     do
-        case "$1" in
+        local arg="$1"
+        shift
+        case "$arg" in
             -r | --revision)
-                PKG_REVISION="$2"
-                shift 2
+                PKG_REVISION="$1"
+                shift
                 ;;
             --no-prepare-source)
                 NO_PREPARE_SOURCE="yes"
-                shift
                 ;;
             --json)
-                shift
                 json "$@"
                 return
                 ;;
@@ -109,24 +109,24 @@ main() {
                 return
                 ;;
             -*)
-                error $EXIT_UNKNOWN_OPTION "$1"
+                error $EXIT_UNKNOWN_OPTION "$arg"
                 ;;
             linux)
-                load_edition "$1" "$2"
+                load_edition linux "$1"
                 build
                 bsp_makedeb
                 return
                 ;;
             u-boot)
-                load_edition "$1" "$2"
+                load_edition u-boot "$1"
 
-                if [[ -n "$3" ]]
+                if [[ -n "$2" ]]
                 then
-                    if ! in_array "$3" "${SUPPORTED_BOARDS[@]}"
+                    if ! in_array "$2" "${SUPPORTED_BOARDS[@]}"
                     then
-                        error $EXIT_UNKNOWN_OPTION "$1"
+                        error $EXIT_UNKNOWN_OPTION "$2"
                     fi
-                    local products=("$3")
+                    local products=("$2")
                 else
                     local products=("${SUPPORTED_BOARDS[@]}")
                 fi
@@ -135,7 +135,7 @@ main() {
 
                 for BOARD in "${products[@]}"
                 do
-                    load_edition "$1" "$2"
+                    load_edition u-boot "$1"
                     bsp_$BOARD
                     build
                     bsp_preparedeb
