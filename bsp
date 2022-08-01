@@ -13,6 +13,8 @@ which will only build for that specific image.
 
 Supported package generation options:
     -r, --revision [num]    Specify custom revision number, default=1
+    -c, --clean             Run 'make clean' before building
+    -C, --distclean         Run 'make distclean' before building
     --no-prepare-source     Allow building against locally modified repos
 
 Alternative functionalities
@@ -68,7 +70,7 @@ build() {
 
     bsp_prepare
 
-    bsp_make $BSP_DEFCONFIG 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    bsp_make $CLEAN_LEVEL $BSP_DEFCONFIG 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
     
     for d in $(find -L "$SCRIPT_DIR/$TARGET/$FORK" -mindepth 1 -type d | sort)
     do
@@ -82,6 +84,7 @@ build() {
 main() {
     local PKG_REVISION="1"
     local NO_PREPARE_SOURCE=
+    local CLEAN_LEVEL=
 
     if [[ -e "$SCRIPT_DIR/.src/build.log" ]]
     then
@@ -99,6 +102,12 @@ main() {
                 ;;
             --no-prepare-source)
                 NO_PREPARE_SOURCE="yes"
+                ;;
+            -c | --clean)
+                CLEAN_LEVEL="clean"
+                ;;
+            -C | --distclean)
+                CLEAN_LEVEL="distclean"
                 ;;
             --json)
                 json "$@"
