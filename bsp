@@ -12,9 +12,8 @@ When building u-boot, you can also provide 'product' argument,
 which will only build for that specific image.
 
 Supported package generation options:
-    -r, --revision [num]
-                        Specify custom revision number, default=1
-    --no-prepare-source Allow building against locally modified repos
+    -r, --revision [num]    Specify custom revision number, default=1
+    --no-prepare-source     Allow building against locally modified repos
 
 Alternative functionalities
     --json [catagory]   Print supported options in json format
