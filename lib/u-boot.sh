@@ -68,12 +68,12 @@ bsp_make1() {
 
 rkpack_idbloader() {
     local flash_data=
-    if [[ -n $RKBIN ]]
+    if [[ -n $RKBIN_DDR ]]
     then
         local flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN} | sort | tail -n 1)"
         if [[ -z $flash_data ]]
         then
-            error $EXIT_UNKNOWN_OPTION "$RKBIN"
+            error $EXIT_UNKNOWN_OPTION "$RKBIN_DDR"
         else
             echo "Using rkbin $(basename $flash_data)"
         fi
