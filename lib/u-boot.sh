@@ -23,20 +23,20 @@ bsp_version() {
 bsp_prepare() {
     local SOC_FAMILY=$(get_soc_family $BSP_SOC)
 
+    BSP_SOC_OVERRIDE="${BSP_SOC_OVERRIDE:-"$BSP_SOC"}"
+    BSP_BOARD_OVERRIDE="${BSP_BOARD_OVERRIDE:-"$BOARD"}"
+
     if [[ -z $BSP_DEFCONFIG ]]
     then
         case "$SOC_FAMILY" in
             rockchip)
-                BSP_DEFCONFIG="${BOARD}-${BSP_SOC}_defconfig"
+                BSP_DEFCONFIG="${BSP_BOARD_OVERRIDE}-${BSP_SOC}_defconfig"
                 ;;
             *)
                 BSP_DEFCONFIG="${BOARD}_defconfig"
                 ;;
         esac
     fi
-
-    BSP_SOC_OVERRIDE="${BSP_SOC_OVERRIDE:-"$BSP_SOC"}"
-    BSP_BOARD_OVERRIDE="${BSP_BOARD_OVERRIDE:-"$BOARD"}"
 
     case "$SOC_FAMILY" in
         rockchip)
