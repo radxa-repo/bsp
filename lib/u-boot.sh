@@ -33,8 +33,8 @@ bsp_prepare() {
         esac
     fi
 
-    BSP_SOC_OVERRIDE="${BSP_SOC_OVERRIDE:="$BSP_SOC"}"
-    BSP_BOARD_OVERRIDE="${BSP_BOARD_OVERRIDE:="$BOARD"}"
+    BSP_SOC_OVERRIDE="${BSP_SOC_OVERRIDE:-"$BSP_SOC"}"
+    BSP_BOARD_OVERRIDE="${BSP_BOARD_OVERRIDE:-"$BOARD"}"
 
     case "$SOC_FAMILY" in
         rockchip)
