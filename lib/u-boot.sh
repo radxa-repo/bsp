@@ -7,11 +7,13 @@ bsp_reset() {
     BSP_DEFCONFIG=
 
     BSP_MAKE_TARGETS="all"
+    BSP_MAKE_EXTRA=()
     BSP_SOC=
     BSP_SOC_OVERRIDE=
     BSP_BOARD_OVERRIDE=
 
     RKBIN_DDR=
+    RKMINILOADER=
 }
 
 bsp_version() {
@@ -42,7 +44,7 @@ bsp_prepare() {
             if [[ $USE_ATF == "yes" ]]
             then
                 make -C "$SCRIPT_DIR/.src/arm-trusted-firmware" -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE PLAT=$BSP_SOC_OVERRIDE
-                BSP_BL31="BL31=$SCRIPT_DIR/.src/arm-trusted-firmware/build/$BSP_SOC_OVERRIDE/release/bl31/bl31.elf"
+                BSP_MAKE_EXTRA+=("BL31=$SCRIPT_DIR/.src/arm-trusted-firmware/build/$BSP_SOC_OVERRIDE/release/bl31/bl31.elf")
             else
                 local RKBIN_BL31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e ${BSP_SOC_OVERRIDE}_bl31_v -e ${BSP_BL31_OVERRIDE}_bl31_v | sort | tail -n 1)
                 if [[ -z $RKBIN_BL31 ]]
@@ -50,29 +52,22 @@ bsp_prepare() {
                     echo "Unable to find prebuilt bl31. The resulting bootloader may not work!" >&2
                 else
                     echo "Using bl31 $(basename $RKBIN_BL31)"
-                    BSP_BL31="BL31=$RKBIN_BL31"
+                    BSP_MAKE_EXTRA+=("BL31=$RKBIN_BL31")
                 fi
             fi
-
-            BSP_MAKE_TARGETS="$BSP_BL31 $BSP_MAKE_TARGETS"
             ;;
     esac
 }
 
 bsp_make() {
-    make -C "$TARGET_DIR" -j$(nproc) ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE $@
-}
-
-bsp_make1() {
-    echo "make -C "$TARGET_DIR" -j$(nproc) ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE $@"
-    exit 1
+    make -C "$TARGET_DIR" -j$(nproc) ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE "${BSP_MAKE_EXTRA[@]}" $@
 }
 
 rkpack_idbloader() {
     local flash_data=
     if [[ -n $RKBIN_DDR ]]
     then
-        local flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN} | sort | tail -n 1)"
+        flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN_DDR} | sort | tail -n 1)"
         if [[ -z $flash_data ]]
         then
             error $EXIT_UNKNOWN_OPTION "$RKBIN_DDR"
@@ -80,6 +75,7 @@ rkpack_idbloader() {
             echo "Using rkbin $(basename $flash_data)"
         fi
     fi
+
     if [[ -e "${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin" ]] && [[ "$1" == "spl" ]]
     then
         flash_data="${flash_data:+${flash_data}:}${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin"
