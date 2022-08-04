@@ -78,7 +78,7 @@ build() {
     done
     apply_kconfig "$SCRIPT_DIR/$TARGET/$FORK/kconfig.conf"
 
-    bsp_make olddefconfig $BSP_MAKE_TARGETS 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    bsp_make olddefconfig "${BSP_MAKE_TARGETS[@]}" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
 }
 
 main() {

@@ -6,7 +6,7 @@ bsp_reset() {
     BSP_BRANCH=
     BSP_DEFCONFIG="defconfig"
 
-    BSP_MAKE_TARGETS="all bindeb-pkg"
+    BSP_MAKE_TARGETS=("all" "bindeb-pkg")
     BSP_DPKG_FLAGS="-d"
 }
 
