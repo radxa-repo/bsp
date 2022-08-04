@@ -10,6 +10,8 @@ bsp_reset() {
     BSP_SOC=
     BSP_SOC_OVERRIDE=
     BSP_BOARD_OVERRIDE=
+
+    RKBIN_DDR=
 }
 
 bsp_version() {
