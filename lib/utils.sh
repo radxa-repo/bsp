@@ -34,26 +34,26 @@ error() {
 }
 
 printf_array() {
-    local FORMAT="$1"
+    local format="$1"
     shift
-    local ARRAY=("$@")
+    local array=("$@")
 
-    if [[ $FORMAT == "json" ]]
+    if [[ $format == "json" ]]
     then
-        jq --compact-output --null-input '$ARGS.positional' --args -- "${ARRAY[@]}"
+        jq --compact-output --null-input '$ARGS.positional' --args -- "${array[@]}"
     else
-        for i in ${ARRAY[@]}
+        for i in ${array[@]}
         do
-            printf "$FORMAT" "$i"
+            printf "$format" "$i"
         done
     fi
 }
 
 in_array() {
-    local ITEM="$1"
+    local item="$1"
     shift
-    local ARRAY=("$@")
-    if [[ " ${ARRAY[*]} " =~ " $ITEM " ]]
+    local array=("$@")
+    if [[ " ${array[*]} " =~ " $item " ]]
     then
         true
     else
@@ -77,7 +77,7 @@ git_source() {
     __CUSTOM_SOURCE_FOLDER="$(basename $git_url)"
     __CUSTOM_SOURCE_FOLDER="${__CUSTOM_SOURCE_FOLDER%.*}"
 
-    if ! [[ -e "$SRC_DIR/$__CUSTOM_SOURCE_FOLDER" ]]
+    if ! [[ -e "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER" ]]
     then
         local git_branch="$2"
         if [[ -n $git_branch ]]
@@ -85,8 +85,8 @@ git_source() {
             git_branch="--branch $git_branch"
         fi
 
-        git clone --depth 1 $git_branch "$git_url" "$SRC_DIR/$__CUSTOM_SOURCE_FOLDER"
-        pushd "$SRC_DIR/$__CUSTOM_SOURCE_FOLDER"
+        git clone --depth 1 $git_branch "$git_url" "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
+        pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
         git_repo_config
         popd
     else
@@ -98,17 +98,16 @@ git_am() {
     if [[ -n "$__CUSTOM_SOURCE_FOLDER" ]]
     then
         local patch="$(realpath "$1")"
-        pushd "$SRC_DIR/$__CUSTOM_SOURCE_FOLDER"
+        pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
         git am "$patch"
         popd
     fi
 }
 
 prepare_source() {
-    local TARGET="$1"
-    local SRC_DIR="$SCRIPT_DIR/.src"
-    TARGET_DIR="$SRC_DIR/$TARGET"
-    local FORK_DIR="$SCRIPT_DIR/$TARGET/$FORK"
+    local target="$1"
+    TARGET_DIR="$SCRIPT_DIR/.src/$target"
+    local fork_dir="$SCRIPT_DIR/$target/$FORK"
 
     mkdir -p "$TARGET_DIR"
 
@@ -124,12 +123,12 @@ prepare_source() {
         git am --abort || true
         [[ -n $(git status -s) ]] && git reset --hard HEAD
 
-        local ORIGIN=$(sha1sum <(echo "$BSP_GIT") | cut -d' ' -f1)
-        git remote add $ORIGIN $BSP_GIT 2>/dev/null && true
+        local origin=$(sha1sum <(echo "$BSP_GIT") | cut -d' ' -f1)
+        git remote add $origin $BSP_GIT 2>/dev/null && true
 
         if [[ -n $BSP_COMMIT ]]
         then
-            git fetch --depth 1 $ORIGIN $BSP_COMMIT
+            git fetch --depth 1 $origin $BSP_COMMIT
             git checkout $BSP_COMMIT
             git update-ref refs/tags/$BSP_COMMIT $BSP_COMMIT
         elif [[ -n $BSP_BRANCH ]]
@@ -138,18 +137,18 @@ prepare_source() {
             # However, since we are defaulting with upstream Linux,
             # we will always have non empty $BSP_TAG.
             # As such check $BSP_BRANCH first.
-            git fetch --depth 1 $ORIGIN $BSP_BRANCH
+            git fetch --depth 1 $origin $BSP_BRANCH
             git checkout $BSP_BRANCH
         elif [[ -n $BSP_TAG ]]
         then
-            git fetch --depth 1 $ORIGIN tag $BSP_TAG
+            git fetch --depth 1 $origin tag $BSP_TAG
             git checkout tags/$BSP_TAG
         fi
 
         git reset --hard FETCH_HEAD
         git clean -ffd
 
-        for d in $(find -L $FORK_DIR -type d | sort -r)
+        for d in $(find -L $fork_dir -type d | sort -r)
         do
             shopt -s nullglob
             for f in $d/*.sh
@@ -173,7 +172,7 @@ prepare_source() {
             shopt -u nullglob
         done
 
-        for d in $(find -L $FORK_DIR -type d | sort)
+        for d in $(find -L $fork_dir -type d | sort)
         do
             if ls $d/*.patch &>/dev/null
             then

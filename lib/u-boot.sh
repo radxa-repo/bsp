@@ -21,14 +21,14 @@ bsp_version() {
 }
 
 bsp_prepare() {
-    local SOC_FAMILY=$(get_soc_family $BSP_SOC)
+    local soc_family=$(get_soc_family $BSP_SOC)
 
     BSP_SOC_OVERRIDE="${BSP_SOC_OVERRIDE:-"$BSP_SOC"}"
     BSP_BOARD_OVERRIDE="${BSP_BOARD_OVERRIDE:-"$BOARD"}"
 
     if [[ -z $BSP_DEFCONFIG ]]
     then
-        case "$SOC_FAMILY" in
+        case "$soc_family" in
             rockchip)
                 BSP_DEFCONFIG="${BSP_BOARD_OVERRIDE}-${BSP_SOC}_defconfig"
                 ;;
@@ -38,21 +38,20 @@ bsp_prepare() {
         esac
     fi
 
-    case "$SOC_FAMILY" in
+    case "$soc_family" in
         rockchip)
-            local BSP_BL31=
             if [[ $USE_ATF == "yes" ]]
             then
                 make -C "$SCRIPT_DIR/.src/arm-trusted-firmware" -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE PLAT=$BSP_SOC_OVERRIDE
                 BSP_MAKE_EXTRA+=("BL31=$SCRIPT_DIR/.src/arm-trusted-firmware/build/$BSP_SOC_OVERRIDE/release/bl31/bl31.elf")
             else
-                local RKBIN_BL31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e ${BSP_SOC_OVERRIDE}_bl31_v -e ${BSP_BL31_OVERRIDE}_bl31_v | sort | tail -n 1)
-                if [[ -z $RKBIN_BL31 ]]
+                local rkbin_bl31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e ${BSP_SOC_OVERRIDE}_bl31_v -e ${BSP_BL31_OVERRIDE}_bl31_v | sort | tail -n 1)
+                if [[ -z $rkbin_bl31 ]]
                 then
                     echo "Unable to find prebuilt bl31. The resulting bootloader may not work!" >&2
                 else
-                    echo "Using bl31 $(basename $RKBIN_BL31)"
-                    BSP_MAKE_EXTRA+=("BL31=$RKBIN_BL31")
+                    echo "Using bl31 $(basename $rkbin_bl31)"
+                    BSP_MAKE_EXTRA+=("BL31=$rkbin_bl31")
                 fi
             fi
             ;;
@@ -109,12 +108,12 @@ rkpack_rkminiloader() {
 }
 
 bsp_preparedeb() {
-    local SOC_FAMILY=$(get_soc_family $BSP_SOC)
+    local soc_family=$(get_soc_family $BSP_SOC)
     
     mkdir -p "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE"
     cp "$SCRIPT_DIR/common/u-boot_setup.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/setup.sh"
 
-    case "$SOC_FAMILY" in
+    case "$soc_family" in
         amlogic)
             make -C "$SCRIPT_DIR/.src/fip" -j$(nproc) distclean
             make -C "$SCRIPT_DIR/.src/fip" -j$(nproc) fip BOARD=$BSP_BOARD_OVERRIDE UBOOT_BIN="$TARGET_DIR/u-boot.bin"
@@ -135,7 +134,7 @@ bsp_preparedeb() {
             cp "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
             ;;
         *)
-            error $EXIT_UNSUPPORTED_OPTION "$SOC_FAMILY"
+            error $EXIT_UNSUPPORTED_OPTION "$soc_family"
             ;;
     esac
 }
