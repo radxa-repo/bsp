@@ -177,6 +177,11 @@ prepare_source() {
             if ls $d/*.patch &>/dev/null
             then
                 git am --reject --whitespace=fix $(ls $d/*.patch)
+                echo "Patchset $(basename $d) has been applied."
+                if [[ "$PATCH_PAUSE" == "yes" ]]
+                then
+                    read -p "Please press enter to continue processing the next patchset: "
+                fi
             fi
         done
         

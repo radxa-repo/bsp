@@ -16,6 +16,7 @@ Supported package generation options:
     -c, --clean             Run 'make clean' before building
     -C, --distclean         Run 'make distclean' before building
     --no-prepare-source     Allow building against locally modified repos
+    -p                      Pause after applying patches from each folder
 
 Alternative functionalities
     --json [catagory]   Print supported options in json format
@@ -85,6 +86,7 @@ main() {
     local PKG_REVISION="1"
     local NO_PREPARE_SOURCE=
     local CLEAN_LEVEL=
+    local PATCH_PAUSE=
 
     if [[ -e "$SCRIPT_DIR/.src/build.log" ]]
     then
@@ -102,6 +104,9 @@ main() {
                 ;;
             --no-prepare-source)
                 NO_PREPARE_SOURCE="yes"
+                ;;
+            -p)
+                PATCH_PAUSE="yes"
                 ;;
             -c | --clean)
                 CLEAN_LEVEL="clean"
