@@ -242,9 +242,9 @@ kconfig() {
                 "$SCRIPT_DIR/common/config" --file "$TARGET_DIR/.config" $switch $config "$option"
                 ;;
             verify)
-                if ! grep -q "$k" "$TARGET_DIR/.config"
+                if ! grep -m 1 -q "$k" "$TARGET_DIR/.config"
                 then
-                    if ! grep -q "^# CONFIG_.* is not set$" <<< $k || grep -q "$(cut -d ' ' -f 2 <<< $k)[=\s]" "$TARGET_DIR/.config"
+                    if ! grep -q "^# CONFIG_.* is not set$" <<< $k || grep -m 1 -q "$(cut -d ' ' -f 2 <<< $k)[=\s]" "$TARGET_DIR/.config"
                     then
                         echo "kconfig: Mismatch: $k" >&2
                     fi
