@@ -5,21 +5,22 @@ Subject: [PATCH] Fix build error
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
- Makefile                              | 2 ++
+ Makefile                              | 3 +++
  arch/arm/mach-rockchip/resource_img.c | 3 +--
  scripts/Makefile.lib                  | 3 ++-
- 3 files changed, 5 insertions(+), 3 deletions(-)
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/Makefile b/Makefile
 index 7060da1c..cf3a4789 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -605,6 +605,8 @@ ifeq ($(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-stack-usage.sh $(CC)),y)
+@@ -605,6 +605,9 @@ ifeq ($(shell $(CONFIG_SHELL) $(srctree)/scripts/gcc-stack-usage.sh $(CC)),y)
  endif
  
  KBUILD_CFLAGS += $(call cc-option,-Wno-format-nonliteral)
 +KBUILD_CFLAGS += $(call cc-option,-Wno-address-of-packed-member)
 +KBUILD_CFLAGS += $(call cc-option,-Wno-format-overflow)
++KBUILD_CFLAGS += $(call cc-option,-Wno-array-bounds)
  
  # turn jbsr into jsr for m68k
  ifeq ($(ARCH),m68k)
@@ -31,12 +32,12 @@ index 8f084628..08b8def7 100755
  
  	ret = memcmp(RESOURCE_MAGIC, hdr->magic, RESOURCE_MAGIC_SIZE);
  	if (ret) {
--		printf("bad resource image magic: %s\n",
--		       hdr->magic ? hdr->magic : "none");
-+		printf("bad resource image magic: %s\n", hdr->magic);
+-		debug("bad resource image magic: %s\n",
+-		      hdr->magic ? hdr->magic : "none");
++		debug("bad resource image magic: %s\n", hdr->magic);
  		ret = -EINVAL;
  	}
- 	debug("resource image header:\n");
+ 
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
 index 12d1123a..2ae03806 100644
 --- a/scripts/Makefile.lib
