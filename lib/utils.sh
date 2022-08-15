@@ -121,7 +121,11 @@ prepare_source() {
         git init
         git_repo_config
         git am --abort || true
-        [[ -n $(git status -s) ]] && git reset --hard HEAD
+        if [[ -n $(git status -s) ]]
+        then
+            git reset --hard FETCH_HEAD
+            git clean -ffd
+        fi
 
         local origin=$(sha1sum <(echo "$BSP_GIT") | cut -d' ' -f1)
         git remote add $origin $BSP_GIT 2>/dev/null && true
@@ -144,9 +148,6 @@ prepare_source() {
             git fetch --depth 1 $origin tag $BSP_TAG
             git checkout tags/$BSP_TAG
         fi
-
-        git reset --hard FETCH_HEAD
-        git clean -ffd
 
         for d in $(find -L $fork_dir -type d | sort -r)
         do
