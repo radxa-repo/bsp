@@ -149,6 +149,9 @@ prepare_source() {
             git checkout tags/$BSP_TAG
         fi
 
+        git reset --hard FETCH_HEAD
+        git clean -ffd
+
         for d in $(find -L $fork_dir -type d | sort -r)
         do
             shopt -s nullglob
