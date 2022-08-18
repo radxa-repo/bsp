@@ -150,7 +150,20 @@ main() {
                 for BOARD in "${products[@]}"
                 do
                     load_edition u-boot "$1"
-                    bsp_$BOARD
+
+                    if [[ $(type -t bsp_profile_base) == function ]]
+                    then
+                        bsp_profile_base
+                    fi
+                    if [[ $(type -t bsp_$BOARD) == function ]]
+                    then
+                        bsp_$BOARD
+                    fi
+                    if [[ $(type -t bsp_profile_override) == function ]]
+                    then
+                        bsp_profile_override
+                    fi
+
                     build
                     bsp_preparedeb
                     NO_PREPARE_SOURCE="yes"
