@@ -10,6 +10,7 @@ bsp_reset() {
     BSP_MAKE_EXTRA=()
     BSP_SOC=
     BSP_SOC_OVERRIDE=
+    BSP_TRUST_OVERRIDE=
     BSP_BOARD_OVERRIDE=
 
     RKBIN_DDR=
@@ -24,6 +25,7 @@ bsp_prepare() {
     local soc_family=$(get_soc_family $BSP_SOC)
 
     BSP_SOC_OVERRIDE="${BSP_SOC_OVERRIDE:-"$BSP_SOC"}"
+    BSP_TRUST_OVERRIDE="${BSP_TRUST_OVERRIDE:-"$BSP_SOC"}"
     BSP_BOARD_OVERRIDE="${BSP_BOARD_OVERRIDE:-"$BOARD"}"
 
     if [[ -z $BSP_DEFCONFIG ]]
@@ -99,8 +101,8 @@ rkpack_idbloader() {
 
 rkpack_rkminiloader() {
     pushd $SCRIPT_DIR/.src/rkbin/
-    $SCRIPT_DIR/.src/rkbin/tools/trust_merger "$SCRIPT_DIR/.src/rkbin/RKTRUST/${BSP_SOC^^}TRUST.ini"
     $SCRIPT_DIR/.src/rkbin/tools/loaderimage --pack --uboot "$TARGET_DIR/u-boot-dtb.bin" "$TARGET_DIR/uboot.img"
+    $SCRIPT_DIR/.src/rkbin/tools/trust_merger "$SCRIPT_DIR/.src/rkbin/RKTRUST/${BSP_TRUST_OVERRIDE^^}TRUST.ini"
     mv ./trust.img "$TARGET_DIR/trust.img"
     popd
 
