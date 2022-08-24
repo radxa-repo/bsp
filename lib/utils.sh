@@ -201,12 +201,19 @@ prepare_source() {
 }
 
 kconfig() {
-    local mode="config"
-    if [[ $1 == "-v" ]]
-    then
-        mode="verify"
-        shift
-    fi
+    case $1 in
+        "-v")
+            local mode="verify"
+            shift
+            ;;
+        "-o")
+            local mode="override"
+            shift
+            ;;
+        "")
+            local mode="config"
+            ;;
+    esac
     local file="$1"
 
     while IFS="" read -r k || [ -n "$k" ]
@@ -220,8 +227,8 @@ kconfig() {
             switch="--undefine"
         elif grep -q "^CONFIG_.*=[ynm]$" <<< $k
         then
-            config=$(cut -d '=' -f 1 <<< $k)
-            case "$(cut -d'=' -f 2 <<< $k)" in
+            IFS='=' read -r config option <<< $k
+            case "$option" in
                 y)
                     switch="--enable"
                     ;;
@@ -262,6 +269,9 @@ kconfig() {
                     fi
                 fi
                 ;;
+            override)
+                BSP_MAKE_DEFINES+=("$config=$option")
+                ;;
         esac
     done < "$file"
 }
@@ -270,8 +280,15 @@ apply_kconfig() {
     if [[ -e "$1" ]]
     then
         tee -a "$SCRIPT_DIR/.src/build.log" <<< "Apply kconfig from $1"
-        kconfig "$1"
-        kconfig -v "$1" | tee -a "$SCRIPT_DIR/.src/build.log"
+        case ${1##*.} in
+            override)
+                kconfig -o "$1"
+                ;;
+            *)
+                kconfig "$1"
+                kconfig -v "$1" | tee -a "$SCRIPT_DIR/.src/build.log"
+                ;;
+        esac
     fi
 }
 

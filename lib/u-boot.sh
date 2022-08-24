@@ -6,6 +6,7 @@ bsp_reset() {
     BSP_BRANCH=
     BSP_DEFCONFIG=
 
+    BSP_MAKE_DEFINES=()
     BSP_MAKE_TARGETS=("all")
     BSP_MAKE_EXTRA=()
     BSP_SOC=
