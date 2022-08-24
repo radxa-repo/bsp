@@ -104,6 +104,14 @@ git_am() {
     fi
 }
 
+source_cp() {
+    if [[ -n "$__CUSTOM_SOURCE_FOLDER" ]]
+    then
+        local file="$(realpath "$1")"
+        cp "$file" "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER/$2"
+    fi
+}
+
 prepare_source() {
     local target="$1"
     TARGET_DIR="$SCRIPT_DIR/.src/$target"
