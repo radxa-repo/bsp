@@ -109,6 +109,14 @@ rkpack_rkminiloader() {
     cp "$TARGET_DIR/uboot.img" "$TARGET_DIR/trust.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
 }
 
+rkpack_rkboot() {
+    pushd $SCRIPT_DIR/.src/rkbin/
+    rm -f ./*.bin
+    $SCRIPT_DIR/.src/rkbin/tools/boot_merger "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL.ini"
+    mv ./*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/rkboot.bin"
+    popd
+}
+
 bsp_preparedeb() {
     local soc_family=$(get_soc_family $BSP_SOC)
     
@@ -133,6 +141,7 @@ bsp_preparedeb() {
                 rkpack_idbloader "rkminiloader"
                 rkpack_rkminiloader
             fi
+            rkpack_rkboot
             cp "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
             ;;
         *)

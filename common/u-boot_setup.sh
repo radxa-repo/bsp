@@ -1,5 +1,22 @@
 #!/bin/bash
 
+maskrom() {
+    local SOC=${1:-$(dtsoc)}
+
+    case "$SOC" in
+        amlogic*)
+            boot-g12.py "$SCRIPT_DIR/u-boot.bin"
+            ;;
+        rockchip*)
+            rkdeveloptool db "$SCRIPT_DIR/rkboot.bin"
+            ;;
+        *)
+            echo "Unknown SOC." >&2
+            return 1
+            ;;
+    esac
+}
+
 update_bootloader() {
     local DEVICE=$1
     local SOC=${2:-$(dtsoc)}

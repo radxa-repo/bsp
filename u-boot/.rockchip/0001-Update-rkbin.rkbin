@@ -5,12 +5,90 @@ Subject: [PATCH] Update rkbin
 
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
- RKTRUST/RK3308TRUST.ini    | 2 +-
- RKTRUST/RK3328TRUST.ini    | 4 ++--
- RKTRUST/RK3399PROTRUST.ini | 4 ++--
- RKTRUST/RK3399TRUST.ini    | 4 ++--
- 4 files changed, 7 insertions(+), 7 deletions(-)
+ RKBOOT/RK3328MINIALL.ini    | 8 ++++----
+ RKBOOT/RK3399MINIALL.ini    | 8 ++++----
+ RKBOOT/RK3399PROMINIALL.ini | 8 ++++----
+ RKTRUST/RK3308TRUST.ini     | 2 +-
+ RKTRUST/RK3328TRUST.ini     | 4 ++--
+ RKTRUST/RK3399PROTRUST.ini  | 4 ++--
+ RKTRUST/RK3399TRUST.ini     | 4 ++--
+ 7 files changed, 19 insertions(+), 19 deletions(-)
 
+diff --git a/RKBOOT/RK3328MINIALL.ini b/RKBOOT/RK3328MINIALL.ini
+index 5294b99..87baa57 100755
+--- a/RKBOOT/RK3328MINIALL.ini
++++ b/RKBOOT/RK3328MINIALL.ini
+@@ -5,16 +5,16 @@ MAJOR=2
+ MINOR=49
+ [CODE471_OPTION]
+ NUM=1
+-Path1=tools/rk_tools/bin/rk33/rk3328_ddr_333MHz_v1.14.bin
++Path1=bin/rk33/rk3328_ddr_333MHz_v1.14.bin
+ Sleep=1
+ [CODE472_OPTION]
+ NUM=1
+-Path1=tools/rk_tools/bin/rk33/rk322xh_usbplug_v2.49.bin
++Path1=bin/rk33/rk322xh_usbplug_v2.49.bin
+ [LOADER_OPTION]
+ NUM=2
+ LOADER1=FlashData
+ LOADER2=FlashBoot
+-FlashData=tools/rk_tools/bin/rk33/rk3328_ddr_333MHz_v1.14.bin
+-FlashBoot=tools/rk_tools/bin/rk33/rk322xh_miniloader_v2.49.bin
++FlashData=bin/rk33/rk3328_ddr_333MHz_v1.14.bin
++FlashBoot=bin/rk33/rk322xh_miniloader_v2.49.bin
+ [OUTPUT]
+ PATH=rk3328_loader_v1.14.249.bin
+diff --git a/RKBOOT/RK3399MINIALL.ini b/RKBOOT/RK3399MINIALL.ini
+index 8c9dcc4..31ccd13 100644
+--- a/RKBOOT/RK3399MINIALL.ini
++++ b/RKBOOT/RK3399MINIALL.ini
+@@ -5,16 +5,16 @@ MAJOR=1
+ MINOR=19
+ [CODE471_OPTION]
+ NUM=1
+-Path1=tools/rk_tools/bin/rk33/rk3399_ddr_800MHz_v1.20.bin
++Path1=bin/rk33/rk3399_ddr_800MHz_v1.20.bin
+ Sleep=1
+ [CODE472_OPTION]
+ NUM=1
+-Path1=tools/rk_tools/bin/rk33/rk3399_usbplug_v1.19.bin
++Path1=bin/rk33/rk3399_usbplug_v1.19.bin
+ [LOADER_OPTION]
+ NUM=2
+ LOADER1=FlashData
+ LOADER2=FlashBoot
+-FlashData=tools/rk_tools/bin/rk33/rk3399_ddr_800MHz_v1.20.bin
+-FlashBoot=tools/rk_tools/bin/rk33/rk3399_miniloader_v1.19.bin
++FlashData=bin/rk33/rk3399_ddr_800MHz_v1.20.bin
++FlashBoot=bin/rk33/rk3399_miniloader_v1.19.bin
+ [OUTPUT]
+ PATH=rk3399_loader_v1.20.119.bin
+diff --git a/RKBOOT/RK3399PROMINIALL.ini b/RKBOOT/RK3399PROMINIALL.ini
+index f85bc55..40a9e5e 100755
+--- a/RKBOOT/RK3399PROMINIALL.ini
++++ b/RKBOOT/RK3399PROMINIALL.ini
+@@ -5,16 +5,16 @@ MAJOR=1
+ MINOR=15
+ [CODE471_OPTION]
+ NUM=1
+-Path1=tools/rk_tools/bin/rk33/rk3399pro_ddr_800MHz_v1.20.bin
++Path1=bin/rk33/rk3399pro_ddr_800MHz_v1.20.bin
+ Sleep=1
+ [CODE472_OPTION]
+ NUM=1
+-Path1=tools/rk_tools/bin/rk33/rk3399pro_usbplug_v1.15.bin
++Path1=bin/rk33/rk3399pro_usbplug_v1.15.bin
+ [LOADER_OPTION]
+ NUM=2
+ LOADER1=FlashData
+ LOADER2=FlashBoot
+-FlashData=tools/rk_tools/bin/rk33/rk3399pro_ddr_800MHz_v1.20.bin
+-FlashBoot=tools/rk_tools/bin/rk33/rk3399pro_miniloader_v1.15.bin
++FlashData=bin/rk33/rk3399pro_ddr_800MHz_v1.20.bin
++FlashBoot=bin/rk33/rk3399pro_miniloader_v1.15.bin
+ [OUTPUT]
+ PATH=rk3399pro_loader_v1.20.115.bin
 diff --git a/RKTRUST/RK3308TRUST.ini b/RKTRUST/RK3308TRUST.ini
 index 2de3395..e813530 100644
 --- a/RKTRUST/RK3308TRUST.ini
@@ -79,5 +157,5 @@ index fb03663..dbb7564 100644
  [BL33_OPTION]
  SEC=0
 -- 
-2.37.1
+2.37.2
 
