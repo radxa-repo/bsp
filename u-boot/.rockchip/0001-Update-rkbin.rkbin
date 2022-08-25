@@ -8,11 +8,12 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  RKBOOT/RK3328MINIALL.ini    | 8 ++++----
  RKBOOT/RK3399MINIALL.ini    | 8 ++++----
  RKBOOT/RK3399PROMINIALL.ini | 8 ++++----
+ RKBOOT/RK3566MINIALL.ini    | 2 +-
  RKTRUST/RK3308TRUST.ini     | 2 +-
  RKTRUST/RK3328TRUST.ini     | 4 ++--
  RKTRUST/RK3399PROTRUST.ini  | 4 ++--
  RKTRUST/RK3399TRUST.ini     | 4 ++--
- 7 files changed, 19 insertions(+), 19 deletions(-)
+ 8 files changed, 20 insertions(+), 20 deletions(-)
 
 diff --git a/RKBOOT/RK3328MINIALL.ini b/RKBOOT/RK3328MINIALL.ini
 index 5294b99..87baa57 100755
@@ -89,6 +90,19 @@ index f85bc55..40a9e5e 100755
 +FlashBoot=bin/rk33/rk3399pro_miniloader_v1.15.bin
  [OUTPUT]
  PATH=rk3399pro_loader_v1.20.115.bin
+diff --git a/RKBOOT/RK3566MINIALL.ini b/RKBOOT/RK3566MINIALL.ini
+index c89f78e..e09b93d 100755
+--- a/RKBOOT/RK3566MINIALL.ini
++++ b/RKBOOT/RK3566MINIALL.ini
+@@ -9,7 +9,7 @@ Path1=bin/rk35/rk3566_ddr_1056MHz_v1.10.bin
+ Sleep=1
+ [CODE472_OPTION]
+ NUM=1
+-Path1=bin/rk35/rk356x_usbplug_v1.12.bin
++Path1=bin/rk35/rk356x_usbplug_v1.14.bin
+ [LOADER_OPTION]
+ NUM=2
+ LOADER1=FlashData
 diff --git a/RKTRUST/RK3308TRUST.ini b/RKTRUST/RK3308TRUST.ini
 index 2de3395..e813530 100644
 --- a/RKTRUST/RK3308TRUST.ini
