@@ -200,95 +200,12 @@ prepare_source() {
     popd
 }
 
-kconfig() {
-    case $1 in
-        "-v")
-            local mode="verify"
-            shift
-            ;;
-        "-o")
-            local mode="override"
-            shift
-            ;;
-        "")
-            local mode="config"
-            ;;
-    esac
-    local file="$1"
-
-    while IFS="" read -r k || [ -n "$k" ]
-    do
-        local config=
-        local option=
-        local switch=
-        if grep -q "^# CONFIG_.* is not set$" <<< $k
-        then
-            config=$(cut -d ' ' -f 2 <<< $k)
-            switch="--undefine"
-        elif grep -q "^CONFIG_.*=[ynm]$" <<< $k
-        then
-            IFS='=' read -r config option <<< $k
-            case "$option" in
-                y)
-                    switch="--enable"
-                    ;;
-                n)
-                    switch="--disable"
-                    ;;
-                m)
-                    switch="--module"
-                    ;;
-            esac
-        elif grep -q "^CONFIG_.*=\".*\"$" <<< $k
-        then
-            IFS='=' read -r config option <<< $k
-            switch="--set-val"
-        elif grep -q "^CONFIG_.*=.*$" <<< $k
-        then
-            IFS='=' read -r config option <<< $k
-            switch="--set-val"
-        elif grep -q "^#" <<< $k
-        then
-            continue
-        elif [[ -z "$k" ]]
-        then
-            continue
-        else
-            error $EXIT_UNKNOWN_OPTION "$k"
-        fi
-        case $mode in
-            config)
-                "$SCRIPT_DIR/common/config" --file "$TARGET_DIR/.config" $switch $config "$option"
-                ;;
-            verify)
-                if ! grep -m 1 -q "$k" "$TARGET_DIR/.config"
-                then
-                    if ! grep -q "^# CONFIG_.* is not set$" <<< $k || grep -m 1 -q "$(cut -d ' ' -f 2 <<< $k)[=\s]" "$TARGET_DIR/.config"
-                    then
-                        echo "kconfig: Mismatch: $k" >&2
-                    fi
-                fi
-                ;;
-            override)
-                BSP_MAKE_DEFINES+=("$config=$option")
-                ;;
-        esac
-    done < "$file"
-}
-
 apply_kconfig() {
     if [[ -e "$1" ]]
     then
-        tee -a "$SCRIPT_DIR/.src/build.log" <<< "Apply kconfig from $1"
-        case ${1##*.} in
-            override)
-                kconfig -o "$1"
-                ;;
-            *)
-                kconfig "$1"
-                kconfig -v "$1" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
-                ;;
-        esac
+        pushd "$TARGET_DIR"
+        scripts/kconfig/merge_config.sh -r .config "$1"
+        popd
     fi
 }
 

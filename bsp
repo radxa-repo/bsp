@@ -71,19 +71,13 @@ build() {
 
     bsp_prepare
 
-    for d in $(find -L "$SCRIPT_DIR/$TARGET/$FORK" -mindepth 1 -type d | sort)
-    do
-        apply_kconfig "$d/kconfig.override"
-    done
-    apply_kconfig "$SCRIPT_DIR/$TARGET/$FORK/kconfig.override"
-
     bsp_make "${BSP_MAKE_DEFINES[@]}" $CLEAN_LEVEL $BSP_DEFCONFIG 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
     
     for d in $(find -L "$SCRIPT_DIR/$TARGET/$FORK" -mindepth 1 -type d | sort)
     do
-        apply_kconfig "$d/kconfig.conf"
+        apply_kconfig "$d/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
     done
-    apply_kconfig "$SCRIPT_DIR/$TARGET/$FORK/kconfig.conf"
+    apply_kconfig "$SCRIPT_DIR/$TARGET/$FORK/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
 
     bsp_make "${BSP_MAKE_DEFINES[@]}" olddefconfig "${BSP_MAKE_TARGETS[@]}" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
 }
