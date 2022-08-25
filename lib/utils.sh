@@ -286,7 +286,7 @@ apply_kconfig() {
                 ;;
             *)
                 kconfig "$1"
-                kconfig -v "$1" | tee -a "$SCRIPT_DIR/.src/build.log"
+                kconfig -v "$1" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
                 ;;
         esac
     fi
