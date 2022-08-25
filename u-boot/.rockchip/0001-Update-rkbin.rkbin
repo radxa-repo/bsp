@@ -9,11 +9,12 @@ Signed-off-by: Yuntian Zhang <yt@radxa.com>
  RKBOOT/RK3399MINIALL.ini    | 8 ++++----
  RKBOOT/RK3399PROMINIALL.ini | 8 ++++----
  RKBOOT/RK3566MINIALL.ini    | 2 +-
+ RKBOOT/RK3568MINIALL.ini    | 2 +-
  RKTRUST/RK3308TRUST.ini     | 2 +-
  RKTRUST/RK3328TRUST.ini     | 4 ++--
  RKTRUST/RK3399PROTRUST.ini  | 4 ++--
  RKTRUST/RK3399TRUST.ini     | 4 ++--
- 8 files changed, 20 insertions(+), 20 deletions(-)
+ 9 files changed, 21 insertions(+), 21 deletions(-)
 
 diff --git a/RKBOOT/RK3328MINIALL.ini b/RKBOOT/RK3328MINIALL.ini
 index 5294b99..87baa57 100755
@@ -95,6 +96,19 @@ index c89f78e..e09b93d 100755
 --- a/RKBOOT/RK3566MINIALL.ini
 +++ b/RKBOOT/RK3566MINIALL.ini
 @@ -9,7 +9,7 @@ Path1=bin/rk35/rk3566_ddr_1056MHz_v1.10.bin
+ Sleep=1
+ [CODE472_OPTION]
+ NUM=1
+-Path1=bin/rk35/rk356x_usbplug_v1.12.bin
++Path1=bin/rk35/rk356x_usbplug_v1.14.bin
+ [LOADER_OPTION]
+ NUM=2
+ LOADER1=FlashData
+diff --git a/RKBOOT/RK3568MINIALL.ini b/RKBOOT/RK3568MINIALL.ini
+index b15f0e9..08ba5a4 100755
+--- a/RKBOOT/RK3568MINIALL.ini
++++ b/RKBOOT/RK3568MINIALL.ini
+@@ -9,7 +9,7 @@ Path1=bin/rk35/rk3568_ddr_1560MHz_v1.10.bin
  Sleep=1
  [CODE472_OPTION]
  NUM=1
