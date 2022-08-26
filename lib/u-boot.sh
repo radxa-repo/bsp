@@ -47,10 +47,10 @@ bsp_prepare() {
         rockchip)
             if [[ $USE_ATF == "yes" ]]
             then
-                make -C "$SCRIPT_DIR/.src/arm-trusted-firmware" -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE PLAT=$BSP_SOC_OVERRIDE
-                BSP_MAKE_EXTRA+=("BL31=$SCRIPT_DIR/.src/arm-trusted-firmware/build/$BSP_SOC_OVERRIDE/release/bl31/bl31.elf")
+                make -C "$SCRIPT_DIR/.src/arm-trusted-firmware" -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE PLAT=$BSP_BL31_OVERRIDE
+                BSP_MAKE_EXTRA+=("BL31=$SCRIPT_DIR/.src/arm-trusted-firmware/build/$BSP_BL31_OVERRIDE/release/bl31/bl31.elf")
             else
-                local rkbin_bl31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e ${BSP_SOC_OVERRIDE}_bl31_v -e ${BSP_BL31_OVERRIDE}_bl31_v | sort | tail -n 1)
+                local rkbin_bl31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e ${BSP_BL31_OVERRIDE}_bl31_v | sort | tail -n 1)
                 if [[ -z $rkbin_bl31 ]]
                 then
                     echo "Unable to find prebuilt bl31. The resulting bootloader may not work!" >&2
