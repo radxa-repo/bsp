@@ -11,6 +11,7 @@ bsp_reset() {
     BSP_MAKE_EXTRA=()
     BSP_SOC=
     BSP_SOC_OVERRIDE=
+    BSP_BL31_OVERRIDE=
     BSP_TRUST_OVERRIDE=
     BSP_BOARD_OVERRIDE=
 
@@ -26,6 +27,7 @@ bsp_prepare() {
     local soc_family=$(get_soc_family $BSP_SOC)
 
     BSP_SOC_OVERRIDE="${BSP_SOC_OVERRIDE:-"$BSP_SOC"}"
+    BSP_BL31_OVERRIDE="${BSP_BL31_OVERRIDE:-"$BSP_SOC"}"
     BSP_TRUST_OVERRIDE="${BSP_TRUST_OVERRIDE:-"$BSP_SOC"}"
     BSP_BOARD_OVERRIDE="${BSP_BOARD_OVERRIDE:-"$BOARD"}"
 
