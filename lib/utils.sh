@@ -204,7 +204,7 @@ apply_kconfig() {
     if [[ -e "$1" ]]
     then
         pushd "$TARGET_DIR"
-        scripts/kconfig/merge_config.sh -r .config "$1"
+        scripts/kconfig/merge_config.sh -m -r .config "$1"
         popd
     fi
 }
