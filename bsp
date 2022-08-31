@@ -16,6 +16,7 @@ Supported package generation options:
     -c, --clean             Run 'make clean' before building
     -C, --distclean         Run 'make distclean' before building
     --no-prepare-source     Allow building against locally modified repos
+    --no-config             Do not load defconfig or apply kconfig
     -p                      Pause after applying patches from each folder
 
 Alternative functionalities
@@ -71,20 +72,31 @@ build() {
 
     bsp_prepare
 
-    bsp_make "${BSP_MAKE_DEFINES[@]}" $CLEAN_LEVEL $BSP_DEFCONFIG 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    if [[ -n "$CLEAN_LEVEL" ]]
+    then
+        bsp_make "${BSP_MAKE_DEFINES[@]}" $CLEAN_LEVEL 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    fi
     
-    for d in $(find -L "$SCRIPT_DIR/$TARGET/$FORK" -mindepth 1 -type d | sort)
-    do
-        apply_kconfig "$d/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
-    done
-    apply_kconfig "$SCRIPT_DIR/$TARGET/$FORK/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    if [[ "$NO_CONFIG" != "yes" ]]
+    then
+        bsp_make "${BSP_MAKE_DEFINES[@]}" $BSP_DEFCONFIG 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        for d in $(find -L "$SCRIPT_DIR/$TARGET/$FORK" -mindepth 1 -type d | sort)
+        do
+            apply_kconfig "$d/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        done
+        apply_kconfig "$SCRIPT_DIR/$TARGET/$FORK/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        # Cannot run `bsp_make olddefconfig` seperately here
+        # as it will break the build in the next step
+        BSP_MAKE_TARGETS=("olddefconfig" "${BSP_MAKE_TARGETS[@]}")
+    fi
 
-    bsp_make "${BSP_MAKE_DEFINES[@]}" olddefconfig "${BSP_MAKE_TARGETS[@]}" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    bsp_make "${BSP_MAKE_DEFINES[@]}" "${BSP_MAKE_TARGETS[@]}" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
 }
 
 main() {
     local PKG_REVISION="1"
     local NO_PREPARE_SOURCE=
+    local NO_CONFIG=
     local CLEAN_LEVEL=
     local PATCH_PAUSE=
 
@@ -104,6 +116,9 @@ main() {
                 ;;
             --no-prepare-source)
                 NO_PREPARE_SOURCE="yes"
+                ;;
+            --no-config)
+                NO_CONFIG="yes"
                 ;;
             -p)
                 PATCH_PAUSE="yes"
