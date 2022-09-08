@@ -44,6 +44,12 @@ bsp_prepare() {
     fi
 
     case "$soc_family" in
+        amlogic)
+            if [[ $USE_ATF == "yes" ]]
+            then
+                make -C "$SCRIPT_DIR/.src/arm-trusted-firmware" -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE PLAT=$BSP_BL31_OVERRIDE
+            fi
+            ;;
         rockchip)
             if [[ $USE_ATF == "yes" ]]
             then
