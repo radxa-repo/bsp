@@ -23,18 +23,18 @@ update_bootloader() {
 
     case "$SOC" in
         amlogic*)
-            dd conv=notrunc if="$SCRIPT_DIR/u-boot.bin.sd.bin" of=$DEVICE bs=1 count=444
-            dd conv=notrunc if="$SCRIPT_DIR/u-boot.bin.sd.bin" of=$DEVICE bs=512 skip=1 seek=1
+            dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.bin.sd.bin" of=$DEVICE bs=1 count=444
+            dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.bin.sd.bin" of=$DEVICE bs=512 skip=1 seek=1
             ;;
         rockchip*)
-            dd conv=notrunc if="$SCRIPT_DIR/idbloader.img" of=$DEVICE bs=512 seek=64
+            dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader.img" of=$DEVICE bs=512 seek=64
             if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
             then
-                dd conv=notrunc if="$SCRIPT_DIR/u-boot.itb" of=$DEVICE bs=512 seek=16384
+                dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=$DEVICE bs=512 seek=16384
             elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
             then
-                dd conv=notrunc if="$SCRIPT_DIR/uboot.img" of=$DEVICE bs=512 seek=16384
-                dd conv=notrunc if="$SCRIPT_DIR/trust.img" of=$DEVICE bs=512 seek=24576
+                dd conv=notrunc,fsync if="$SCRIPT_DIR/uboot.img" of=$DEVICE bs=512 seek=16384
+                dd conv=notrunc,fsync if="$SCRIPT_DIR/trust.img" of=$DEVICE bs=512 seek=24576
             else
                 echo "Missing U-Boot binary!" >&2
                 return 2
@@ -61,15 +61,16 @@ update_spi() {
             cp "$SCRIPT_DIR/idbloader-spi.img" /tmp/spi.img
             if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
             then
-                dd conv=notrunc if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=512
+                dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=512
             elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
             then
-                dd conv=notrunc if="$SCRIPT_DIR/uboot.img" of=/tmp/spi.img bs=512 seek=512
+                dd conv=notrunc,fsync if="$SCRIPT_DIR/uboot.img" of=/tmp/spi.img bs=512 seek=512
             else
                 echo "Missing U-Boot binary!" >&2
                 return 2
             fi
-            dd conv=notrunc if=/tmp/spi.img of=/dev/mtdblock0 bs=4096
+            flash_eraseall /dev/mtdblock0
+            dd conv=notrunc,fsync if=/tmp/spi.img of=/dev/mtdblock0 bs=4096
             rm /tmp/spi.img
             ;;
         *)
