@@ -141,8 +141,7 @@ prepare_source() {
         if [[ -n $BSP_COMMIT ]]
         then
             git fetch --depth 1 $origin $BSP_COMMIT
-            git checkout $BSP_COMMIT
-            git update-ref refs/tags/$BSP_COMMIT $BSP_COMMIT
+            git switch --detach $BSP_COMMIT
         elif [[ -n $BSP_BRANCH ]]
         then
             # Tag is more precise than branch and should be preferred.
@@ -150,11 +149,11 @@ prepare_source() {
             # we will always have non empty $BSP_TAG.
             # As such check $BSP_BRANCH first.
             git fetch --depth 1 $origin $BSP_BRANCH
-            git checkout $BSP_BRANCH
+            git switch --detach $origin/$BSP_BRANCH
         elif [[ -n $BSP_TAG ]]
         then
             git fetch --depth 1 $origin tag $BSP_TAG
-            git checkout tags/$BSP_TAG
+            git switch --detach tags/$BSP_TAG
         fi
 
         git reset --hard FETCH_HEAD
