@@ -142,18 +142,14 @@ prepare_source() {
         then
             git fetch --depth 1 $origin $BSP_COMMIT
             git switch --detach $BSP_COMMIT
-        elif [[ -n $BSP_BRANCH ]]
-        then
-            # Tag is more precise than branch and should be preferred.
-            # However, since we are defaulting with upstream Linux,
-            # we will always have non empty $BSP_TAG.
-            # As such check $BSP_BRANCH first.
-            git fetch --depth 1 $origin $BSP_BRANCH
-            git switch --detach $origin/$BSP_BRANCH
         elif [[ -n $BSP_TAG ]]
         then
             git fetch --depth 1 $origin tag $BSP_TAG
             git switch --detach tags/$BSP_TAG
+        elif [[ -n $BSP_BRANCH ]]
+        then
+            git fetch --depth 1 $origin $BSP_BRANCH
+            git switch --detach $origin/$BSP_BRANCH
         fi
 
         git reset --hard FETCH_HEAD
