@@ -23,8 +23,8 @@ index 42a7ab5423..8fd33c975b 100644
 +obj-$(CONFIG_DRM_PANEL_SIMPLE) += panel-simple.o \
 +		panel-simple-dsi.o
  obj-$(CONFIG_DRM_PANEL_EDP) += panel-edp.o
+ obj-$(CONFIG_DRM_PANEL_EBBG_FT8719) += panel-ebbg-ft8719.o
  obj-$(CONFIG_DRM_PANEL_ELIDA_KD35T133) += panel-elida-kd35t133.o
- obj-$(CONFIG_DRM_PANEL_FEIXIN_K101_IM2BA02) += panel-feixin-k101-im2ba02.o
 diff --git a/drivers/gpu/drm/panel/panel-simple-dsi.c b/drivers/gpu/drm/panel/panel-simple-dsi.c
 new file mode 100644
 index 0000000000..30a008dac5
