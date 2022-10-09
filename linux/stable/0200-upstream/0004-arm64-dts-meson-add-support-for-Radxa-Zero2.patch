@@ -298,7 +298,7 @@ index 000000000..f7da62ccf
 +	/* Ensure the TYPE C controller irq pin is not driven by the SoC */
 +	fusb302_irq_pins: fusb302_irq {
 +		mux {
-+			groups = "GPIOA_4";
++			groups = "GPIOA_13";
 +			function = "gpio_periphs";
 +			bias-pull-up;
 +			output-disable;
@@ -468,7 +468,7 @@ index 000000000..f7da62ccf
 +		pinctrl-0 = <&fusb302_irq_pins>;
 +		pinctrl-names = "default";
 +		interrupt-parent = <&gpio_intc>;
-+		interrupts = <59 IRQ_TYPE_LEVEL_LOW>;
++		interrupts = <74 IRQ_TYPE_LEVEL_LOW>;
 +
 +		vbus-supply = <&typec2_vbus>;
 +
