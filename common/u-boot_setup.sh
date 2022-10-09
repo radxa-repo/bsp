@@ -58,13 +58,14 @@ update_spi() {
 
     case "$SOC" in
         rockchip*)
-            cp "$SCRIPT_DIR/idbloader-spi.img" /tmp/spi.img
+            dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader-spi.img" of=/tmp/spi.img bs=512 seek=64
             if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
             then
-                dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=512
+                dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=4096
             elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
             then
-                dd conv=notrunc,fsync if="$SCRIPT_DIR/uboot.img" of=/tmp/spi.img bs=512 seek=512
+                dd conv=notrunc,fsync if="$SCRIPT_DIR/uboot.img" of=/tmp/spi.img bs=512 seek=4096
+                dd conv=notrunc,fsync if="$SCRIPT_DIR/trust.img" of=/tmp/spi.img bs=512 seek=6144
             else
                 echo "Missing U-Boot binary!" >&2
                 return 2
