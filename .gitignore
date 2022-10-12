@@ -1,5 +1,5 @@
 *.deb
 .src/
 .root/
-.vscode/
+.vscode*
 **/0500-private/
