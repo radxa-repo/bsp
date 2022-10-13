@@ -182,9 +182,11 @@ main() {
                     build
                     bsp_preparedeb
                     NO_PREPARE_SOURCE="yes"
+                    SOURCE_GITREV_OVERRIDE="${SOURCE_GITREV_OVERRIDE:-$SOURCE_GITREV}"
                 done
 
                 SUPPORTED_BOARDS=("${products[@]}")
+                SOURCE_GITREV="$SOURCE_GITREV_OVERRIDE"
                 bsp_makedeb
                 return
                 ;;
