@@ -119,12 +119,22 @@ prepare_source() {
 
     mkdir -p "$TARGET_DIR"
 
-    if [[ $NO_PREPARE_SOURCE == "yes" ]]
+    pushd "$SCRIPT_DIR"
+    BSP_GITREV="$(git rev-parse --short HEAD^{commit})"
+    if ! git diff --quiet
     then
-        return
+        BSP_GITREV="$BSP_GITREV.dirty"
     fi
+    popd
 
     pushd "$TARGET_DIR"
+
+        if [[ $NO_PREPARE_SOURCE == "yes" ]]
+        then
+            SOURCE_GITREV="$(git rev-parse --short FETCH_HEAD^{commit}).dirty"
+            popd
+            return
+        fi
 
         git init
         git_repo_config
@@ -154,6 +164,7 @@ prepare_source() {
 
         git reset --hard FETCH_HEAD
         git clean -ffd
+        SOURCE_GITREV="$(git rev-parse --short FETCH_HEAD^{commit})"
 
         for d in $(find -L $fork_dir -type d | sort -r)
         do
