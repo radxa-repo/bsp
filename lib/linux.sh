@@ -37,7 +37,7 @@ bsp_makedeb() {
     do
         local NAMES=("linux-image-$BOARD" "linux-headers-$BOARD")
         local DESCRIPTIONS=("Radxa virtual Linux package for $BOARD" "Radxa virtual Linux header package for $BOARD")
-        local DEPENDS=("linux-image-$FORK-$kernelversion" "linux-headers-$FORK-$kernelversion")
+        local DEPENDS=("linux-image-$kernelversion-$FORK" "linux-headers-$kernelversion-$FORK")
         for i in {0..1}
         do
             local NAME=${NAMES[$i]}
