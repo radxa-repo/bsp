@@ -24,8 +24,8 @@ jobs:
       - name: Query available board configs
         id: query
         run: |
-          echo "::set-output name=linux::$(./bsp --json edition linux)"
-          echo "::set-output name=u-boot::$(./bsp --json edition u-boot)"
+          echo "linux=$(./bsp --json edition linux)" >> $GITHUB_OUTPUT
+          echo "u-boot=$(./bsp --json edition u-boot)" >> $GITHUB_OUTPUT
   build_u-boot:
     needs: query
     runs-on: ubuntu-latest
