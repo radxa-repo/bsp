@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <95260730+RadxaYuntian@users.noreply.github.com>
+Date: Fri, 14 Oct 2022 18:19:10 +0800
+Subject: [PATCH] Rename ROCK Pi 4C Plus to ROCK 4C Plus
+
+---
+ arch/arm64/boot/dts/rockchip/Makefile                         | 2 +-
+ .../{rk3399-rock-pi-4c-plus.dts => rk3399-rock-4c-plus.dts}   | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+ rename arch/arm64/boot/dts/rockchip/{rk3399-rock-pi-4c-plus.dts => rk3399-rock-4c-plus.dts} (99%)
+
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+index a2dc67167213..52a110b60b18 100644
+--- a/arch/arm64/boot/dts/rockchip/Makefile
++++ b/arch/arm64/boot/dts/rockchip/Makefile
+@@ -111,7 +111,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rockpro64.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4a.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4b.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4c.dtb
+-dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4c-plus.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-4c-plus.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rv1-android.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire-excavator-box-android-6.0.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-sapphire-excavator-box.dtb
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4c-plus.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-4c-plus.dts
+similarity index 99%
+rename from arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4c-plus.dts
+rename to arch/arm64/boot/dts/rockchip/rk3399-rock-4c-plus.dts
+index 3a219d4fa494..77bb946e007b 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4c-plus.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-4c-plus.dts
+@@ -14,8 +14,8 @@
+ #include "rock-pi-4c-plus-radxa-10p1inch-display.dtsi"
+ 
+ / {
+-	model = "Radxa ROCK Pi 4C+";
+-	compatible = "radxa,rockpi4c-plus","rockchip,rk3399";
++	model = "Radxa ROCK 4C+";
++	compatible = "radxa,rock-4c-plus", "rockchip,rk3399";
+ 
+ 	fiq_debugger: fiq-debugger {
+ 		status = "okay";
+-- 
+2.38.0
+
