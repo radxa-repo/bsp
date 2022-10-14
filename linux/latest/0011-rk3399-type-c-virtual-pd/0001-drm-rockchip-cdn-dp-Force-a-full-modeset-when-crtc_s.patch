@@ -5,16 +5,15 @@ Subject: [PATCH] drm/rockchip: cdn-dp: Force a full modeset when
  crtc_state->active is changed
 
 Signed-off-by: Jagan Teki <jagan@amarulasolutions.com>
-Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
  drivers/gpu/drm/rockchip/cdn-dp-core.c | 7 +++++++
  1 file changed, 7 insertions(+)
 
 diff --git a/drivers/gpu/drm/rockchip/cdn-dp-core.c b/drivers/gpu/drm/rockchip/cdn-dp-core.c
-index c204e9b95c..2f3ced3614 100644
+index d3e6c93739bf..440387e4746b 100644
 --- a/drivers/gpu/drm/rockchip/cdn-dp-core.c
 +++ b/drivers/gpu/drm/rockchip/cdn-dp-core.c
-@@ -700,6 +700,13 @@ static int cdn_dp_encoder_atomic_check(struct drm_encoder *encoder,
+@@ -694,6 +694,13 @@ static int cdn_dp_encoder_atomic_check(struct drm_encoder *encoder,
  	s->output_mode = ROCKCHIP_OUT_MODE_AAAA;
  	s->output_type = DRM_MODE_CONNECTOR_DisplayPort;
  
@@ -29,5 +28,5 @@ index c204e9b95c..2f3ced3614 100644
  }
  
 -- 
-2.36.1
+2.38.0
 
