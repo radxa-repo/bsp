@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jagan Teki <jagan@amarulasolutions.com>
+Date: Thu, 3 Mar 2022 00:29:07 +0530
+Subject: [PATCH] arm64: dts: rk3399-rock-pi-4c-plus: Enable HDMI out (from DP)
+
+Signed-off-by: Jagan Teki <jagan@amarulasolutions.com>
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
+---
+ .../boot/dts/rockchip/rk3399-rock-4c-plus.dts | 26 +++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-4c-plus.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-4c-plus.dts
+index f9884902f874..866d318fe99a 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-rock-4c-plus.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-4c-plus.dts
+@@ -123,6 +123,25 @@ vdd_log: vdd-log-regulator {
+ 		regulator-max-microvolt = <950000>;
+ 		vin-supply = <&vcc5v0_sys>;
+ 	};
++
++	virtual_pd: virtual-pd {
++		compatible = "linux,extcon-pd-virtual";
++		/* 0: positive, 1: negative*/
++		vpd,init-flip = <0>;
++		/* 0: u2, 1: u3*/
++		vpd,init-ss = <1>;
++		/* 0: dfp, 1: ufp, 2: dp 3: dp/ufp */
++		vpd,init-mode = <2>;
++		hpd-gpios = <&gpio4 25 GPIO_ACTIVE_LOW>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&hpd_en>;
++		dp-pwr-supply = <&vcc3v3_sys>;
++	};
++};
++
++&cdn_dp {
++	extcon = <&virtual_pd>;
++	status = "okay";
+ };
+ 
+ &cpu_l0 {
+@@ -457,6 +476,12 @@ &io_domains {
+ };
+ 
+ &pinctrl {
++	hpd {
++		hpd_en: hpd-en {
++			rockchip,pins = <4 RK_PD1 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
+ 	bt {
+ 		bt_enable_h: bt-enable-h {
+ 			rockchip,pins = <0 RK_PB1 RK_FUNC_GPIO &pcfg_pull_none>;
+@@ -594,6 +619,7 @@ &sdmmc {
+ };
+ 
+ &tcphy0 {
++	extcon = <&virtual_pd>;
+ 	status = "okay";
+ };
+ 
+-- 
+2.38.0
+
