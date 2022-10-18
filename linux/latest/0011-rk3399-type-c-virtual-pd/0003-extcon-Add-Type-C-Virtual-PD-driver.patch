@@ -31,7 +31,7 @@ index 0d42e49105dd..fe90b2915cb1 100644
 +
  config EXTCON_USBC_TUSB320
  	tristate "TI TUSB320 USB-C extcon support"
- 	depends on I2C
+ 	depends on I2C && TYPEC
 diff --git a/drivers/extcon/Makefile b/drivers/extcon/Makefile
 index 1b390d934ca9..b585b18de555 100644
 --- a/drivers/extcon/Makefile
