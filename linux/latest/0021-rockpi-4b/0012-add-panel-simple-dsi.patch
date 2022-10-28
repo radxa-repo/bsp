@@ -742,7 +742,7 @@ index 0000000000..30a008dac5
 +	return mipi_dsi_attach(dsi);
 +}
 +
-+static int panel_simple_dsi_remove(struct mipi_dsi_device *dsi)
++static void panel_simple_dsi_remove(struct mipi_dsi_device *dsi)
 +{
 +	int err;
 +
@@ -750,7 +750,7 @@ index 0000000000..30a008dac5
 +	if (err < 0)
 +		dev_err(&dsi->dev, "failed to detach from DSI host: %d\n", err);
 +
-+	return panel_simple_remove(&dsi->dev);
++	panel_simple_remove(&dsi->dev);
 +}
 +
 +static void panel_simple_dsi_shutdown(struct mipi_dsi_device *dsi)
