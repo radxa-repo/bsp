@@ -99,7 +99,7 @@ git_am() {
     then
         local patch="$(realpath "$1")"
         pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
-        git am "$patch"
+        git am --reject --whitespace=fix "$patch"
         popd
     fi
 }
