@@ -14,7 +14,7 @@ index dbb7564..a2bf7b8 100644
 --- a/RKTRUST/RK3399TRUST.ini
 +++ b/RKTRUST/RK3399TRUST.ini
 @@ -8,9 +8,7 @@ SEC=1
- PATH=bin/rk33/rk3399_bl31_v1.26.elf
+ PATH=bin/rk33/rk3399_bl31_v1.35.elf
  ADDR=0x00010000
  [BL32_OPTION]
 -SEC=1
