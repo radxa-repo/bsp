@@ -138,10 +138,10 @@ prepare_source() {
 
         git init
         git_repo_config
-        git am --abort || true
+        git am --abort &>/dev/null || true
         if [[ -n $(git status -s) ]]
         then
-            git reset --hard FETCH_HEAD
+            git reset --hard FETCH_HEAD || true
             git clean -ffd
         fi
 
