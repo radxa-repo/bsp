@@ -94,5 +94,5 @@ then
     $ACTION "$@"
 else
     echo "Unsupported action: '$ACTION'" >&2
-    return 1
+    exit 1
 fi
