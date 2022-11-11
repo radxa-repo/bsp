@@ -8,6 +8,9 @@ inputs:
   revision:
     retuired: false
     default: 1
+  artifacts:
+    required: false
+    default: 'false'
   release-id:
     required: false
   github-token:
@@ -31,6 +34,12 @@ runs:
         pushd .output
         ../bsp -r ${{ inputs.revision }} ${{ inputs.target }} ${{ inputs.edition }}
         popd
+    - name: Upload artifacts
+      if: inputs.artifacts == 'true' && inputs.board != 'rootfs'
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.target }}_${{ inputs.edition }}_${{ inputs.revision }}
+        path: .output
     - name: Upload
       if: inputs.release-id != '' && inputs.github-token != ''
       uses: xresloader/upload-to-github-release@v1
@@ -39,7 +48,6 @@ runs:
       with:
         release_id: ${{ inputs.release-id }}
         file: .output/*
-        draft: false
     - name: Rollback release
       if: failure() && inputs.release-id != '' && inputs.github-token != ''
       uses: author/action-rollback@stable
