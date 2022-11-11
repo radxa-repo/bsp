@@ -25,7 +25,8 @@ runs:
     - name: Install dependency
       shell: bash
       run: |
-        sudo apt install gcc-aarch64-linux-gnu gcc-arm-none-eabi device-tree-compiler u-boot-tools python2-dev
+        sudo apt-get update
+        sudo apt-get install gcc-aarch64-linux-gnu gcc-arm-none-eabi device-tree-compiler u-boot-tools python2-dev
         sudo gem i fpm -f
     - name: Build
       shell: bash
