@@ -3,3 +3,4 @@
 .root/
 .vscode*
 **/0500-private/
+*.tar.xz

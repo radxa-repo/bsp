@@ -22,6 +22,8 @@ Supported package generation options:
 Alternative functionalities
     --json [catagory]   Print supported options in json format
                         Available catagories: $(get_supported_infos)
+    --export [edition]  Export profile
+    --import [edition]  Import profile
     -h, --help          Show this help message
 
 Supported Linux edition:
@@ -135,6 +137,14 @@ main() {
                 ;;
             -h | --help)
                 usage
+                return
+                ;;
+            --export)
+                find "linux/$1" "u-boot/$1" | tar acvf "$1.tar.xz" --files-from -
+                return
+                ;;
+            --import)
+                tar axvf "$1"
                 return
                 ;;
             -*)
