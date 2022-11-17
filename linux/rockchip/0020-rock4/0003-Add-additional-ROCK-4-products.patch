@@ -7,12 +7,12 @@ Currently they are just copies of the original dts
 with different OPP configuration.
 ---
  arch/arm64/boot/dts/rockchip/Makefile         |  3 +
- .../boot/dts/rockchip/rk3399-rock-4a-plus.dts | 29 +++++++++
- .../boot/dts/rockchip/rk3399-rock-4b-plus.dts | 61 +++++++++++++++++++
+ .../boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts | 29 +++++++++
+ .../boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts | 61 +++++++++++++++++++
  .../boot/dts/rockchip/rk3399-rock-4se.dts     | 61 +++++++++++++++++++
  4 files changed, 154 insertions(+)
- create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-rock-4a-plus.dts
- create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-rock-4b-plus.dts
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts
  create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-rock-4se.dts
 
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
@@ -24,16 +24,16 @@ index faa656ae960b..4889edb78d3e 100644
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-roc-pc.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-roc-pc-mezzanine.dtb
 +dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-4se.dtb
-+dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-4a-plus.dtb
-+dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-4b-plus.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4a-plus.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4b-plus.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-4c-plus.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4a.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4b.dtb
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-4a-plus.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-4a-plus.dts
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts
 new file mode 100644
 index 000000000000..d2ca5649b2dd
 --- /dev/null
-+++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-4a-plus.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts
 @@ -0,0 +1,29 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -46,8 +46,8 @@ index 000000000000..d2ca5649b2dd
 +#include "rk3399-op1-opp.dtsi"
 +
 +/ {
-+	model = "Radxa ROCK 4A+";
-+	compatible = "radxa,rock-4a-plus", "rockchip,rk3399";
++	model = "Radxa ROCK Pi 4A+";
++	compatible = "radxa,rockpi4a-plus", "radxa,rockpi4", "rockchip,rk3399";
 +};
 +
 +&pinctrl {
@@ -64,11 +64,11 @@ index 000000000000..d2ca5649b2dd
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&vcc5v0_host_en>;
 +};
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-4b-plus.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-4b-plus.dts
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts
 new file mode 100644
 index 000000000000..8c54d42c761a
 --- /dev/null
-+++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-4b-plus.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts
 @@ -0,0 +1,61 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -81,8 +81,8 @@ index 000000000000..8c54d42c761a
 +#include "rk3399-op1-opp.dtsi"
 +
 +/ {
-+	model = "Radxa ROCK 4B+";
-+	compatible = "radxa,rock-4b-plus", "rockchip,rk3399";
++	model = "Radxa ROCK Pi 4B+";
++	compatible = "radxa,rockpi4b-plus", "radxa,rockpi4", "rockchip,rk3399";
 +};
 +
 +&pinctrl {

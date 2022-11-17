@@ -5,26 +5,26 @@ Subject: [PATCH] Add additional ROCK 4 products
 
 ---
  arch/arm/dts/Makefile                         |  3 +
- arch/arm/dts/rk3399-rock-4a-plus-u-boot.dtsi  |  6 ++
- arch/arm/dts/rk3399-rock-4a-plus.dts          | 13 +++
- arch/arm/dts/rk3399-rock-4b-plus-u-boot.dtsi  |  6 ++
- arch/arm/dts/rk3399-rock-4b-plus.dts          | 46 ++++++++++
+ arch/arm/dts/rk3399-rock-pi-4a-plus-u-boot.dtsi  |  6 ++
+ arch/arm/dts/rk3399-rock-pi-4a-plus.dts          | 13 +++
+ arch/arm/dts/rk3399-rock-pi-4b-plus-u-boot.dtsi  |  6 ++
+ arch/arm/dts/rk3399-rock-pi-4b-plus.dts          | 46 ++++++++++
  arch/arm/dts/rk3399-rock-4se-plus-u-boot.dtsi |  6 ++
  arch/arm/dts/rk3399-rock-4se.dts              | 46 ++++++++++
- configs/rock-4a-plus-rk3399_defconfig         | 87 +++++++++++++++++++
- configs/rock-4b-plus-rk3399_defconfig         | 87 +++++++++++++++++++
+ configs/rock-pi-4a-plus-rk3399_defconfig         | 87 +++++++++++++++++++
+ configs/rock-pi-4b-plus-rk3399_defconfig         | 87 +++++++++++++++++++
  configs/rock-4se-rk3399_defconfig             | 87 +++++++++++++++++++
  configs/rock-pi-4a-rk3399_defconfig           | 86 ++++++++++++++++++
  ..._defconfig => rock-pi-4b-rk3399_defconfig} |  0
  12 files changed, 473 insertions(+)
- create mode 100644 arch/arm/dts/rk3399-rock-4a-plus-u-boot.dtsi
- create mode 100644 arch/arm/dts/rk3399-rock-4a-plus.dts
- create mode 100644 arch/arm/dts/rk3399-rock-4b-plus-u-boot.dtsi
- create mode 100644 arch/arm/dts/rk3399-rock-4b-plus.dts
+ create mode 100644 arch/arm/dts/rk3399-rock-pi-4a-plus-u-boot.dtsi
+ create mode 100644 arch/arm/dts/rk3399-rock-pi-4a-plus.dts
+ create mode 100644 arch/arm/dts/rk3399-rock-pi-4b-plus-u-boot.dtsi
+ create mode 100644 arch/arm/dts/rk3399-rock-pi-4b-plus.dts
  create mode 100644 arch/arm/dts/rk3399-rock-4se-plus-u-boot.dtsi
  create mode 100644 arch/arm/dts/rk3399-rock-4se.dts
- create mode 100644 configs/rock-4a-plus-rk3399_defconfig
- create mode 100644 configs/rock-4b-plus-rk3399_defconfig
+ create mode 100644 configs/rock-pi-4a-plus-rk3399_defconfig
+ create mode 100644 configs/rock-pi-4b-plus-rk3399_defconfig
  create mode 100644 configs/rock-4se-rk3399_defconfig
  create mode 100644 configs/rock-pi-4a-rk3399_defconfig
  rename configs/{rock-pi-4-rk3399_defconfig => rock-pi-4b-rk3399_defconfig} (100%)
@@ -37,18 +37,18 @@ index 536e9ffd..bcefa38a 100644
  	rk3399-puma-haikou.dtb \
  	rk3399-roc-pc.dtb \
  	rk3399-roc-pc-mezzanine.dtb \
-+	rk3399-rock-4a-plus.dtb \
-+	rk3399-rock-4b-plus.dtb \
++	rk3399-rock-pi-4a-plus.dtb \
++	rk3399-rock-pi-4b-plus.dtb \
  	rk3399-rock-4c-plus.dtb \
 +	rk3399-rock-4se.dtb \
  	rk3399-rock-pi-4a.dtb \
  	rk3399-rock-pi-4b.dtb \
  	rk3399-rock-pi-4c.dtb \
-diff --git a/arch/arm/dts/rk3399-rock-4a-plus-u-boot.dtsi b/arch/arm/dts/rk3399-rock-4a-plus-u-boot.dtsi
+diff --git a/arch/arm/dts/rk3399-rock-pi-4a-plus-u-boot.dtsi b/arch/arm/dts/rk3399-rock-pi-4a-plus-u-boot.dtsi
 new file mode 100644
 index 00000000..b7dcd2e0
 --- /dev/null
-+++ b/arch/arm/dts/rk3399-rock-4a-plus-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-rock-pi-4a-plus-u-boot.dtsi
 @@ -0,0 +1,6 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -56,11 +56,11 @@ index 00000000..b7dcd2e0
 + */
 +
 +#include "rk3399-rock-pi-4-u-boot.dtsi"
-diff --git a/arch/arm/dts/rk3399-rock-4a-plus.dts b/arch/arm/dts/rk3399-rock-4a-plus.dts
+diff --git a/arch/arm/dts/rk3399-rock-pi-4a-plus.dts b/arch/arm/dts/rk3399-rock-pi-4a-plus.dts
 new file mode 100644
 index 00000000..624deaca
 --- /dev/null
-+++ b/arch/arm/dts/rk3399-rock-4a-plus.dts
++++ b/arch/arm/dts/rk3399-rock-pi-4a-plus.dts
 @@ -0,0 +1,13 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -72,14 +72,14 @@ index 00000000..624deaca
 +#include "rk3399-rock-pi-4.dtsi"
 +
 +/ {
-+	model = "Radxa ROCK 4A+";
-+	compatible = "radxa,rock-4a-plus", "rockchip,rk3399";
++	model = "Radxa ROCK Pi 4A+";
++	compatible = "radxa,rockpi4a-plus", "radxa,rockpi4", "rockchip,rk3399";
 +};
-diff --git a/arch/arm/dts/rk3399-rock-4b-plus-u-boot.dtsi b/arch/arm/dts/rk3399-rock-4b-plus-u-boot.dtsi
+diff --git a/arch/arm/dts/rk3399-rock-pi-4b-plus-u-boot.dtsi b/arch/arm/dts/rk3399-rock-pi-4b-plus-u-boot.dtsi
 new file mode 100644
 index 00000000..b7dcd2e0
 --- /dev/null
-+++ b/arch/arm/dts/rk3399-rock-4b-plus-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-rock-pi-4b-plus-u-boot.dtsi
 @@ -0,0 +1,6 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -87,11 +87,11 @@ index 00000000..b7dcd2e0
 + */
 +
 +#include "rk3399-rock-pi-4-u-boot.dtsi"
-diff --git a/arch/arm/dts/rk3399-rock-4b-plus.dts b/arch/arm/dts/rk3399-rock-4b-plus.dts
+diff --git a/arch/arm/dts/rk3399-rock-pi-4b-plus.dts b/arch/arm/dts/rk3399-rock-pi-4b-plus.dts
 new file mode 100644
 index 00000000..a88131b2
 --- /dev/null
-+++ b/arch/arm/dts/rk3399-rock-4b-plus.dts
++++ b/arch/arm/dts/rk3399-rock-pi-4b-plus.dts
 @@ -0,0 +1,46 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -103,8 +103,8 @@ index 00000000..a88131b2
 +#include "rk3399-rock-pi-4.dtsi"
 +
 +/ {
-+	model = "Radxa ROCK 4B+";
-+	compatible = "radxa,rock-4b-plus", "rockchip,rk3399";
++	model = "Radxa ROCK Pi 4B+";
++	compatible = "radxa,rockpi4b-plus", "radxa,rockpi4", "rockchip,rk3399";
 +
 +	aliases {
 +		mmc2 = &sdio0;
@@ -203,11 +203,11 @@ index 00000000..3d4fac96
 +		pinctrl-0 = <&bt_host_wake_l &bt_wake_l &bt_enable_h>;
 +	};
 +};
-diff --git a/configs/rock-4a-plus-rk3399_defconfig b/configs/rock-4a-plus-rk3399_defconfig
+diff --git a/configs/rock-pi-4a-plus-rk3399_defconfig b/configs/rock-pi-4a-plus-rk3399_defconfig
 new file mode 100644
 index 00000000..f864c732
 --- /dev/null
-+++ b/configs/rock-4a-plus-rk3399_defconfig
++++ b/configs/rock-pi-4a-plus-rk3399_defconfig
 @@ -0,0 +1,87 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
@@ -216,7 +216,7 @@ index 00000000..f864c732
 +CONFIG_SYS_TEXT_BASE=0x00200000
 +CONFIG_NR_DRAM_BANKS=1
 +CONFIG_ENV_OFFSET=0x3F8000
-+CONFIG_DEFAULT_DEVICE_TREE="rk3399-rock-4c-plus"
++CONFIG_DEFAULT_DEVICE_TREE="rk3399-rock-pi-4a-plus"
 +CONFIG_ROCKCHIP_RK3399=y
 +CONFIG_TARGET_EVB_RK3399=y
 +CONFIG_DEBUG_UART_BASE=0xFF1A0000
@@ -226,7 +226,7 @@ index 00000000..f864c732
 +CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR=y
 +CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x300000
 +# CONFIG_ANDROID_BOOT_IMAGE is not set
-+CONFIG_DEFAULT_FDT_FILE="rockchip/rk3399-rock-4c-plus.dtb"
++CONFIG_DEFAULT_FDT_FILE="rockchip/rk3399-rock-pi-4a-plus.dtb"
 +CONFIG_DISPLAY_BOARDINFO_LATE=y
 +CONFIG_MISC_INIT_R=y
 +CONFIG_SPL_MAX_SIZE=0x2e000
@@ -296,11 +296,11 @@ index 00000000..f864c732
 +CONFIG_SPL_TINY_MEMSET=y
 +CONFIG_ERRNO_STR=y
 +CONFIG_OF_LIBFDT_OVERLAY=y
-diff --git a/configs/rock-4b-plus-rk3399_defconfig b/configs/rock-4b-plus-rk3399_defconfig
+diff --git a/configs/rock-pi-4b-plus-rk3399_defconfig b/configs/rock-pi-4b-plus-rk3399_defconfig
 new file mode 100644
 index 00000000..f864c732
 --- /dev/null
-+++ b/configs/rock-4b-plus-rk3399_defconfig
++++ b/configs/rock-pi-4b-plus-rk3399_defconfig
 @@ -0,0 +1,87 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
@@ -309,7 +309,7 @@ index 00000000..f864c732
 +CONFIG_SYS_TEXT_BASE=0x00200000
 +CONFIG_NR_DRAM_BANKS=1
 +CONFIG_ENV_OFFSET=0x3F8000
-+CONFIG_DEFAULT_DEVICE_TREE="rk3399-rock-4c-plus"
++CONFIG_DEFAULT_DEVICE_TREE="rk3399-rock-pi-4b-plus"
 +CONFIG_ROCKCHIP_RK3399=y
 +CONFIG_TARGET_EVB_RK3399=y
 +CONFIG_DEBUG_UART_BASE=0xFF1A0000
@@ -319,7 +319,7 @@ index 00000000..f864c732
 +CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR=y
 +CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x300000
 +# CONFIG_ANDROID_BOOT_IMAGE is not set
-+CONFIG_DEFAULT_FDT_FILE="rockchip/rk3399-rock-4c-plus.dtb"
++CONFIG_DEFAULT_FDT_FILE="rockchip/rk3399-rock-pi-4b-plus.dtb"
 +CONFIG_DISPLAY_BOARDINFO_LATE=y
 +CONFIG_MISC_INIT_R=y
 +CONFIG_SPL_MAX_SIZE=0x2e000
@@ -402,7 +402,7 @@ index 00000000..f864c732
 +CONFIG_SYS_TEXT_BASE=0x00200000
 +CONFIG_NR_DRAM_BANKS=1
 +CONFIG_ENV_OFFSET=0x3F8000
-+CONFIG_DEFAULT_DEVICE_TREE="rk3399-rock-4c-plus"
++CONFIG_DEFAULT_DEVICE_TREE="rk3399-rock-4se"
 +CONFIG_ROCKCHIP_RK3399=y
 +CONFIG_TARGET_EVB_RK3399=y
 +CONFIG_DEBUG_UART_BASE=0xFF1A0000
@@ -412,7 +412,7 @@ index 00000000..f864c732
 +CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR=y
 +CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0x300000
 +# CONFIG_ANDROID_BOOT_IMAGE is not set
-+CONFIG_DEFAULT_FDT_FILE="rockchip/rk3399-rock-4c-plus.dtb"
++CONFIG_DEFAULT_FDT_FILE="rockchip/rk3399-rock-4se.dtb"
 +CONFIG_DISPLAY_BOARDINFO_LATE=y
 +CONFIG_MISC_INIT_R=y
 +CONFIG_SPL_MAX_SIZE=0x2e000
