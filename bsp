@@ -15,6 +15,8 @@ Supported package generation options:
     --no-prepare-source     Allow building against locally modified repos
     --no-config             Do not load defconfig or apply kconfig
     -p                      Pause after applying patches from each folder
+    -n, --native-build      Build without using Docker
+    -l, --local-docker      Using local Docker image if available
 
 Alternative functionalities
     --json [catagory]   Print supported options in json format
@@ -109,7 +111,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCph" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnl" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker" -n "$0" -- "$@")"
     then
         usage
         return
@@ -121,6 +123,8 @@ main() {
     local NO_CONFIG=
     local CLEAN_LEVEL=
     local PATCH_PAUSE=
+    local NATIVE_BUILD="false"
+    local DOCKER_REGISTRY="ghcr.io/radxa-repo/"
 
     while true
     do
@@ -145,6 +149,12 @@ main() {
                 ;;
             -C|--distclean)
                 CLEAN_LEVEL="distclean"
+                ;;
+            -n|--native-build)
+                NATIVE_BUILD="true"
+                ;;
+            -l|--local-docker)
+                DOCKER_REGISTRY=
                 ;;
             --json)
                 json "$@"
