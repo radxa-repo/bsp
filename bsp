@@ -1,8 +1,5 @@
 #!/bin/bash
 
-SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-source "$SCRIPT_DIR/lib/utils.sh"
-
 usage() {
     cat >&2 << EOF
 Radxa BSP Build Tool
@@ -35,6 +32,11 @@ EOF
 }
 
 get_supported_edition() {
+    while (( $# > 0 )) && [[ "$1" == "--" ]]
+    do
+        shift
+    done
+
     if [[ ! -d "$SCRIPT_DIR/$1" ]] || [[ -z "$1" ]]
     then
         error $EXIT_UNSUPPORTED_OPTION "$1"
@@ -49,6 +51,11 @@ get_supported_edition() {
 }
 
 get_supported_infos() {
+    while (( $# > 0 )) && [[ "$1" == "--" ]]
+    do
+        shift
+    done
+
     local infos=("edition linux" "edition u-boot")
     echo "${infos[@]}"
 }
@@ -96,23 +103,31 @@ build() {
 }
 
 main() {
+    local SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+    source "$SCRIPT_DIR/lib/utils.sh"
+
+    rm -f "$SCRIPT_DIR/.src/build.log"
+
+    local ARGV=("$@")
+    if ! local TEMP="$(getopt -o "r:cCph" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help" -n "$0" -- "$@")"
+    then
+        usage
+        return
+    fi
+    eval set -- "$TEMP"
+
     local PKG_REVISION="1"
     local NO_PREPARE_SOURCE=
     local NO_CONFIG=
     local CLEAN_LEVEL=
     local PATCH_PAUSE=
 
-    if [[ -e "$SCRIPT_DIR/.src/build.log" ]]
-    then
-        rm "$SCRIPT_DIR/.src/build.log"
-    fi
-
-    while (( $# > 0 ))
+    while true
     do
-        local arg="$1"
+        TEMP="$1"
         shift
-        case "$arg" in
-            -r | --revision)
+        case "$TEMP" in
+            -r|--revision)
                 PKG_REVISION="$1"
                 shift
                 ;;
@@ -125,17 +140,17 @@ main() {
             -p)
                 PATCH_PAUSE="yes"
                 ;;
-            -c | --clean)
+            -c|--clean)
                 CLEAN_LEVEL="clean"
                 ;;
-            -C | --distclean)
+            -C|--distclean)
                 CLEAN_LEVEL="distclean"
                 ;;
             --json)
                 json "$@"
                 return
                 ;;
-            -h | --help)
+            -h|--help)
                 usage
                 return
                 ;;
@@ -147,64 +162,77 @@ main() {
                 tar axvf "$1"
                 return
                 ;;
-            -*)
-                error $EXIT_UNKNOWN_OPTION "$arg"
+            --)
+                break
                 ;;
-            linux)
-                load_edition linux "$1"
-                build
-                bsp_makedeb
-                return
+            *)
+                error $EXIT_UNKNOWN_OPTION "$TEMP"
                 ;;
-            u-boot)
-                load_edition u-boot "$1"
-
-                if [[ -n "$2" ]]
-                then
-                    if ! in_array "$2" "${SUPPORTED_BOARDS[@]}"
-                    then
-                        error $EXIT_UNKNOWN_OPTION "$2"
-                    fi
-                    local products=("$2")
-                else
-                    local products=("${SUPPORTED_BOARDS[@]}")
-                fi
-
-                rm -rf "$SCRIPT_DIR/.root"
-
-                for BOARD in "${products[@]}"
-                do
-                    load_edition u-boot "$1"
-
-                    if [[ $(type -t bsp_profile_base) == function ]]
-                    then
-                        bsp_profile_base
-                    fi
-                    if [[ $(type -t bsp_$BOARD) == function ]]
-                    then
-                        bsp_$BOARD
-                    fi
-                    if [[ $(type -t bsp_profile_override) == function ]]
-                    then
-                        bsp_profile_override
-                    fi
-
-                    build
-                    bsp_preparedeb
-                    NO_PREPARE_SOURCE="yes"
-                    SOURCE_GITREV_OVERRIDE="${SOURCE_GITREV_OVERRIDE:-$SOURCE_GITREV}"
-                done
-
-                SUPPORTED_BOARDS=("${products[@]}")
-                SOURCE_GITREV="$SOURCE_GITREV_OVERRIDE"
-                bsp_makedeb
-                return
-                ;;
-            *)  break ;;
         esac
     done
-    usage
-    return 1
+
+    if (( $# == 0))
+    then
+        usage
+        return
+    fi
+
+    TEMP="$1"
+    shift
+    case "$TEMP" in
+        linux)
+            load_edition linux "$1"
+            build
+            bsp_makedeb
+            ;;
+        u-boot)
+            load_edition u-boot "$1"
+
+            if [[ -n "$2" ]]
+            then
+                if ! in_array "$2" "${SUPPORTED_BOARDS[@]}"
+                then
+                    error $EXIT_UNKNOWN_OPTION "$2"
+                fi
+                local products=("$2")
+            else
+                local products=("${SUPPORTED_BOARDS[@]}")
+            fi
+
+            rm -rf "$SCRIPT_DIR/.root"
+
+            for BOARD in "${products[@]}"
+            do
+                load_edition u-boot "$1"
+
+                if [[ $(type -t bsp_profile_base) == function ]]
+                then
+                    bsp_profile_base
+                fi
+                if [[ $(type -t bsp_$BOARD) == function ]]
+                then
+                    bsp_$BOARD
+                fi
+                if [[ $(type -t bsp_profile_override) == function ]]
+                then
+                    bsp_profile_override
+                fi
+
+                build
+                bsp_preparedeb
+                NO_PREPARE_SOURCE="yes"
+                SOURCE_GITREV_OVERRIDE="${SOURCE_GITREV_OVERRIDE:-$SOURCE_GITREV}"
+            done
+
+            SUPPORTED_BOARDS=("${products[@]}")
+            SOURCE_GITREV="$SOURCE_GITREV_OVERRIDE"
+            bsp_makedeb
+            ;;
+        *)
+            usage
+            return 1
+            ;;
+    esac
 }
 
 main "$@"

@@ -1,5 +1,4 @@
-set -e
-set -o pipefail
+set -euo pipefail
 
 LC_ALL="C"
 LANG="C"
