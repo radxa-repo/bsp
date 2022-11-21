@@ -5,7 +5,7 @@ RUN dpkg --add-architecture arm64 && \
     apt-get full-upgrade --no-install-recommends -y \
         build-essential crossbuild-essential-arm64 gcc-arm-none-eabi git ruby sudo apt-utils \
         python3 python2 python-is-python2 python3-distutils python3-pkg-resources \
-        cpio bc flex bison rsync kmod swig device-tree-compiler u-boot-tools \
+        cpio bc flex fakeroot bison rsync kmod swig device-tree-compiler u-boot-tools \
         python2-dev python3-dev libssl-dev libssl-dev:arm64 \
         libc6:arm64 && \
     gem install fpm && \
