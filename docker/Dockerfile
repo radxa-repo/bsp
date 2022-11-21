@@ -4,9 +4,9 @@ RUN dpkg --add-architecture arm64 && \
     apt-get update && \
     apt-get full-upgrade --no-install-recommends -y \
         build-essential crossbuild-essential-arm64 gcc-arm-none-eabi git ruby sudo apt-utils \
-        python3 python-is-python3 python3-distutils python3-pkg-resources \
+        python3 python2 python-is-python2 python3-distutils python3-pkg-resources \
         bc flex bison rsync kmod swig device-tree-compiler \
-        python3-dev libssl-dev libssl-dev:arm64 \
+        python2-dev python3-dev libssl-dev libssl-dev:arm64 \
         qemu-user-static binfmt-support libc6:arm64 && \
     gem install fpm && \
     adduser --gecos runner --disabled-password runner && \
