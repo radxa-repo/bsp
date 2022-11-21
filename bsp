@@ -16,7 +16,7 @@ Supported package generation options:
     --no-config             Do not load defconfig or apply kconfig
     -p                      Pause after applying patches from each folder
     -n, --native-build      Build without using Docker
-    -l, --local-docker      Using local Docker image if available
+    -l, --local-docker      Using locally built Docker image
 
 Alternative functionalities
     --json [catagory]   Print supported options in json format
@@ -184,6 +184,47 @@ main() {
     if (( $# == 0))
     then
         usage
+        return
+    fi
+
+    if ! $NATIVE_BUILD
+    then
+        local DOCKER_IMAGE="$(docker image ls "-qf=reference=${DOCKER_REGISTRY}bsp:main")"
+
+        if [[ -z $DOCKER_REGISTRY ]]
+        then
+            docker build --force-rm -t "${DOCKER_REGISTRY}bsp:main" "$SCRIPT_DIR/docker"
+        else
+            docker pull "${DOCKER_REGISTRY}bsp:main"
+        fi
+
+        if [[ $DOCKER_IMAGE != "$(docker image ls "-qf=reference=${DOCKER_REGISTRY}bsp:main")" ]]
+        then
+            docker container rm bsp &>/dev/null || true
+            docker image rm "${DOCKER_REGISTRY}bsp:builder" &>/dev/null || true
+        fi
+
+        DOCKER_BUILDER="$(docker image ls "-qf=reference=${DOCKER_REGISTRY}bsp:builder")"
+        if [[ -z $DOCKER_BUILDER ]]
+        then
+            docker tag "${DOCKER_REGISTRY}bsp:main" "${DOCKER_REGISTRY}bsp:builder"
+        fi
+
+        DOCKER_OPTIONS=( "--name" "bsp" )
+        DOCKER_OPTIONS+=( "--workdir" "$PWD" )
+        DOCKER_OPTIONS+=( "--mount" "type=bind,source=$PWD,destination=$PWD" )
+        if [[ -t 0 ]]
+        then
+            DOCKER_OPTIONS+=( "-it" )
+        fi
+        if [[ "$PWD" != "$SCRIPT_DIR" ]]
+        then
+            DOCKER_OPTIONS+=( "--mount" "type=bind,source=$SCRIPT_DIR,destination=$SCRIPT_DIR" )
+        fi
+        docker container rm bsp &>/dev/null || true
+        docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner \"$0\" --native-build ${ARGV[*]}"
+        docker commit bsp "${DOCKER_REGISTRY}bsp:builder"
+        docker container rm bsp
         return
     fi
 
