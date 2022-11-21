@@ -17,6 +17,7 @@ Supported package generation options:
     -p                      Pause after applying patches from each folder
     -n, --native-build      Build without using Docker
     -l, --local-docker      Using locally built Docker image
+    -s, --docker-shell      Start a shell inside the container instead of the build
 
 Alternative functionalities
     --json [catagory]   Print supported options in json format
@@ -111,7 +112,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnl" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnls" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker,docker-shell" -n "$0" -- "$@")"
     then
         usage
         return
@@ -125,6 +126,7 @@ main() {
     local PATCH_PAUSE=
     local NATIVE_BUILD="false"
     local DOCKER_REGISTRY="ghcr.io/radxa-repo/"
+    local DOCKER_SHELL="false"
 
     while true
     do
@@ -155,6 +157,9 @@ main() {
                 ;;
             -l|--local-docker)
                 DOCKER_REGISTRY=
+                ;;
+            -s|--docker-shell)
+                DOCKER_SHELL="true"
                 ;;
             --json)
                 json "$@"
@@ -222,9 +227,14 @@ main() {
             DOCKER_OPTIONS+=( "--mount" "type=bind,source=$SCRIPT_DIR,destination=$SCRIPT_DIR" )
         fi
         docker container rm bsp &>/dev/null || true
-        docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner \"$0\" --native-build ${ARGV[*]}"
-        docker commit bsp "${DOCKER_REGISTRY}bsp:builder"
-        docker container rm bsp
+        if $DOCKER_SHELL
+        then
+            docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner -i"
+        else
+            docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner \"$0\" --native-build ${ARGV[*]}"
+            docker commit bsp "${DOCKER_REGISTRY}bsp:builder"
+            docker container rm bsp
+        fi
         return
     fi
 
