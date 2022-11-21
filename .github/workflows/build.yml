@@ -9,10 +9,12 @@ on:
     paths-ignore:
       - '**.md'
       - .gitignore
+      - docker/Dockerfile
   pull_request:
     paths-ignore:
       - '**.md'
       - .gitignore
+      - docker/Dockerfile
 
 jobs:
   query:
