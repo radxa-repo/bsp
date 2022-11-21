@@ -78,10 +78,10 @@ git_source() {
 
     if ! [[ -e "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER" ]]
     then
-        local git_branch="$2"
-        if [[ -n $git_branch ]]
+        local git_branch
+        if (( $# > 1 )) && [[ -n $2 ]]
         then
-            git_branch="--branch $git_branch"
+            git_branch="--branch $2"
         fi
 
         git clone --depth 1 $git_branch "$git_url" "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"

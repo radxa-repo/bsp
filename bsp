@@ -188,7 +188,7 @@ main() {
         u-boot)
             load_edition u-boot "$1"
 
-            if [[ -n "$2" ]]
+            if (( $# > 1 )) && [[ -n "$2" ]]
             then
                 if ! in_array "$2" "${SUPPORTED_BOARDS[@]}"
                 then
