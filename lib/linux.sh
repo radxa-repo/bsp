@@ -23,7 +23,7 @@ bsp_make() {
     local kernelversion="$(bsp_version)"
 
     make -C "$TARGET_DIR" -j$(nproc) \
-        ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE \
+        ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE HOSTCC=${CROSS_COMPILE}gcc \
         KDEB_COMPRESS="xz" KDEB_CHANGELOG_DIST="unstable" DPKG_FLAGS=$BSP_DPKG_FLAGS \
         LOCALVERSION=-$FORK KERNELRELEASE=$kernelversion-$FORK KDEB_PKGVERSION=$kernelversion-$PKG_REVISION-$SOURCE_GITREV \
         $@
