@@ -17,6 +17,7 @@ bsp_reset() {
 
     RKBIN_DDR=
     RKMINILOADER=
+    USE_ATF=
 }
 
 bsp_version() {

@@ -78,7 +78,7 @@ git_source() {
 
     if ! [[ -e "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER" ]]
     then
-        local git_branch
+        local git_branch=
         if (( $# > 1 )) && [[ -n $2 ]]
         then
             git_branch="--branch $2"
@@ -94,7 +94,7 @@ git_source() {
 }
 
 git_am() {
-    if [[ -n "$__CUSTOM_SOURCE_FOLDER" ]]
+    if [[ -v __CUSTOM_SOURCE_FOLDER ]] && [[ -n "$__CUSTOM_SOURCE_FOLDER" ]]
     then
         local patch="$(realpath "$1")"
         pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
@@ -104,7 +104,7 @@ git_am() {
 }
 
 source_cp() {
-    if [[ -n "$__CUSTOM_SOURCE_FOLDER" ]]
+    if [[ -v __CUSTOM_SOURCE_FOLDER ]] && [[ -n "$__CUSTOM_SOURCE_FOLDER" ]]
     then
         local file="$(realpath "$1")"
         cp "$file" "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER/$2"
