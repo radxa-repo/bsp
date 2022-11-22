@@ -82,7 +82,8 @@ update_spi() {
 
 }
 
-set -e
+set -euo pipefail
+shopt -s nullglob
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 

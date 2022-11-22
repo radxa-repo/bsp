@@ -1,4 +1,5 @@
 set -euo pipefail
+shopt -s nullglob
 
 LC_ALL="C"
 LANG="C"
@@ -167,7 +168,6 @@ prepare_source() {
 
         for d in $(find -L $fork_dir -type d | sort -r)
         do
-            shopt -s nullglob
             for f in $d/*.sh
             do
                 if [[ $(type -t custom_source_action) == function ]]
@@ -186,14 +186,14 @@ prepare_source() {
                     popd
                 fi
             done
-            shopt -u nullglob
         done
 
         for d in $(find -L $fork_dir -type d | sort)
         do
-            if ls $d/*.patch &>/dev/null
+            local patches=( $d/*.patch )
+            if (( ${#patches[@]} ))
             then
-                git am --reject --whitespace=fix $(ls $d/*.patch)
+                git am --reject --whitespace=fix "${patches[@]}"
                 echo "Patchset $(basename $d) has been applied."
                 if [[ "$PATCH_PAUSE" == "yes" ]]
                 then
