@@ -79,15 +79,19 @@ git_source() {
 
     if ! [[ -e "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER" ]]
     then
-        local git_branch=
-        if (( $# > 1 )) && [[ -n $2 ]]
-        then
-            git_branch="--branch $2"
-        fi
-
-        git clone --depth 1 $git_branch "$git_url" "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
+        mkdir -p "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
         pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
-        git_repo_config
+            git init
+            git_repo_config
+            git remote add origin $git_url 2>/dev/null && true
+            if (( ${#2} == 40))
+            then
+                git fetch --depth 1 origin $2
+                git switch --detach $2
+            else
+                git fetch --depth 1 origin tag $2
+                git switch --detach tags//$2
+            fi
         popd
     else
         unset __CUSTOM_SOURCE_FOLDER
