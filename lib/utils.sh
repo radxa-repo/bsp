@@ -90,7 +90,7 @@ git_source() {
                 git switch --detach $2
             else
                 git fetch --depth 1 origin tag $2
-                git switch --detach tags//$2
+                git switch --detach tags/$2
             fi
         popd
     else
