@@ -17,6 +17,60 @@ maskrom() {
     esac
 }
 
+maskrom_update_bootloader() {
+    local SOC=${1:-$(dtsoc)}
+
+    case "$SOC" in
+        amlogic*)
+            echo "Amlogic device supports running U-Boot binary from maskrom mode." >&2
+            echo "Please retry with update_bootloader command." >&2
+            return 3
+            ;;
+        rockchip*)
+            rkdeveloptool wl 64 "$SCRIPT_DIR/idbloader.img"
+            if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
+            then
+                rkdeveloptool wl 16384 "$SCRIPT_DIR/u-boot.itb"
+            elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
+            then
+                rkdeveloptool wl 16384 "$SCRIPT_DIR/uboot.img"
+                rkdeveloptool wl 24576 "$SCRIPT_DIR/trust.img"
+            else
+                echo "Missing U-Boot binary!" >&2
+                return 2
+            fi
+            ;;
+        *)
+            echo "Unknown SOC." >&2
+            return 1
+            ;;
+    esac
+}
+
+maskrom_dump() {
+    local SOC=${1:-$(dtsoc)}
+    local OUTPUT=${2:-dump.img}
+
+    case "$SOC" in
+        amlogic*)
+            echo "Amlogic device supports running U-Boot binary from maskrom mode." >&2
+            echo "Please retry with update_bootloader command." >&2
+            return 3
+            ;;
+        rockchip*)
+            echo "eMMC dump will continue indefinitely."
+            echo "Please manually interrupt the process (Ctrl+C)"
+            echo "  once the image size is larger than your eMMC size."
+            echo "Writting to $OUTPUT..."
+            rkdeveloptool rl 0 -1 "$OUTPUT"
+            ;;
+        *)
+            echo "Unknown SOC." >&2
+            return 1
+            ;;
+    esac
+}
+
 update_bootloader() {
     local DEVICE=$1
     local SOC=${2:-$(dtsoc)}
