@@ -195,6 +195,7 @@ main() {
     if ! $NATIVE_BUILD
     then
         local DOCKER_IMAGE="$(docker image ls "-qf=reference=${DOCKER_REGISTRY}bsp:main")"
+        local DOCKER_EXIT_CODE=0
 
         if [[ -z $DOCKER_REGISTRY ]]
         then
@@ -229,13 +230,19 @@ main() {
         docker container rm bsp &>/dev/null || true
         if $DOCKER_SHELL
         then
-            docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner -i"
+            if ! docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner -i"
+            then
+                DOCKER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
+            fi
         else
-            docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner \"$0\" --native-build ${ARGV[*]}"
+            if ! docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner \"$0\" --native-build ${ARGV[*]}"
+            then
+                DOCKER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
+            fi
             docker commit bsp "${DOCKER_REGISTRY}bsp:builder"
             docker container rm bsp
         fi
-        return
+        return $DOCKER_EXIT_CODE
     fi
 
     TEMP="$1"
