@@ -93,8 +93,11 @@ git_source() {
 
         if (( ${#2} == 40))
         then
-            git fetch --depth 1 $origin $2
-            git switch --detach $2
+            if [[ "$(git rev-parse FETCH_HEAD)" != "$2" ]]
+            then
+                git fetch --depth 1 $origin $2
+                git switch --detach $2
+            fi
         else
             git fetch --depth 1 $origin tag $2
             git switch --detach tags/$2
@@ -155,8 +158,11 @@ prepare_source() {
 
         if [[ -n $BSP_COMMIT ]]
         then
-            git fetch --depth 1 $origin $BSP_COMMIT
-            git switch --detach $BSP_COMMIT
+            if [[ "$(git rev-parse FETCH_HEAD)" != "$BSP_COMMIT" ]]
+            then
+                git fetch --depth 1 $origin $BSP_COMMIT
+                git switch --detach $BSP_COMMIT
+            fi
         elif [[ -n $BSP_TAG ]]
         then
             git fetch --depth 1 $origin tag $BSP_TAG
