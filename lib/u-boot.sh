@@ -81,8 +81,8 @@ rkpack_idbloader() {
     local flash_data=
     if [[ -n $RKBIN_DDR ]]
     then
-        flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN_DDR} | sort | tail -n 1)"
-        if [[ -z $flash_data ]]
+        
+        if ! flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN_DDR} | sort | tail -n 1)" || [[ -z $flash_data ]]
         then
             error $EXIT_UNKNOWN_OPTION "$RKBIN_DDR"
         else
