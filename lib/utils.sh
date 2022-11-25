@@ -77,43 +77,44 @@ git_source() {
     __CUSTOM_SOURCE_FOLDER="$(basename $git_url)"
     __CUSTOM_SOURCE_FOLDER="${__CUSTOM_SOURCE_FOLDER%.*}"
 
-    if ! [[ -e "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER" ]]
-    then
-        mkdir -p "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
-        pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
-            git init
-            git_repo_config
-            git remote add origin $git_url 2>/dev/null && true
-            if (( ${#2} == 40))
-            then
-                git fetch --depth 1 origin $2
-                git switch --detach $2
-            else
-                git fetch --depth 1 origin tag $2
-                git switch --detach tags/$2
-            fi
-        popd
-    else
-        unset __CUSTOM_SOURCE_FOLDER
-    fi
+    mkdir -p "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
+    pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
+        git init
+        git_repo_config
+        git am --abort &>/dev/null || true
+        if [[ -n $(git status -s) ]]
+        then
+            git reset --hard FETCH_HEAD || true
+            git clean -ffd
+        fi
+
+        local origin=$(sha1sum <(echo "$git_url") | cut -d' ' -f1)
+        git remote add $origin $git_url 2>/dev/null && true
+
+        if (( ${#2} == 40))
+        then
+            git fetch --depth 1 $origin $2
+            git switch --detach $2
+        else
+            git fetch --depth 1 $origin tag $2
+            git switch --detach tags/$2
+        fi
+
+        git reset --hard FETCH_HEAD
+        git clean -ffd
+    popd
 }
 
 git_am() {
-    if [[ -v __CUSTOM_SOURCE_FOLDER ]] && [[ -n "$__CUSTOM_SOURCE_FOLDER" ]]
-    then
-        local patch="$(realpath "$1")"
-        pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
-        git am --reject --whitespace=fix "$patch"
-        popd
-    fi
+    local patch="$(realpath "$1")"
+    pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
+    git am --reject --whitespace=fix "$patch"
+    popd
 }
 
 source_cp() {
-    if [[ -v __CUSTOM_SOURCE_FOLDER ]] && [[ -n "$__CUSTOM_SOURCE_FOLDER" ]]
-    then
-        local file="$(realpath "$1")"
-        cp "$file" "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER/$2"
-    fi
+    local file="$(realpath "$1")"
+    cp "$file" "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER/$2"
 }
 
 prepare_source() {
