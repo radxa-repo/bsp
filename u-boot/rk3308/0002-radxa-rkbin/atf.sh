@@ -1,1 +1,0 @@
-../../.rockchip/atf.sh
