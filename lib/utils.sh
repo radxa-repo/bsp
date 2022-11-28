@@ -97,6 +97,7 @@ git_source() {
             then
                 git fetch --depth 1 $origin $2
                 git switch --detach $2
+                git tag -f tag_$2
             fi
         else
             git fetch --depth 1 $origin tag $2
@@ -162,6 +163,7 @@ prepare_source() {
             then
                 git fetch --depth 1 $origin $BSP_COMMIT
                 git switch --detach $BSP_COMMIT
+                git tag -f tag_$BSP_COMMIT
             fi
         elif [[ -n $BSP_TAG ]]
         then
