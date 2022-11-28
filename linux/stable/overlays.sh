@@ -1,4 +1,4 @@
 custom_source_action() {
-    git_source https://github.com/radxa/overlays.git b2867b4c753c4a304b847d41f6e8db359953662a
+    git_source https://github.com/radxa/overlays.git c9c73f94114160693a5d571432630c39c0671742
     cp -r $SCRIPT_DIR/.src/overlays/arch $TARGET_DIR
 }
