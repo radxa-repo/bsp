@@ -138,7 +138,7 @@ prepare_source() {
 
     pushd "$TARGET_DIR"
 
-        if [[ $NO_PREPARE_SOURCE == "yes" ]]
+        if $NO_PREPARE_SOURCE
         then
             SOURCE_GITREV="$(git rev-parse --short FETCH_HEAD^{commit}).dirty"
             popd
@@ -208,7 +208,7 @@ prepare_source() {
             then
                 git am --reject --whitespace=fix "${patches[@]}"
                 echo "Patchset $(basename $d) has been applied."
-                if [[ "$PATCH_PAUSE" == "yes" ]]
+                if $PATCH_PAUSE
                 then
                     read -p "Please press enter to continue processing the next patchset: "
                 fi

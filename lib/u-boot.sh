@@ -17,7 +17,7 @@ bsp_reset() {
 
     RKBIN_DDR=
     RKMINILOADER=
-    USE_ATF=
+    USE_ATF="false"
 }
 
 bsp_version() {
@@ -46,13 +46,13 @@ bsp_prepare() {
 
     case "$soc_family" in
         amlogic)
-            if [[ $USE_ATF == "yes" ]]
+            if $USE_ATF
             then
                 make -C "$SCRIPT_DIR/.src/arm-trusted-firmware" -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE PLAT=$BSP_BL31_OVERRIDE
             fi
             ;;
         rockchip)
-            if [[ $USE_ATF == "yes" ]]
+            if $USE_ATF
             then
                 make -C "$SCRIPT_DIR/.src/arm-trusted-firmware" -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE PLAT=$BSP_BL31_OVERRIDE
                 BSP_MAKE_EXTRA+=("BL31=$SCRIPT_DIR/.src/arm-trusted-firmware/build/$BSP_BL31_OVERRIDE/release/bl31/bl31.elf")
