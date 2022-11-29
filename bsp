@@ -286,6 +286,7 @@ main() {
                     bsp_profile_override
                 fi
 
+                echo "Start building for $BOARD..."
                 build
                 bsp_preparedeb
                 SOURCE_GITREV_OVERRIDE="${SOURCE_GITREV_OVERRIDE:-$SOURCE_GITREV}"
