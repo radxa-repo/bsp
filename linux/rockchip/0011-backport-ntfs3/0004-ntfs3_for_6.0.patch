@@ -1,0 +1,3615 @@
+From b7b6160d0eb922c44d174f7e1199713e4285c54e Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Fri, 6 May 2022 19:29:41 +0300
+Subject: [PATCH 01/39] fs/ntfs3: Refactoring of indx_find function
+
+This commit makes function a bit more readable
+
+Cc: Joe Perches <joe@perches.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/index.c | 25 +++++++++----------------
+ 1 file changed, 9 insertions(+), 16 deletions(-)
+
+diff --git a/fs/ntfs3/index.c b/fs/ntfs3/index.c
+index 6f81e3a49abfb3..8468cca5d54d81 100644
+--- a/fs/ntfs3/index.c
++++ b/fs/ntfs3/index.c
+@@ -1042,19 +1042,16 @@ int indx_find(struct ntfs_index *indx, struct ntfs_inode *ni,
+ {
+ 	int err;
+ 	struct NTFS_DE *e;
+-	const struct INDEX_HDR *hdr;
+ 	struct indx_node *node;
+ 
+ 	if (!root)
+ 		root = indx_get_root(&ni->dir, ni, NULL, NULL);
+ 
+ 	if (!root) {
+-		err = -EINVAL;
+-		goto out;
++		/* Should not happen. */
++		return -EINVAL;
+ 	}
+ 
+-	hdr = &root->ihdr;
+-
+ 	/* Check cache. */
+ 	e = fnd->level ? fnd->de[fnd->level - 1] : fnd->root_de;
+ 	if (e && !de_is_last(e) &&
+@@ -1068,39 +1065,35 @@ int indx_find(struct ntfs_index *indx, struct ntfs_inode *ni,
+ 	fnd_clear(fnd);
+ 
+ 	/* Lookup entry that is <= to the search value. */
+-	e = hdr_find_e(indx, hdr, key, key_len, ctx, diff);
++	e = hdr_find_e(indx, &root->ihdr, key, key_len, ctx, diff);
+ 	if (!e)
+ 		return -EINVAL;
+ 
+ 	fnd->root_de = e;
+-	err = 0;
+ 
+ 	for (;;) {
+ 		node = NULL;
+-		if (*diff >= 0 || !de_has_vcn_ex(e)) {
+-			*entry = e;
+-			goto out;
+-		}
++		if (*diff >= 0 || !de_has_vcn_ex(e))
++			break;
+ 
+ 		/* Read next level. */
+ 		err = indx_read(indx, ni, de_get_vbn(e), &node);
+ 		if (err)
+-			goto out;
++			return err;
+ 
+ 		/* Lookup entry that is <= to the search value. */
+ 		e = hdr_find_e(indx, &node->index->ihdr, key, key_len, ctx,
+ 			       diff);
+ 		if (!e) {
+-			err = -EINVAL;
+ 			put_indx_node(node);
+-			goto out;
++			return -EINVAL;
+ 		}
+ 
+ 		fnd_push(fnd, node, e);
+ 	}
+ 
+-out:
+-	return err;
++	*entry = e;
++	return 0;
+ }
+ 
+ int indx_find_sort(struct ntfs_index *indx, struct ntfs_inode *ni,
+
+From cd39981fb92adf0cc736112f87e3e61602baa415 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Wed, 11 May 2022 19:58:36 +0300
+Subject: [PATCH 02/39] fs/ntfs3: Fix double free on remount
+
+Pointer to options was freed twice on remount
+Fixes xfstest generic/361
+Fixes: 82cae269cfa9 ("fs/ntfs3: Add initialization of super block")
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/super.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/fs/ntfs3/super.c b/fs/ntfs3/super.c
+index 278dcf50241023..4b0dad2ac5988c 100644
+--- a/fs/ntfs3/super.c
++++ b/fs/ntfs3/super.c
+@@ -30,6 +30,7 @@
+ #include <linux/fs_context.h>
+ #include <linux/fs_parser.h>
+ #include <linux/log2.h>
++#include <linux/minmax.h>
+ #include <linux/module.h>
+ #include <linux/nls.h>
+ #include <linux/seq_file.h>
+@@ -390,7 +391,7 @@ static int ntfs_fs_reconfigure(struct fs_context *fc)
+ 		return -EINVAL;
+ 	}
+ 
+-	memcpy(sbi->options, new_opts, sizeof(*new_opts));
++	swap(sbi->options, fc->fs_private);
+ 
+ 	return 0;
+ }
+@@ -897,6 +898,8 @@ static int ntfs_fill_super(struct super_block *sb, struct fs_context *fc)
+ 	ref.high = 0;
+ 
+ 	sbi->sb = sb;
++	sbi->options = fc->fs_private;
++	fc->fs_private = NULL;
+ 	sb->s_flags |= SB_NODIRATIME;
+ 	sb->s_magic = 0x7366746e; // "ntfs"
+ 	sb->s_op = &ntfs_sops;
+@@ -1260,8 +1263,6 @@ static int ntfs_fill_super(struct super_block *sb, struct fs_context *fc)
+ 		goto put_inode_out;
+ 	}
+ 
+-	fc->fs_private = NULL;
+-
+ 	return 0;
+ 
+ put_inode_out:
+@@ -1414,7 +1415,6 @@ static int ntfs_init_fs_context(struct fs_context *fc)
+ 	mutex_init(&sbi->compress.mtx_lzx);
+ #endif
+ 
+-	sbi->options = opts;
+ 	fc->s_fs_info = sbi;
+ ok:
+ 	fc->fs_private = opts;
+
+From 19d1b7872d1ebf0658b5032b79f536a715303ee4 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Thu, 12 May 2022 12:25:48 +0300
+Subject: [PATCH 03/39] fs/ntfs3: Refactor ni_try_remove_attr_list function
+
+Now we save a copy of primary record for restoration.
+Also now we remove all attributes from subrecords.
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/frecord.c | 49 ++++++++++++++++++++++++++++++++++------------
+ fs/ntfs3/record.c  |  5 ++---
+ 2 files changed, 39 insertions(+), 15 deletions(-)
+
+diff --git a/fs/ntfs3/frecord.c b/fs/ntfs3/frecord.c
+index 18842998c8fa3b..3576268ee0a1d5 100644
+--- a/fs/ntfs3/frecord.c
++++ b/fs/ntfs3/frecord.c
+@@ -7,6 +7,7 @@
+ 
+ #include <linux/fiemap.h>
+ #include <linux/fs.h>
++#include <linux/minmax.h>
+ #include <linux/vmalloc.h>
+ 
+ #include "debug.h"
+@@ -649,6 +650,7 @@ static int ni_try_remove_attr_list(struct ntfs_inode *ni)
+ 	struct mft_inode *mi;
+ 	u32 asize, free;
+ 	struct MFT_REF ref;
++	struct MFT_REC *mrec;
+ 	__le16 id;
+ 
+ 	if (!ni->attr_list.dirty)
+@@ -692,11 +694,17 @@ static int ni_try_remove_attr_list(struct ntfs_inode *ni)
+ 		free -= asize;
+ 	}
+ 
++	/* Make a copy of primary record to restore if error. */
++	mrec = kmemdup(ni->mi.mrec, sbi->record_size, GFP_NOFS);
++	if (!mrec)
++		return 0; /* Not critical. */
++
+ 	/* It seems that attribute list can be removed from primary record. */
+ 	mi_remove_attr(NULL, &ni->mi, attr_list);
+ 
+ 	/*
+-	 * Repeat the cycle above and move all attributes to primary record.
++	 * Repeat the cycle above and copy all attributes to primary record.
++	 * Do not remove original attributes from subrecords!
+ 	 * It should be success!
+ 	 */
+ 	le = NULL;
+@@ -707,14 +715,14 @@ static int ni_try_remove_attr_list(struct ntfs_inode *ni)
+ 		mi = ni_find_mi(ni, ino_get(&le->ref));
+ 		if (!mi) {
+ 			/* Should never happened, 'cause already checked. */
+-			goto bad;
++			goto out;
+ 		}
+ 
+ 		attr = mi_find_attr(mi, NULL, le->type, le_name(le),
+ 				    le->name_len, &le->id);
+ 		if (!attr) {
+ 			/* Should never happened, 'cause already checked. */
+-			goto bad;
++			goto out;
+ 		}
+ 		asize = le32_to_cpu(attr->size);
+ 
+@@ -724,18 +732,33 @@ static int ni_try_remove_attr_list(struct ntfs_inode *ni)
+ 					  le16_to_cpu(attr->name_off));
+ 		if (!attr_ins) {
+ 			/*
+-			 * Internal error.
+-			 * Either no space in primary record (already checked).
+-			 * Either tried to insert another
+-			 * non indexed attribute (logic error).
++			 * No space in primary record (already checked).
+ 			 */
+-			goto bad;
++			goto out;
+ 		}
+ 
+ 		/* Copy all except id. */
+ 		id = attr_ins->id;
+ 		memcpy(attr_ins, attr, asize);
+ 		attr_ins->id = id;
++	}
++
++	/*
++	 * Repeat the cycle above and remove all attributes from subrecords.
++	 */
++	le = NULL;
++	while ((le = al_enumerate(ni, le))) {
++		if (!memcmp(&le->ref, &ref, sizeof(ref)))
++			continue;
++
++		mi = ni_find_mi(ni, ino_get(&le->ref));
++		if (!mi)
++			continue;
++
++		attr = mi_find_attr(mi, NULL, le->type, le_name(le),
++				    le->name_len, &le->id);
++		if (!attr)
++			continue;
+ 
+ 		/* Remove from original record. */
+ 		mi_remove_attr(NULL, mi, attr);
+@@ -748,11 +771,13 @@ static int ni_try_remove_attr_list(struct ntfs_inode *ni)
+ 	ni->attr_list.le = NULL;
+ 	ni->attr_list.dirty = false;
+ 
++	kfree(mrec);
++	return 0;
++out:
++	/* Restore primary record. */
++	swap(mrec, ni->mi.mrec);
++	kfree(mrec);
+ 	return 0;
+-bad:
+-	ntfs_inode_err(&ni->vfs_inode, "Internal error");
+-	make_bad_inode(&ni->vfs_inode);
+-	return -EINVAL;
+ }
+ 
+ /*
+diff --git a/fs/ntfs3/record.c b/fs/ntfs3/record.c
+index 861e35791506e8..8fe0a876400ad4 100644
+--- a/fs/ntfs3/record.c
++++ b/fs/ntfs3/record.c
+@@ -445,12 +445,11 @@ struct ATTRIB *mi_insert_attr(struct mft_inode *mi, enum ATTR_TYPE type,
+ 	attr = NULL;
+ 	while ((attr = mi_enum_attr(mi, attr))) {
+ 		diff = compare_attr(attr, type, name, name_len, upcase);
+-		if (diff > 0)
+-			break;
++
+ 		if (diff < 0)
+ 			continue;
+ 
+-		if (!is_attr_indexed(attr))
++		if (!diff && !is_attr_indexed(attr))
+ 			return NULL;
+ 		break;
+ 	}
+
+From 37a530bfe56ca9a0d3129598803f2794c7428aae Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Thu, 26 May 2022 12:51:03 +0300
+Subject: [PATCH 04/39] fs/ntfs3: Fix missing i_op in ntfs_read_mft
+
+There is null pointer dereference because i_op == NULL.
+The bug happens because we don't initialize i_op for records in $Extend.
+Fixes: 82cae269cfa9 ("fs/ntfs3: Add initialization of super block")
+
+Reported-by: Liangbin Lian <jjm2473@gmail.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/inode.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/fs/ntfs3/inode.c b/fs/ntfs3/inode.c
+index 38045264a61bd1..6c78930be03575 100644
+--- a/fs/ntfs3/inode.c
++++ b/fs/ntfs3/inode.c
+@@ -430,6 +430,7 @@ static struct inode *ntfs_read_mft(struct inode *inode,
+ 	} else if (fname && fname->home.low == cpu_to_le32(MFT_REC_EXTEND) &&
+ 		   fname->home.seq == cpu_to_le16(MFT_REC_EXTEND)) {
+ 		/* Records in $Extend are not a files or general directories. */
++		inode->i_op = &ntfs_file_inode_operations;
+ 	} else {
+ 		err = -EINVAL;
+ 		goto out;
+
+From 548744f84456946181ed6dc0ac6be8267f167d28 Mon Sep 17 00:00:00 2001
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Thu, 23 Dec 2021 15:20:00 +0300
+Subject: [PATCH 05/39] fs/ntfs3: Remove a useless test
+
+'new_free' has just been allocated by kmalloc() and is known to be not
+NULL.
+So this pointer can't be equal to a previous memory allocation.
+
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/bitmap.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/fs/ntfs3/bitmap.c b/fs/ntfs3/bitmap.c
+index aa184407520f02..e3b5680fd51689 100644
+--- a/fs/ntfs3/bitmap.c
++++ b/fs/ntfs3/bitmap.c
+@@ -1333,9 +1333,7 @@ int wnd_extend(struct wnd_bitmap *wnd, size_t new_bits)
+ 		if (!new_free)
+ 			return -ENOMEM;
+ 
+-		if (new_free != wnd->free_bits)
+-			memcpy(new_free, wnd->free_bits,
+-			       wnd->nwnd * sizeof(short));
++		memcpy(new_free, wnd->free_bits, wnd->nwnd * sizeof(short));
+ 		memset(new_free + wnd->nwnd, 0,
+ 		       (new_wnd - wnd->nwnd) * sizeof(short));
+ 		kfree(wnd->free_bits);
+
+From 560e613352b4a65c5c397e689a997fb04bd5f928 Mon Sep 17 00:00:00 2001
+From: Colin Ian King <colin.i.king@gmail.com>
+Date: Thu, 30 Dec 2021 18:59:00 +0300
+Subject: [PATCH 06/39] fs/ntfs3: Remove redundant assignment to variable frame
+
+Variable frame is assigned a value that is never read. The
+assignment is redundant and can be removed. Cleans up the
+clang-scan build warning:
+
+fs/ntfs3/file.c:995:3: warning: Value stored to 'frame' is
+never read [deadcode.DeadStores]
+                frame = pos >> frame_bits;
+
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/file.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/fs/ntfs3/file.c b/fs/ntfs3/file.c
+index 3bae76930e68a0..27c32692513c45 100644
+--- a/fs/ntfs3/file.c
++++ b/fs/ntfs3/file.c
+@@ -992,7 +992,6 @@ static ssize_t ntfs_compress_write(struct kiocb *iocb, struct iov_iter *from)
+ 		if (bytes > count)
+ 			bytes = count;
+ 
+-		frame = pos >> frame_bits;
+ 		frame_vbo = pos & ~(frame_size - 1);
+ 		index = frame_vbo >> PAGE_SHIFT;
+ 
+
+From dc8965ab5e338abfd8dfd65d12a62ad5be65a776 Mon Sep 17 00:00:00 2001
+From: Colin Ian King <colin.i.king@gmail.com>
+Date: Mon, 18 Apr 2022 17:00:00 +0300
+Subject: [PATCH 07/39] fs/ntfs3: Remove redundant assignment to variable vcn
+
+Variable vcn is being assigned a value that is never read, it is
+being re-assigned again in the initialization of a for-loop.  The
+assignment is redundant and can be removed.
+
+Cleans up clang scan build warning:
+fs/ntfs3/attrib.c:1176:7: warning: Value stored to 'vcn' during its
+initialization is never read [deadcode.DeadStores]
+
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+Reviewed-by: Kari Argillander <kari.argillander@gmail.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index e8c00dda42adbb..fc0623b029e6bf 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -1173,7 +1173,7 @@ int attr_load_runs_range(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ {
+ 	struct ntfs_sb_info *sbi = ni->mi.sbi;
+ 	u8 cluster_bits = sbi->cluster_bits;
+-	CLST vcn = from >> cluster_bits;
++	CLST vcn;
+ 	CLST vcn_last = (to - 1) >> cluster_bits;
+ 	CLST lcn, clen;
+ 	int err;
+
+From ae5a4e46916fc307288227b64c1d062352eb93b7 Mon Sep 17 00:00:00 2001
+From: Yan Lei <chinayanlei2002@163.com>
+Date: Sun, 10 Apr 2022 09:09:00 +0300
+Subject: [PATCH 08/39] fs/ntfs3: Fix using uninitialized value n when calling
+ indx_read
+
+This value is checked in indx_read, so it must be initialized
+Fixes: 82cae269cfa9 ("fs/ntfs3: Add initialization of super block")
+
+Signed-off-by: Yan Lei <chinayanlei2002@163.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/index.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/ntfs3/index.c b/fs/ntfs3/index.c
+index 8468cca5d54d81..84ccc140987474 100644
+--- a/fs/ntfs3/index.c
++++ b/fs/ntfs3/index.c
+@@ -1987,7 +1987,7 @@ static int indx_free_children(struct ntfs_index *indx, struct ntfs_inode *ni,
+ 			      const struct NTFS_DE *e, bool trim)
+ {
+ 	int err;
+-	struct indx_node *n;
++	struct indx_node *n = NULL;
+ 	struct INDEX_HDR *hdr;
+ 	CLST vbn = de_get_vbn(e);
+ 	size_t i;
+
+From 19e890ff3bedc36fe3cd1cb7d03bfb66c5fdf1db Mon Sep 17 00:00:00 2001
+From: Yang Xu <xuyang2018.jy@fujitsu.com>
+Date: Wed, 20 Apr 2022 11:48:00 +0300
+Subject: [PATCH 09/39] fs/ntfs3: Use the same order for acl pointer check in
+ ntfs_init_acl
+
+For the readability and unity of the code, adjust the order
+
+Signed-off-by: Yang Xu <xuyang2018.jy@fujitsu.com>
+Reviewed-by: Kari Argillander <kari.argillander@gmail.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/xattr.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/ntfs3/xattr.c b/fs/ntfs3/xattr.c
+index 5e0e0280e70deb..2d29afe4b40b17 100644
+--- a/fs/ntfs3/xattr.c
++++ b/fs/ntfs3/xattr.c
+@@ -706,13 +706,13 @@ int ntfs_init_acl(struct user_namespace *mnt_userns, struct inode *inode,
+ 		inode->i_default_acl = NULL;
+ 	}
+ 
+-	if (!acl)
+-		inode->i_acl = NULL;
+-	else {
++	if (acl) {
+ 		if (!err)
+ 			err = ntfs_set_acl_ex(mnt_userns, inode, acl,
+ 					      ACL_TYPE_ACCESS, true);
+ 		posix_acl_release(acl);
++	} else {
++		inode->i_acl = NULL;
+ 	}
+ 
+ 	return err;
+
+From 926034353d3c67db1ffeab47dcb7f6bdac02a263 Mon Sep 17 00:00:00 2001
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 9 May 2022 12:03:00 +0300
+Subject: [PATCH 10/39] fs/ntfs3: Don't clear upper bits accidentally in
+ log_replay()
+
+The "vcn" variable is a 64 bit.  The "log->clst_per_page" variable is a
+u32.  This means that the mask accidentally clears out the high 32 bits
+when it was only supposed to clear some low bits.  Fix this by adding a
+cast to u64.
+
+Fixes: b46acd6a6a62 ("fs/ntfs3: Add NTFS journal")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Reviewed-by: Namjae Jeon <linkinjeon@kernel.org>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/fslog.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/ntfs3/fslog.c b/fs/ntfs3/fslog.c
+index 49b7df6167785d..614513460b8e0f 100644
+--- a/fs/ntfs3/fslog.c
++++ b/fs/ntfs3/fslog.c
+@@ -5057,7 +5057,7 @@ int log_replay(struct ntfs_inode *ni, bool *initialized)
+ 		goto add_allocated_vcns;
+ 
+ 	vcn = le64_to_cpu(lrh->target_vcn);
+-	vcn &= ~(log->clst_per_page - 1);
++	vcn &= ~(u64)(log->clst_per_page - 1);
+ 
+ add_allocated_vcns:
+ 	for (i = 0, vcn = le64_to_cpu(lrh->target_vcn),
+
+From f759942b72a9ad309282b2fedcebcee3c4c58e24 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Mon, 6 Jun 2022 18:57:21 +0300
+Subject: [PATCH 11/39] fs/ntfs3: Add missing error check
+
+We must check return value of log_read_rst
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/fslog.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/fs/ntfs3/fslog.c b/fs/ntfs3/fslog.c
+index 614513460b8e0f..e7c494005122c0 100644
+--- a/fs/ntfs3/fslog.c
++++ b/fs/ntfs3/fslog.c
+@@ -3843,6 +3843,8 @@ int log_replay(struct ntfs_inode *ni, bool *initialized)
+ 
+ 	memset(&rst_info2, 0, sizeof(struct restart_info));
+ 	err = log_read_rst(log, l_size, false, &rst_info2);
++	if (err)
++		goto out;
+ 
+ 	/* Determine which restart area to use. */
+ 	if (!rst_info2.restart || rst_info2.last_lsn <= rst_info.last_lsn)
+
+From aa30eccb24e5a66a2cf7f7b34a69c3651d12cc6a Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Tue, 21 Jun 2022 12:46:25 +0300
+Subject: [PATCH 12/39] fs/ntfs3: Fallocate (FALLOC_FL_INSERT_RANGE)
+ implementation
+
+Add functions for inserting hole in file and inserting range in run.
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c  | 176 +++++++++++++++++++++++++++++++++++++++++++++
+ fs/ntfs3/ntfs_fs.h |   4 +-
+ fs/ntfs3/run.c     |  43 +++++++++++
+ 3 files changed, 222 insertions(+), 1 deletion(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index fc0623b029e6bf..86e688b95ad574 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -2081,3 +2081,179 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 
+ 	return err;
+ }
++
++/*
++ * attr_insert_range - Insert range (hole) in file.
++ * Not for normal files.
++ */
++int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
++{
++	int err = 0;
++	struct runs_tree *run = &ni->file.run;
++	struct ntfs_sb_info *sbi = ni->mi.sbi;
++	struct ATTRIB *attr = NULL, *attr_b;
++	struct ATTR_LIST_ENTRY *le, *le_b;
++	struct mft_inode *mi, *mi_b;
++	CLST vcn, svcn, evcn1, len, next_svcn;
++	u64 data_size, alloc_size;
++	u32 mask;
++	__le16 a_flags;
++
++	if (!bytes)
++		return 0;
++
++	le_b = NULL;
++	attr_b = ni_find_attr(ni, NULL, &le_b, ATTR_DATA, NULL, 0, NULL, &mi_b);
++	if (!attr_b)
++		return -ENOENT;
++
++	if (!is_attr_ext(attr_b)) {
++		/* It was checked above. See fallocate. */
++		return -EOPNOTSUPP;
++	}
++
++	if (!attr_b->non_res) {
++		data_size = le32_to_cpu(attr_b->res.data_size);
++		mask = sbi->cluster_mask; /* cluster_size - 1 */
++	} else {
++		data_size = le64_to_cpu(attr_b->nres.data_size);
++		mask = (sbi->cluster_size << attr_b->nres.c_unit) - 1;
++	}
++
++	if (vbo > data_size) {
++		/* Insert range after the file size is not allowed. */
++		return -EINVAL;
++	}
++
++	if ((vbo & mask) || (bytes & mask)) {
++		/* Allow to insert only frame aligned ranges. */
++		return -EINVAL;
++	}
++
++	vcn = vbo >> sbi->cluster_bits;
++	len = bytes >> sbi->cluster_bits;
++
++	down_write(&ni->file.run_lock);
++
++	if (!attr_b->non_res) {
++		err = attr_set_size(ni, ATTR_DATA, NULL, 0, run,
++				    data_size + bytes, NULL, false, &attr);
++		if (err)
++			goto out;
++		if (!attr->non_res) {
++			/* Still resident. */
++			char *data = Add2Ptr(attr, attr->res.data_off);
++
++			memmove(data + bytes, data, bytes);
++			memset(data, 0, bytes);
++			err = 0;
++			goto out;
++		}
++		/* Resident files becomes nonresident. */
++		le_b = NULL;
++		attr_b = ni_find_attr(ni, NULL, &le_b, ATTR_DATA, NULL, 0, NULL,
++				      &mi_b);
++		if (!attr_b)
++			return -ENOENT;
++		if (!attr_b->non_res) {
++			err = -EINVAL;
++			goto out;
++		}
++		data_size = le64_to_cpu(attr_b->nres.data_size);
++		alloc_size = le64_to_cpu(attr_b->nres.alloc_size);
++	}
++
++	/*
++	 * Enumerate all attribute segments and shift start vcn.
++	 */
++	a_flags = attr_b->flags;
++	svcn = le64_to_cpu(attr_b->nres.svcn);
++	evcn1 = le64_to_cpu(attr_b->nres.evcn) + 1;
++
++	if (svcn <= vcn && vcn < evcn1) {
++		attr = attr_b;
++		le = le_b;
++		mi = mi_b;
++	} else if (!le_b) {
++		err = -EINVAL;
++		goto out;
++	} else {
++		le = le_b;
++		attr = ni_find_attr(ni, attr_b, &le, ATTR_DATA, NULL, 0, &vcn,
++				    &mi);
++		if (!attr) {
++			err = -EINVAL;
++			goto out;
++		}
++
++		svcn = le64_to_cpu(attr->nres.svcn);
++		evcn1 = le64_to_cpu(attr->nres.evcn) + 1;
++	}
++
++	run_truncate(run, 0); /* clear cached values. */
++	err = attr_load_runs(attr, ni, run, NULL);
++	if (err)
++		goto out;
++
++	if (!run_insert_range(run, vcn, len)) {
++		err = -ENOMEM;
++		goto out;
++	}
++
++	/* Try to pack in current record as much as possible. */
++	err = mi_pack_runs(mi, attr, run, evcn1 + len - svcn);
++	if (err)
++		goto out;
++
++	next_svcn = le64_to_cpu(attr->nres.evcn) + 1;
++	run_truncate_head(run, next_svcn);
++
++	while ((attr = ni_enum_attr_ex(ni, attr, &le, &mi)) &&
++	       attr->type == ATTR_DATA && !attr->name_len) {
++		le64_add_cpu(&attr->nres.svcn, len);
++		le64_add_cpu(&attr->nres.evcn, len);
++		if (le) {
++			le->vcn = attr->nres.svcn;
++			ni->attr_list.dirty = true;
++		}
++		mi->dirty = true;
++	}
++
++	/*
++	 * Update primary attribute segment in advance.
++	 * pointer attr_b may become invalid (layout of mft is changed)
++	 */
++	if (vbo <= ni->i_valid)
++		ni->i_valid += bytes;
++
++	attr_b->nres.data_size = le64_to_cpu(data_size + bytes);
++	attr_b->nres.alloc_size = le64_to_cpu(alloc_size + bytes);
++
++	/* ni->valid may be not equal valid_size (temporary). */
++	if (ni->i_valid > data_size + bytes)
++		attr_b->nres.valid_size = attr_b->nres.data_size;
++	else
++		attr_b->nres.valid_size = cpu_to_le64(ni->i_valid);
++	mi_b->dirty = true;
++
++	if (next_svcn < evcn1 + len) {
++		err = ni_insert_nonresident(ni, ATTR_DATA, NULL, 0, run,
++					    next_svcn, evcn1 + len - next_svcn,
++					    a_flags, NULL, NULL);
++		if (err)
++			goto out;
++	}
++
++	ni->vfs_inode.i_size += bytes;
++	ni->ni_flags |= NI_FLAG_UPDATE_PARENT;
++	mark_inode_dirty(&ni->vfs_inode);
++
++out:
++	run_truncate(run, 0); /* clear cached values. */
++
++	up_write(&ni->file.run_lock);
++	if (err)
++		make_bad_inode(&ni->vfs_inode);
++
++	return err;
++}
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index fb825059d48867..1f92e3a05f61e1 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -440,6 +440,7 @@ int attr_is_frame_compressed(struct ntfs_inode *ni, struct ATTRIB *attr,
+ int attr_allocate_frame(struct ntfs_inode *ni, CLST frame, size_t compr_size,
+ 			u64 new_valid);
+ int attr_collapse_range(struct ntfs_inode *ni, u64 vbo, u64 bytes);
++int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes);
+ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size);
+ 
+ /* Functions from attrlist.c */
+@@ -775,10 +776,11 @@ bool run_lookup_entry(const struct runs_tree *run, CLST vcn, CLST *lcn,
+ void run_truncate(struct runs_tree *run, CLST vcn);
+ void run_truncate_head(struct runs_tree *run, CLST vcn);
+ void run_truncate_around(struct runs_tree *run, CLST vcn);
+-bool run_lookup(const struct runs_tree *run, CLST vcn, size_t *Index);
++bool run_lookup(const struct runs_tree *run, CLST vcn, size_t *index);
+ bool run_add_entry(struct runs_tree *run, CLST vcn, CLST lcn, CLST len,
+ 		   bool is_mft);
+ bool run_collapse_range(struct runs_tree *run, CLST vcn, CLST len);
++bool run_insert_range(struct runs_tree *run, CLST vcn, CLST len);
+ bool run_get_entry(const struct runs_tree *run, size_t index, CLST *vcn,
+ 		   CLST *lcn, CLST *len);
+ bool run_is_mapped_full(const struct runs_tree *run, CLST svcn, CLST evcn);
+diff --git a/fs/ntfs3/run.c b/fs/ntfs3/run.c
+index a8fec651f97328..7609d45a2d7214 100644
+--- a/fs/ntfs3/run.c
++++ b/fs/ntfs3/run.c
+@@ -547,6 +547,49 @@ bool run_collapse_range(struct runs_tree *run, CLST vcn, CLST len)
+ 	return true;
+ }
+ 
++/* run_insert_range
++ *
++ * Helper for attr_insert_range(),
++ * which is helper for fallocate(insert_range).
++ */
++bool run_insert_range(struct runs_tree *run, CLST vcn, CLST len)
++{
++	size_t index;
++	struct ntfs_run *r, *e;
++
++	if (WARN_ON(!run_lookup(run, vcn, &index)))
++		return false; /* Should never be here. */
++
++	e = run->runs + run->count;
++	r = run->runs + index;
++
++	r = run->runs + index;
++	if (vcn > r->vcn)
++		r += 1;
++
++	for (; r < e; r++)
++		r->vcn += len;
++
++	r = run->runs + index;
++
++	if (vcn > r->vcn) {
++		/* split fragment. */
++		CLST len1 = vcn - r->vcn;
++		CLST len2 = r->len - len1;
++		CLST lcn2 = r->lcn == SPARSE_LCN ? SPARSE_LCN : (r->lcn + len1);
++
++		r->len = len1;
++
++		if (!run_add_entry(run, vcn + len, lcn2, len2, false))
++			return false;
++	}
++
++	if (!run_add_entry(run, vcn, SPARSE_LCN, len, false))
++		return false;
++
++	return true;
++}
++
+ /*
+  * run_get_entry - Return index-th mapped region.
+  */
+
+From e4d2f4fd5341064d2b3c5158da69421a581e7ec1 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Tue, 21 Jun 2022 12:49:52 +0300
+Subject: [PATCH 13/39] fs/ntfs3: Enable FALLOC_FL_INSERT_RANGE
+
+Changed logic in ntfs_fallocate - more clear checks in beginning
+instead of the middle of function and added FALLOC_FL_INSERT_RANGE.
+Fixes xfstest generic/064
+Fixes: 4342306f0f0d ("fs/ntfs3: Add file operations and implementation")
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/file.c | 97 ++++++++++++++++++++++++++++---------------------
+ 1 file changed, 55 insertions(+), 42 deletions(-)
+
+diff --git a/fs/ntfs3/file.c b/fs/ntfs3/file.c
+index 27c32692513c45..bdffe4b8554bd1 100644
+--- a/fs/ntfs3/file.c
++++ b/fs/ntfs3/file.c
+@@ -533,21 +533,35 @@ static int ntfs_truncate(struct inode *inode, loff_t new_size)
+ static long ntfs_fallocate(struct file *file, int mode, loff_t vbo, loff_t len)
+ {
+ 	struct inode *inode = file->f_mapping->host;
++	struct address_space *mapping = inode->i_mapping;
+ 	struct super_block *sb = inode->i_sb;
+ 	struct ntfs_sb_info *sbi = sb->s_fs_info;
+ 	struct ntfs_inode *ni = ntfs_i(inode);
+ 	loff_t end = vbo + len;
+ 	loff_t vbo_down = round_down(vbo, PAGE_SIZE);
+-	loff_t i_size;
++	bool is_supported_holes = is_sparsed(ni) || is_compressed(ni);
++	loff_t i_size, new_size;
++	bool map_locked;
+ 	int err;
+ 
+ 	/* No support for dir. */
+ 	if (!S_ISREG(inode->i_mode))
+ 		return -EOPNOTSUPP;
+ 
+-	/* Return error if mode is not supported. */
+-	if (mode & ~(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE |
+-		     FALLOC_FL_COLLAPSE_RANGE)) {
++	/*
++	 * vfs_fallocate checks all possible combinations of mode.
++	 * Do additional checks here before ntfs_set_state(dirty).
++	 */
++	if (mode & FALLOC_FL_PUNCH_HOLE) {
++		if (!is_supported_holes)
++			return -EOPNOTSUPP;
++	} else if (mode & FALLOC_FL_COLLAPSE_RANGE) {
++	} else if (mode & FALLOC_FL_INSERT_RANGE) {
++		if (!is_supported_holes)
++			return -EOPNOTSUPP;
++	} else if (mode &
++		   ~(FALLOC_FL_KEEP_SIZE | FALLOC_FL_PUNCH_HOLE |
++		     FALLOC_FL_COLLAPSE_RANGE | FALLOC_FL_INSERT_RANGE)) {
+ 		ntfs_inode_warn(inode, "fallocate(0x%x) is not supported",
+ 				mode);
+ 		return -EOPNOTSUPP;
+@@ -557,6 +571,8 @@ static long ntfs_fallocate(struct file *file, int mode, loff_t vbo, loff_t len)
+ 
+ 	inode_lock(inode);
+ 	i_size = inode->i_size;
++	new_size = max(end, i_size);
++	map_locked = false;
+ 
+ 	if (WARN_ON(ni->ni_flags & NI_FLAG_COMPRESSED_MASK)) {
+ 		/* Should never be here, see ntfs_file_open. */
+@@ -564,38 +580,27 @@ static long ntfs_fallocate(struct file *file, int mode, loff_t vbo, loff_t len)
+ 		goto out;
+ 	}
+ 
++	if (mode & (FALLOC_FL_PUNCH_HOLE | FALLOC_FL_COLLAPSE_RANGE |
++		    FALLOC_FL_INSERT_RANGE)) {
++		inode_dio_wait(inode);
++		filemap_invalidate_lock(mapping);
++		map_locked = true;
++	}
++
+ 	if (mode & FALLOC_FL_PUNCH_HOLE) {
+ 		u32 frame_size;
+ 		loff_t mask, vbo_a, end_a, tmp;
+ 
+-		if (!(mode & FALLOC_FL_KEEP_SIZE)) {
+-			err = -EINVAL;
+-			goto out;
+-		}
+-
+-		err = filemap_write_and_wait_range(inode->i_mapping, vbo,
+-						   end - 1);
++		err = filemap_write_and_wait_range(mapping, vbo, end - 1);
+ 		if (err)
+ 			goto out;
+ 
+-		err = filemap_write_and_wait_range(inode->i_mapping, end,
+-						   LLONG_MAX);
++		err = filemap_write_and_wait_range(mapping, end, LLONG_MAX);
+ 		if (err)
+ 			goto out;
+ 
+-		inode_dio_wait(inode);
+-
+ 		truncate_pagecache(inode, vbo_down);
+ 
+-		if (!is_sparsed(ni) && !is_compressed(ni)) {
+-			/*
+-			 * Normal file, can't make hole.
+-			 * TODO: Try to find way to save info about hole.
+-			 */
+-			err = -EOPNOTSUPP;
+-			goto out;
+-		}
+-
+ 		ni_lock(ni);
+ 		err = attr_punch_hole(ni, vbo, len, &frame_size);
+ 		ni_unlock(ni);
+@@ -627,17 +632,11 @@ static long ntfs_fallocate(struct file *file, int mode, loff_t vbo, loff_t len)
+ 			ni_unlock(ni);
+ 		}
+ 	} else if (mode & FALLOC_FL_COLLAPSE_RANGE) {
+-		if (mode & ~FALLOC_FL_COLLAPSE_RANGE) {
+-			err = -EINVAL;
+-			goto out;
+-		}
+-
+ 		/*
+ 		 * Write tail of the last page before removed range since
+ 		 * it will get removed from the page cache below.
+ 		 */
+-		err = filemap_write_and_wait_range(inode->i_mapping, vbo_down,
+-						   vbo);
++		err = filemap_write_and_wait_range(mapping, vbo_down, vbo);
+ 		if (err)
+ 			goto out;
+ 
+@@ -645,34 +644,45 @@ static long ntfs_fallocate(struct file *file, int mode, loff_t vbo, loff_t len)
+ 		 * Write data that will be shifted to preserve them
+ 		 * when discarding page cache below.
+ 		 */
+-		err = filemap_write_and_wait_range(inode->i_mapping, end,
+-						   LLONG_MAX);
++		err = filemap_write_and_wait_range(mapping, end, LLONG_MAX);
+ 		if (err)
+ 			goto out;
+ 
+-		/* Wait for existing dio to complete. */
+-		inode_dio_wait(inode);
+-
+ 		truncate_pagecache(inode, vbo_down);
+ 
+ 		ni_lock(ni);
+ 		err = attr_collapse_range(ni, vbo, len);
+ 		ni_unlock(ni);
+-	} else {
+-		/*
+-		 * Normal file: Allocate clusters, do not change 'valid' size.
+-		 */
+-		loff_t new_size = max(end, i_size);
++	} else if (mode & FALLOC_FL_INSERT_RANGE) {
++		/* Check new size. */
++		err = inode_newsize_ok(inode, new_size);
++		if (err)
++			goto out;
++
++		/* Write out all dirty pages. */
++		err = filemap_write_and_wait_range(mapping, vbo_down,
++						   LLONG_MAX);
++		if (err)
++			goto out;
++		truncate_pagecache(inode, vbo_down);
+ 
++		ni_lock(ni);
++		err = attr_insert_range(ni, vbo, len);
++		ni_unlock(ni);
++	} else {
++		/* Check new size. */
+ 		err = inode_newsize_ok(inode, new_size);
+ 		if (err)
+ 			goto out;
+ 
++		/*
++		 * Allocate clusters, do not change 'valid' size.
++		 */
+ 		err = ntfs_set_size(inode, new_size);
+ 		if (err)
+ 			goto out;
+ 
+-		if (is_sparsed(ni) || is_compressed(ni)) {
++		if (is_supported_holes) {
+ 			CLST vcn_v = ni->i_valid >> sbi->cluster_bits;
+ 			CLST vcn = vbo >> sbi->cluster_bits;
+ 			CLST cend = bytes_to_cluster(sbi, end);
+@@ -720,6 +730,9 @@ static long ntfs_fallocate(struct file *file, int mode, loff_t vbo, loff_t len)
+ 	}
+ 
+ out:
++	if (map_locked)
++		filemap_invalidate_unlock(mapping);
++
+ 	if (err == -EFBIG)
+ 		err = -ENOSPC;
+ 
+
+From 321460ca3b55f48b3ba6008248264ab2bd6407d9 Mon Sep 17 00:00:00 2001
+From: Pavel Skripkin <paskripkin@gmail.com>
+Date: Thu, 21 Apr 2022 23:53:36 +0300
+Subject: [PATCH 14/39] fs/ntfs3: Fix NULL deref in ntfs_update_mftmirr
+
+If ntfs_fill_super() wasn't called then sbi->sb will be equal to NULL.
+Code should check this ptr before dereferencing. Syzbot hit this issue
+via passing wrong mount param as can be seen from log below
+
+Fail log:
+ntfs3: Unknown parameter 'iochvrset'
+general protection fault, probably for non-canonical address 0xdffffc0000000003: 0000 [#1] PREEMPT SMP KASAN
+KASAN: null-ptr-deref in range [0x0000000000000018-0x000000000000001f]
+CPU: 1 PID: 3589 Comm: syz-executor210 Not tainted 5.18.0-rc3-syzkaller-00016-gb253435746d9 #0
+...
+Call Trace:
+ <TASK>
+ put_ntfs+0x1ed/0x2a0 fs/ntfs3/super.c:463
+ ntfs_fs_free+0x6a/0xe0 fs/ntfs3/super.c:1363
+ put_fs_context+0x119/0x7a0 fs/fs_context.c:469
+ do_new_mount+0x2b4/0xad0 fs/namespace.c:3044
+ do_mount fs/namespace.c:3383 [inline]
+ __do_sys_mount fs/namespace.c:3591 [inline]
+
+Fixes: 82cae269cfa9 ("fs/ntfs3: Add initialization of super block")
+Reported-and-tested-by: syzbot+c95173762127ad76a824@syzkaller.appspotmail.com
+Signed-off-by: Pavel Skripkin <paskripkin@gmail.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/fsntfs.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/fs/ntfs3/fsntfs.c b/fs/ntfs3/fsntfs.c
+index 3de5700a9b833e..891125ca684883 100644
+--- a/fs/ntfs3/fsntfs.c
++++ b/fs/ntfs3/fsntfs.c
+@@ -831,10 +831,15 @@ int ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait)
+ {
+ 	int err;
+ 	struct super_block *sb = sbi->sb;
+-	u32 blocksize = sb->s_blocksize;
++	u32 blocksize;
+ 	sector_t block1, block2;
+ 	u32 bytes;
+ 
++	if (!sb)
++		return -EINVAL;
++
++	blocksize = sb->s_blocksize;
++
+ 	if (!(sbi->flags & NTFS_FLAGS_MFTMIRR))
+ 		return 0;
+ 
+
+From e66af07ca2b57e01dbf6001ae565ab40037b2df3 Mon Sep 17 00:00:00 2001
+From: Pavel Skripkin <paskripkin@gmail.com>
+Date: Thu, 21 Apr 2022 23:53:45 +0300
+Subject: [PATCH 15/39] fs/ntfs3: Make ntfs_update_mftmirr return void
+
+None of callers check the return value of ntfs_update_mftmirr(), so make
+it return void to make code simpler.
+
+Signed-off-by: Pavel Skripkin <paskripkin@gmail.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/fsntfs.c  | 20 +++++++-------------
+ fs/ntfs3/ntfs_fs.h |  2 +-
+ 2 files changed, 8 insertions(+), 14 deletions(-)
+
+diff --git a/fs/ntfs3/fsntfs.c b/fs/ntfs3/fsntfs.c
+index 891125ca684883..938acb246b58b9 100644
+--- a/fs/ntfs3/fsntfs.c
++++ b/fs/ntfs3/fsntfs.c
+@@ -827,7 +827,7 @@ int ntfs_refresh_zone(struct ntfs_sb_info *sbi)
+ /*
+  * ntfs_update_mftmirr - Update $MFTMirr data.
+  */
+-int ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait)
++void ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait)
+ {
+ 	int err;
+ 	struct super_block *sb = sbi->sb;
+@@ -836,12 +836,12 @@ int ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait)
+ 	u32 bytes;
+ 
+ 	if (!sb)
+-		return -EINVAL;
++		return;
+ 
+ 	blocksize = sb->s_blocksize;
+ 
+ 	if (!(sbi->flags & NTFS_FLAGS_MFTMIRR))
+-		return 0;
++		return;
+ 
+ 	err = 0;
+ 	bytes = sbi->mft.recs_mirr << sbi->record_bits;
+@@ -852,16 +852,13 @@ int ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait)
+ 		struct buffer_head *bh1, *bh2;
+ 
+ 		bh1 = sb_bread(sb, block1++);
+-		if (!bh1) {
+-			err = -EIO;
+-			goto out;
+-		}
++		if (!bh1)
++			return;
+ 
+ 		bh2 = sb_getblk(sb, block2++);
+ 		if (!bh2) {
+ 			put_bh(bh1);
+-			err = -EIO;
+-			goto out;
++			return;
+ 		}
+ 
+ 		if (buffer_locked(bh2))
+@@ -881,13 +878,10 @@ int ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait)
+ 
+ 		put_bh(bh2);
+ 		if (err)
+-			goto out;
++			return;
+ 	}
+ 
+ 	sbi->flags &= ~NTFS_FLAGS_MFTMIRR;
+-
+-out:
+-	return err;
+ }
+ 
+ /*
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index 1f92e3a05f61e1..8f05b91f3c5e69 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -593,7 +593,7 @@ int ntfs_look_free_mft(struct ntfs_sb_info *sbi, CLST *rno, bool mft,
+ void ntfs_mark_rec_free(struct ntfs_sb_info *sbi, CLST rno);
+ int ntfs_clear_mft_tail(struct ntfs_sb_info *sbi, size_t from, size_t to);
+ int ntfs_refresh_zone(struct ntfs_sb_info *sbi);
+-int ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait);
++void ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait);
+ enum NTFS_DIRTY_FLAGS {
+ 	NTFS_DIRTY_CLEAR = 0,
+ 	NTFS_DIRTY_DIRTY = 1,
+
+From 4838ec0d80b110a5f30c7e3169dc5021efd203d4 Mon Sep 17 00:00:00 2001
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Thu, 30 Jun 2022 16:10:56 +0300
+Subject: [PATCH 16/39] fs/ntfs3: Unlock on error in attr_insert_range()
+
+This error path needs to call up_write(&ni->file.run_lock) and do some
+other clean up before returning.
+
+Fixes: aa30eccb24e5 ("fs/ntfs3: Fallocate (FALLOC_FL_INSERT_RANGE) implementation")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index 86e688b95ad574..3e9aefcb3e6c15 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -2153,8 +2153,10 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 		le_b = NULL;
+ 		attr_b = ni_find_attr(ni, NULL, &le_b, ATTR_DATA, NULL, 0, NULL,
+ 				      &mi_b);
+-		if (!attr_b)
+-			return -ENOENT;
++		if (!attr_b) {
++			err = -ENOENT;
++			goto out;
++		}
+ 		if (!attr_b->non_res) {
+ 			err = -EINVAL;
+ 			goto out;
+
+From cc83b0c7e3064e2bb1f9d099bbfdaf493cd669fe Mon Sep 17 00:00:00 2001
+From: Colin Ian King <colin.i.king@gmail.com>
+Date: Mon, 4 Jul 2022 19:53:19 +0100
+Subject: [PATCH 17/39] fs/ntfs3: Remove duplicated assignment to variable r
+
+The assignment to variable r is duplicated, the second assignment
+is redundant and can be removed.
+
+Signed-off-by: Colin Ian King <colin.i.king@gmail.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/run.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/fs/ntfs3/run.c b/fs/ntfs3/run.c
+index 7609d45a2d7214..aba8ab1b9fcb99 100644
+--- a/fs/ntfs3/run.c
++++ b/fs/ntfs3/run.c
+@@ -563,7 +563,6 @@ bool run_insert_range(struct runs_tree *run, CLST vcn, CLST len)
+ 	e = run->runs + run->count;
+ 	r = run->runs + index;
+ 
+-	r = run->runs + index;
+ 	if (vcn > r->vcn)
+ 		r += 1;
+ 
+
+From 604a9d272dc3802d880e0510b9d145b1090b3f8a Mon Sep 17 00:00:00 2001
+From: Li kunyu <kunyu@nfschina.com>
+Date: Mon, 4 Jul 2022 18:31:13 +0800
+Subject: [PATCH 18/39] fs/ntfs3: Remove unnecessary 'NULL' values from
+ pointers
+
+There is no need to initialize with NULL as it'll be rewritten later.
+
+Signed-off-by: Li kunyu <kunyu@nfschina.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/index.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/ntfs3/index.c b/fs/ntfs3/index.c
+index 84ccc140987474..ba2a07dfeaf520 100644
+--- a/fs/ntfs3/index.c
++++ b/fs/ntfs3/index.c
+@@ -1678,8 +1678,8 @@ indx_insert_into_buffer(struct ntfs_index *indx, struct ntfs_inode *ni,
+ {
+ 	int err;
+ 	const struct NTFS_DE *sp;
+-	struct NTFS_DE *e, *de_t, *up_e = NULL;
+-	struct indx_node *n2 = NULL;
++	struct NTFS_DE *e, *de_t, *up_e;
++	struct indx_node *n2;
+ 	struct indx_node *n1 = fnd->nodes[level];
+ 	struct INDEX_HDR *hdr1 = &n1->index->ihdr;
+ 	struct INDEX_HDR *hdr2;
+
+From 460bbf2990b3fdc597601c2cf669a3371c069242 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Thu, 12 May 2022 19:08:40 +0300
+Subject: [PATCH 19/39] fs/ntfs3: Do not change mode if ntfs_set_ea failed
+
+ntfs_set_ea can fail with NOSPC, so we don't need to
+change mode in this situation.
+Fixes xfstest generic/449
+Fixes: be71b5cba2e6 ("fs/ntfs3: Add attrib operations")
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/xattr.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/fs/ntfs3/xattr.c b/fs/ntfs3/xattr.c
+index 2d29afe4b40b17..ddd9fc9129edda 100644
+--- a/fs/ntfs3/xattr.c
++++ b/fs/ntfs3/xattr.c
+@@ -547,28 +547,23 @@ static noinline int ntfs_set_acl_ex(struct user_namespace *mnt_userns,
+ {
+ 	const char *name;
+ 	size_t size, name_len;
+-	void *value = NULL;
+-	int err = 0;
++	void *value;
++	int err;
+ 	int flags;
++	umode_t mode;
+ 
+ 	if (S_ISLNK(inode->i_mode))
+ 		return -EOPNOTSUPP;
+ 
++	mode = inode->i_mode;
+ 	switch (type) {
+ 	case ACL_TYPE_ACCESS:
+ 		/* Do not change i_mode if we are in init_acl */
+ 		if (acl && !init_acl) {
+-			umode_t mode;
+-
+ 			err = posix_acl_update_mode(mnt_userns, inode, &mode,
+ 						    &acl);
+ 			if (err)
+ 				goto out;
+-
+-			if (inode->i_mode != mode) {
+-				inode->i_mode = mode;
+-				mark_inode_dirty(inode);
+-			}
+ 		}
+ 		name = XATTR_NAME_POSIX_ACL_ACCESS;
+ 		name_len = sizeof(XATTR_NAME_POSIX_ACL_ACCESS) - 1;
+@@ -604,8 +599,13 @@ static noinline int ntfs_set_acl_ex(struct user_namespace *mnt_userns,
+ 	err = ntfs_set_ea(inode, name, name_len, value, size, flags, 0);
+ 	if (err == -ENODATA && !size)
+ 		err = 0; /* Removing non existed xattr. */
+-	if (!err)
++	if (!err) {
+ 		set_cached_acl(inode, type, acl);
++		if (inode->i_mode != mode) {
++			inode->i_mode = mode;
++			mark_inode_dirty(inode);
++		}
++	}
+ 
+ out:
+ 	kfree(value);
+
+From 13747aac8984e069427e5de5d68bb6cefa98551e Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Thu, 12 May 2022 19:18:11 +0300
+Subject: [PATCH 20/39] fs/ntfs3: Check reserved size for maximum allowed
+
+Also don't mask EFBIG
+Fixes xfstest generic/485
+Fixes: 4342306f0f0d ("fs/ntfs3: Add file operations and implementation")
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c | 9 +++++++++
+ fs/ntfs3/file.c   | 3 ---
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index 3e9aefcb3e6c15..c9b7181436039e 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -2114,9 +2114,11 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 
+ 	if (!attr_b->non_res) {
+ 		data_size = le32_to_cpu(attr_b->res.data_size);
++		alloc_size = data_size;
+ 		mask = sbi->cluster_mask; /* cluster_size - 1 */
+ 	} else {
+ 		data_size = le64_to_cpu(attr_b->nres.data_size);
++		alloc_size = le64_to_cpu(attr_b->nres.alloc_size);
+ 		mask = (sbi->cluster_size << attr_b->nres.c_unit) - 1;
+ 	}
+ 
+@@ -2130,6 +2132,13 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 		return -EINVAL;
+ 	}
+ 
++	/*
++	 * valid_size <= data_size <= alloc_size
++	 * Check alloc_size for maximum possible.
++	 */
++	if (bytes > sbi->maxbytes_sparse - alloc_size)
++		return -EFBIG;
++
+ 	vcn = vbo >> sbi->cluster_bits;
+ 	len = bytes >> sbi->cluster_bits;
+ 
+diff --git a/fs/ntfs3/file.c b/fs/ntfs3/file.c
+index bdffe4b8554bd1..cf16bde810cce7 100644
+--- a/fs/ntfs3/file.c
++++ b/fs/ntfs3/file.c
+@@ -733,9 +733,6 @@ static long ntfs_fallocate(struct file *file, int mode, loff_t vbo, loff_t len)
+ 	if (map_locked)
+ 		filemap_invalidate_unlock(mapping);
+ 
+-	if (err == -EFBIG)
+-		err = -ENOSPC;
+-
+ 	if (!err) {
+ 		inode->i_ctime = inode->i_mtime = current_time(inode);
+ 		mark_inode_dirty(inode);
+
+From c1e0ab3789215a3dfbe95f226955e93ea4803391 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Fri, 13 May 2022 18:25:04 +0300
+Subject: [PATCH 21/39] fs/ntfs3: extend ni_insert_nonresident to return
+ inserted ATTR_LIST_ENTRY
+
+Fixes xfstest generic/300
+Fixes: 4534a70b7056 ("fs/ntfs3: Add headers and misc files")
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c  | 35 +++++++++++++++++++++--------------
+ fs/ntfs3/frecord.c |  4 ++--
+ fs/ntfs3/index.c   |  2 +-
+ fs/ntfs3/ntfs_fs.h |  2 +-
+ 4 files changed, 25 insertions(+), 18 deletions(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index c9b7181436039e..ad713f62015527 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -320,7 +320,7 @@ int attr_make_nonresident(struct ntfs_inode *ni, struct ATTRIB *attr,
+ 
+ 	err = ni_insert_nonresident(ni, attr_s->type, attr_name(attr_s),
+ 				    attr_s->name_len, run, 0, alen,
+-				    attr_s->flags, &attr, NULL);
++				    attr_s->flags, &attr, NULL, NULL);
+ 	if (err)
+ 		goto out3;
+ 
+@@ -637,7 +637,7 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 		/* Insert new attribute segment. */
+ 		err = ni_insert_nonresident(ni, type, name, name_len, run,
+ 					    next_svcn, vcn - next_svcn,
+-					    attr_b->flags, &attr, &mi);
++					    attr_b->flags, &attr, &mi, NULL);
+ 		if (err)
+ 			goto out;
+ 
+@@ -855,7 +855,7 @@ int attr_data_get_block(struct ntfs_inode *ni, CLST vcn, CLST clen, CLST *lcn,
+ 		goto out;
+ 	}
+ 
+-	asize = le64_to_cpu(attr_b->nres.alloc_size) >> sbi->cluster_bits;
++	asize = le64_to_cpu(attr_b->nres.alloc_size) >> cluster_bits;
+ 	if (vcn >= asize) {
+ 		err = -EINVAL;
+ 		goto out;
+@@ -1047,7 +1047,7 @@ int attr_data_get_block(struct ntfs_inode *ni, CLST vcn, CLST clen, CLST *lcn,
+ 	if (evcn1 > next_svcn) {
+ 		err = ni_insert_nonresident(ni, ATTR_DATA, NULL, 0, run,
+ 					    next_svcn, evcn1 - next_svcn,
+-					    attr_b->flags, &attr, &mi);
++					    attr_b->flags, &attr, &mi, NULL);
+ 		if (err)
+ 			goto out;
+ 	}
+@@ -1647,7 +1647,7 @@ int attr_allocate_frame(struct ntfs_inode *ni, CLST frame, size_t compr_size,
+ 	if (evcn1 > next_svcn) {
+ 		err = ni_insert_nonresident(ni, ATTR_DATA, NULL, 0, run,
+ 					    next_svcn, evcn1 - next_svcn,
+-					    attr_b->flags, &attr, &mi);
++					    attr_b->flags, &attr, &mi, NULL);
+ 		if (err)
+ 			goto out;
+ 	}
+@@ -1812,18 +1812,12 @@ int attr_collapse_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 				err = ni_insert_nonresident(
+ 					ni, ATTR_DATA, NULL, 0, run, next_svcn,
+ 					evcn1 - eat - next_svcn, a_flags, &attr,
+-					&mi);
++					&mi, &le);
+ 				if (err)
+ 					goto out;
+ 
+ 				/* Layout of records maybe changed. */
+ 				attr_b = NULL;
+-				le = al_find_ex(ni, NULL, ATTR_DATA, NULL, 0,
+-						&next_svcn);
+-				if (!le) {
+-					err = -EINVAL;
+-					goto out;
+-				}
+ 			}
+ 
+ 			/* Free all allocated memory. */
+@@ -1936,9 +1930,10 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 	struct ATTRIB *attr = NULL, *attr_b;
+ 	struct ATTR_LIST_ENTRY *le, *le_b;
+ 	struct mft_inode *mi, *mi_b;
+-	CLST svcn, evcn1, vcn, len, end, alen, dealloc;
++	CLST svcn, evcn1, vcn, len, end, alen, dealloc, next_svcn;
+ 	u64 total_size, alloc_size;
+ 	u32 mask;
++	__le16 a_flags;
+ 
+ 	if (!bytes)
+ 		return 0;
+@@ -2001,6 +1996,7 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 
+ 	svcn = le64_to_cpu(attr_b->nres.svcn);
+ 	evcn1 = le64_to_cpu(attr_b->nres.evcn) + 1;
++	a_flags = attr_b->flags;
+ 
+ 	if (svcn <= vcn && vcn < evcn1) {
+ 		attr = attr_b;
+@@ -2048,6 +2044,17 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 			err = mi_pack_runs(mi, attr, run, evcn1 - svcn);
+ 			if (err)
+ 				goto out;
++			next_svcn = le64_to_cpu(attr->nres.evcn) + 1;
++			if (next_svcn < evcn1) {
++				err = ni_insert_nonresident(ni, ATTR_DATA, NULL,
++							    0, run, next_svcn,
++							    evcn1 - next_svcn,
++							    a_flags, &attr, &mi,
++							    &le);
++				if (err)
++					goto out;
++				/* Layout of records maybe changed. */
++			}
+ 		}
+ 		/* Free all allocated memory. */
+ 		run_truncate(run, 0);
+@@ -2250,7 +2257,7 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 	if (next_svcn < evcn1 + len) {
+ 		err = ni_insert_nonresident(ni, ATTR_DATA, NULL, 0, run,
+ 					    next_svcn, evcn1 + len - next_svcn,
+-					    a_flags, NULL, NULL);
++					    a_flags, NULL, NULL, NULL);
+ 		if (err)
+ 			goto out;
+ 	}
+diff --git a/fs/ntfs3/frecord.c b/fs/ntfs3/frecord.c
+index 3576268ee0a1d5..64041152fd982d 100644
+--- a/fs/ntfs3/frecord.c
++++ b/fs/ntfs3/frecord.c
+@@ -1406,7 +1406,7 @@ int ni_insert_nonresident(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 			  const __le16 *name, u8 name_len,
+ 			  const struct runs_tree *run, CLST svcn, CLST len,
+ 			  __le16 flags, struct ATTRIB **new_attr,
+-			  struct mft_inode **mi)
++			  struct mft_inode **mi, struct ATTR_LIST_ENTRY **le)
+ {
+ 	int err;
+ 	CLST plen;
+@@ -1439,7 +1439,7 @@ int ni_insert_nonresident(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 	}
+ 
+ 	err = ni_insert_attr(ni, type, name, name_len, asize, name_off, svcn,
+-			     &attr, mi, NULL);
++			     &attr, mi, le);
+ 
+ 	if (err)
+ 		goto out;
+diff --git a/fs/ntfs3/index.c b/fs/ntfs3/index.c
+index ba2a07dfeaf520..440328147e7e39 100644
+--- a/fs/ntfs3/index.c
++++ b/fs/ntfs3/index.c
+@@ -1347,7 +1347,7 @@ static int indx_create_allocate(struct ntfs_index *indx, struct ntfs_inode *ni,
+ 		goto out;
+ 
+ 	err = ni_insert_nonresident(ni, ATTR_ALLOC, in->name, in->name_len,
+-				    &run, 0, len, 0, &alloc, NULL);
++				    &run, 0, len, 0, &alloc, NULL, NULL);
+ 	if (err)
+ 		goto out1;
+ 
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index 8f05b91f3c5e69..27b610c5bb295c 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -529,7 +529,7 @@ int ni_insert_nonresident(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 			  const __le16 *name, u8 name_len,
+ 			  const struct runs_tree *run, CLST svcn, CLST len,
+ 			  __le16 flags, struct ATTRIB **new_attr,
+-			  struct mft_inode **mi);
++			  struct mft_inode **mi, struct ATTR_LIST_ENTRY **le);
+ int ni_insert_resident(struct ntfs_inode *ni, u32 data_size,
+ 		       enum ATTR_TYPE type, const __le16 *name, u8 name_len,
+ 		       struct ATTRIB **new_attr, struct mft_inode **mi,
+
+From b3e048720dee5641c522015d3f0ff0f0dc9cdc37 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Fri, 13 May 2022 19:21:54 +0300
+Subject: [PATCH 22/39] fs/ntfs3: Make ntfs_fallocate return -ENOSPC instead of
+ -EFBIG
+
+In some cases we need to return ENOSPC
+Fixes xfstest generic/213
+Fixes: 114346978cf6 ("fs/ntfs3: Check new size for limits")
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/file.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/fs/ntfs3/file.c b/fs/ntfs3/file.c
+index cf16bde810cce7..b5f8837f41454c 100644
+--- a/fs/ntfs3/file.c
++++ b/fs/ntfs3/file.c
+@@ -671,6 +671,19 @@ static long ntfs_fallocate(struct file *file, int mode, loff_t vbo, loff_t len)
+ 		ni_unlock(ni);
+ 	} else {
+ 		/* Check new size. */
++
++		/* generic/213: expected -ENOSPC instead of -EFBIG. */
++		if (!is_supported_holes) {
++			loff_t to_alloc = new_size - inode_get_bytes(inode);
++
++			if (to_alloc > 0 &&
++			    (to_alloc >> sbi->cluster_bits) >
++				    wnd_zeroes(&sbi->used.bitmap)) {
++				err = -ENOSPC;
++				goto out;
++			}
++		}
++
+ 		err = inode_newsize_ok(inode, new_size);
+ 		if (err)
+ 			goto out;
+
+From 42f86b1226a42bfc79a7125af435432ad4680a32 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Fri, 13 May 2022 19:54:23 +0300
+Subject: [PATCH 23/39] fs/ntfs3: Fix work with fragmented xattr
+
+In some cases xattr is too fragmented,
+so we need to load it before writing.
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/xattr.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/fs/ntfs3/xattr.c b/fs/ntfs3/xattr.c
+index ddd9fc9129edda..02f6a933ee7977 100644
+--- a/fs/ntfs3/xattr.c
++++ b/fs/ntfs3/xattr.c
+@@ -118,7 +118,7 @@ static int ntfs_read_ea(struct ntfs_inode *ni, struct EA_FULL **ea,
+ 
+ 		run_init(&run);
+ 
+-		err = attr_load_runs(attr_ea, ni, &run, NULL);
++		err = attr_load_runs_range(ni, ATTR_EA, NULL, 0, &run, 0, size);
+ 		if (!err)
+ 			err = ntfs_read_run_nb(sbi, &run, 0, ea_p, size, NULL);
+ 		run_close(&run);
+@@ -444,6 +444,11 @@ static noinline int ntfs_set_ea(struct inode *inode, const char *name,
+ 		/* Delete xattr, ATTR_EA */
+ 		ni_remove_attr_le(ni, attr, mi, le);
+ 	} else if (attr->non_res) {
++		err = attr_load_runs_range(ni, ATTR_EA, NULL, 0, &ea_run, 0,
++					   size);
++		if (err)
++			goto out;
++
+ 		err = ntfs_sb_write_run(sbi, &ea_run, 0, ea_all, size, 0);
+ 		if (err)
+ 			goto out;
+
+From 560f7736b94622c077344e2c541c43c63b4e90e4 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Thu, 30 Jun 2022 18:31:26 +0300
+Subject: [PATCH 24/39] fs/ntfs3: Fix very fragmented case in attr_punch_hole
+
+In some cases we need to ni_find_attr attr_b
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index ad713f62015527..3d64335fa4c7a4 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -2054,6 +2054,7 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 				if (err)
+ 					goto out;
+ 				/* Layout of records maybe changed. */
++				attr_b = NULL;
+ 			}
+ 		}
+ 		/* Free all allocated memory. */
+@@ -2073,6 +2074,14 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 	}
+ 
+ 	total_size -= (u64)dealloc << sbi->cluster_bits;
++	if (!attr_b) {
++		attr_b = ni_find_attr(ni, NULL, NULL, ATTR_DATA, NULL, 0, NULL,
++				      &mi_b);
++		if (!attr_b) {
++			err = -EINVAL;
++			goto out;
++		}
++	}
+ 	attr_b->nres.total_size = cpu_to_le64(total_size);
+ 	mi_b->dirty = true;
+ 
+@@ -2083,8 +2092,10 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 
+ out:
+ 	up_write(&ni->file.run_lock);
+-	if (err)
++	if (err) {
++		ntfs_set_state(sbi, NTFS_DIRTY_ERROR);
+ 		make_bad_inode(&ni->vfs_inode);
++	}
+ 
+ 	return err;
+ }
+
+From 6700eabb90d50c50be21ecbb71131cd6ecf91ded Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Thu, 30 Jun 2022 18:49:24 +0300
+Subject: [PATCH 25/39] fs/ntfs3: Remove unused mi_mark_free
+
+Cleaning up dead code
+Fix wrong comments
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/namei.c   |  2 +-
+ fs/ntfs3/ntfs_fs.h |  1 -
+ fs/ntfs3/record.c  | 22 ----------------------
+ fs/ntfs3/super.c   |  2 +-
+ 4 files changed, 2 insertions(+), 25 deletions(-)
+
+diff --git a/fs/ntfs3/namei.c b/fs/ntfs3/namei.c
+index bc741213ad8483..1cc700760c7ed6 100644
+--- a/fs/ntfs3/namei.c
++++ b/fs/ntfs3/namei.c
+@@ -208,7 +208,7 @@ static int ntfs_mkdir(struct user_namespace *mnt_userns, struct inode *dir,
+ }
+ 
+ /*
+- * ntfs_rmdir - inode_operations::rm_dir
++ * ntfs_rmdir - inode_operations::rmdir
+  */
+ static int ntfs_rmdir(struct inode *dir, struct dentry *dentry)
+ {
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index 27b610c5bb295c..0ea0cdab46b3d2 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -734,7 +734,6 @@ static inline struct ATTRIB *rec_find_attr_le(struct mft_inode *rec,
+ int mi_write(struct mft_inode *mi, int wait);
+ int mi_format_new(struct mft_inode *mi, struct ntfs_sb_info *sbi, CLST rno,
+ 		  __le16 flags, bool is_mft);
+-void mi_mark_free(struct mft_inode *mi);
+ struct ATTRIB *mi_insert_attr(struct mft_inode *mi, enum ATTR_TYPE type,
+ 			      const __le16 *name, u8 name_len, u32 asize,
+ 			      u16 name_off);
+diff --git a/fs/ntfs3/record.c b/fs/ntfs3/record.c
+index 8fe0a876400ad4..7d2fac5ee2156b 100644
+--- a/fs/ntfs3/record.c
++++ b/fs/ntfs3/record.c
+@@ -394,28 +394,6 @@ int mi_format_new(struct mft_inode *mi, struct ntfs_sb_info *sbi, CLST rno,
+ 	return err;
+ }
+ 
+-/*
+- * mi_mark_free - Mark record as unused and marks it as free in bitmap.
+- */
+-void mi_mark_free(struct mft_inode *mi)
+-{
+-	CLST rno = mi->rno;
+-	struct ntfs_sb_info *sbi = mi->sbi;
+-
+-	if (rno >= MFT_REC_RESERVED && rno < MFT_REC_FREE) {
+-		ntfs_clear_mft_tail(sbi, rno, rno + 1);
+-		mi->dirty = false;
+-		return;
+-	}
+-
+-	if (mi->mrec) {
+-		clear_rec_inuse(mi->mrec);
+-		mi->dirty = true;
+-		mi_write(mi, 0);
+-	}
+-	ntfs_mark_rec_free(sbi, rno);
+-}
+-
+ /*
+  * mi_insert_attr - Reserve space for new attribute.
+  *
+diff --git a/fs/ntfs3/super.c b/fs/ntfs3/super.c
+index 4b0dad2ac5988c..eacea72ff92f6a 100644
+--- a/fs/ntfs3/super.c
++++ b/fs/ntfs3/super.c
+@@ -1377,7 +1377,7 @@ static const struct fs_context_operations ntfs_context_ops = {
+ /*
+  * ntfs_init_fs_context - Initialize spi and opts
+  *
+- * This will called when mount/remount. We will first initiliaze
++ * This will called when mount/remount. We will first initialize
+  * options so that if remount we can use just that.
+  */
+ static int ntfs_init_fs_context(struct fs_context *fc)
+
+From 071100ea0e6c353258f322cb2f8dde9be62d6808 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Thu, 30 Jun 2022 19:14:43 +0300
+Subject: [PATCH 26/39] fs/ntfs3: Add new argument is_mft to ntfs_mark_rec_free
+
+This argument helps in avoiding double locking
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/frecord.c | 12 ++++++------
+ fs/ntfs3/fsntfs.c  |  9 ++++++---
+ fs/ntfs3/inode.c   |  2 +-
+ fs/ntfs3/ntfs_fs.h |  2 +-
+ 4 files changed, 14 insertions(+), 11 deletions(-)
+
+diff --git a/fs/ntfs3/frecord.c b/fs/ntfs3/frecord.c
+index 64041152fd982d..756d9a18fa00c2 100644
+--- a/fs/ntfs3/frecord.c
++++ b/fs/ntfs3/frecord.c
+@@ -1048,7 +1048,7 @@ static int ni_ins_attr_ext(struct ntfs_inode *ni, struct ATTR_LIST_ENTRY *le,
+ 	err = -EINVAL;
+ 
+ out1:
+-	ntfs_mark_rec_free(sbi, rno);
++	ntfs_mark_rec_free(sbi, rno, is_mft);
+ 
+ out:
+ 	return err;
+@@ -1243,7 +1243,7 @@ static int ni_expand_mft_list(struct ntfs_inode *ni)
+ 		mft_min = mft_new;
+ 		mi_min = mi_new;
+ 	} else {
+-		ntfs_mark_rec_free(sbi, mft_new);
++		ntfs_mark_rec_free(sbi, mft_new, true);
+ 		mft_new = 0;
+ 		ni_remove_mi(ni, mi_new);
+ 	}
+@@ -1326,7 +1326,7 @@ static int ni_expand_mft_list(struct ntfs_inode *ni)
+ 
+ out:
+ 	if (mft_new) {
+-		ntfs_mark_rec_free(sbi, mft_new);
++		ntfs_mark_rec_free(sbi, mft_new, true);
+ 		ni_remove_mi(ni, mi_new);
+ 	}
+ 
+@@ -1585,7 +1585,7 @@ int ni_delete_all(struct ntfs_inode *ni)
+ 		mi->dirty = true;
+ 		mi_write(mi, 0);
+ 
+-		ntfs_mark_rec_free(sbi, mi->rno);
++		ntfs_mark_rec_free(sbi, mi->rno, false);
+ 		ni_remove_mi(ni, mi);
+ 		mi_put(mi);
+ 		node = next;
+@@ -1596,7 +1596,7 @@ int ni_delete_all(struct ntfs_inode *ni)
+ 	ni->mi.dirty = true;
+ 	err = mi_write(&ni->mi, 0);
+ 
+-	ntfs_mark_rec_free(sbi, ni->mi.rno);
++	ntfs_mark_rec_free(sbi, ni->mi.rno, false);
+ 
+ 	return err;
+ }
+@@ -3286,7 +3286,7 @@ int ni_write_inode(struct inode *inode, int sync, const char *hint)
+ 			err = err2;
+ 
+ 		if (is_empty) {
+-			ntfs_mark_rec_free(sbi, mi->rno);
++			ntfs_mark_rec_free(sbi, mi->rno, false);
+ 			rb_erase(node, &ni->mi_tree);
+ 			mi_put(mi);
+ 		}
+diff --git a/fs/ntfs3/fsntfs.c b/fs/ntfs3/fsntfs.c
+index 938acb246b58b9..fa4ca8b9b499ee 100644
+--- a/fs/ntfs3/fsntfs.c
++++ b/fs/ntfs3/fsntfs.c
+@@ -703,12 +703,14 @@ int ntfs_look_free_mft(struct ntfs_sb_info *sbi, CLST *rno, bool mft,
+ 
+ /*
+  * ntfs_mark_rec_free - Mark record as free.
++ * is_mft - true if we are changing MFT
+  */
+-void ntfs_mark_rec_free(struct ntfs_sb_info *sbi, CLST rno)
++void ntfs_mark_rec_free(struct ntfs_sb_info *sbi, CLST rno, bool is_mft)
+ {
+ 	struct wnd_bitmap *wnd = &sbi->mft.bitmap;
+ 
+-	down_write_nested(&wnd->rw_lock, BITMAP_MUTEX_MFT);
++	if (!is_mft)
++		down_write_nested(&wnd->rw_lock, BITMAP_MUTEX_MFT);
+ 	if (rno >= wnd->nbits)
+ 		goto out;
+ 
+@@ -727,7 +729,8 @@ void ntfs_mark_rec_free(struct ntfs_sb_info *sbi, CLST rno)
+ 		sbi->mft.next_free = rno;
+ 
+ out:
+-	up_write(&wnd->rw_lock);
++	if (!is_mft)
++		up_write(&wnd->rw_lock);
+ }
+ 
+ /*
+diff --git a/fs/ntfs3/inode.c b/fs/ntfs3/inode.c
+index 6c78930be03575..a49da4ec6dc382 100644
+--- a/fs/ntfs3/inode.c
++++ b/fs/ntfs3/inode.c
+@@ -1636,7 +1636,7 @@ struct inode *ntfs_create_inode(struct user_namespace *mnt_userns,
+ 	ni->mi.dirty = false;
+ 	discard_new_inode(inode);
+ out3:
+-	ntfs_mark_rec_free(sbi, ino);
++	ntfs_mark_rec_free(sbi, ino, false);
+ 
+ out2:
+ 	__putname(new_de);
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index 0ea0cdab46b3d2..34c6ee56225c81 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -590,7 +590,7 @@ int ntfs_look_for_free_space(struct ntfs_sb_info *sbi, CLST lcn, CLST len,
+ 			     enum ALLOCATE_OPT opt);
+ int ntfs_look_free_mft(struct ntfs_sb_info *sbi, CLST *rno, bool mft,
+ 		       struct ntfs_inode *ni, struct mft_inode **mi);
+-void ntfs_mark_rec_free(struct ntfs_sb_info *sbi, CLST rno);
++void ntfs_mark_rec_free(struct ntfs_sb_info *sbi, CLST rno, bool is_mft);
+ int ntfs_clear_mft_tail(struct ntfs_sb_info *sbi, size_t from, size_t to);
+ int ntfs_refresh_zone(struct ntfs_sb_info *sbi);
+ void ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait);
+
+From cf760ec0a0b4015ccf3b5e9ecb4caf6b5fb52f0b Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Fri, 1 Jul 2022 15:15:32 +0300
+Subject: [PATCH 27/39] fs/ntfs3: Make static function attr_load_runs
+
+attr_load_runs is an internal function
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c  | 4 ++--
+ fs/ntfs3/ntfs_fs.h | 2 --
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index 3d64335fa4c7a4..7454bd3ea02d76 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -84,8 +84,8 @@ static inline bool attr_must_be_resident(struct ntfs_sb_info *sbi,
+ /*
+  * attr_load_runs - Load all runs stored in @attr.
+  */
+-int attr_load_runs(struct ATTRIB *attr, struct ntfs_inode *ni,
+-		   struct runs_tree *run, const CLST *vcn)
++static int attr_load_runs(struct ATTRIB *attr, struct ntfs_inode *ni,
++			  struct runs_tree *run, const CLST *vcn)
+ {
+ 	int err;
+ 	CLST svcn = le64_to_cpu(attr->nres.svcn);
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index 34c6ee56225c81..83ed27bb624e99 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -408,8 +408,6 @@ enum REPARSE_SIGN {
+ };
+ 
+ /* Functions from attrib.c */
+-int attr_load_runs(struct ATTRIB *attr, struct ntfs_inode *ni,
+-		   struct runs_tree *run, const CLST *vcn);
+ int attr_allocate_clusters(struct ntfs_sb_info *sbi, struct runs_tree *run,
+ 			   CLST vcn, CLST lcn, CLST len, CLST *pre_alloc,
+ 			   enum ALLOCATE_OPT opt, CLST *alen, const size_t fr,
+
+From 42f66a7fdaa0d15691467fb7a808040f2d5ad0c0 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Fri, 1 Jul 2022 15:18:29 +0300
+Subject: [PATCH 28/39] fs/ntfs3: Fill duplicate info in ni_add_name
+
+Work with names must be completed in ni_add_name
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/frecord.c | 20 ++++++++++++++------
+ fs/ntfs3/inode.c   | 10 ----------
+ 2 files changed, 14 insertions(+), 16 deletions(-)
+
+diff --git a/fs/ntfs3/frecord.c b/fs/ntfs3/frecord.c
+index 756d9a18fa00c2..acd9f444bd642a 100644
+--- a/fs/ntfs3/frecord.c
++++ b/fs/ntfs3/frecord.c
+@@ -1614,7 +1614,8 @@ struct ATTR_FILE_NAME *ni_fname_name(struct ntfs_inode *ni,
+ 	struct ATTRIB *attr = NULL;
+ 	struct ATTR_FILE_NAME *fname;
+ 
+-	*le = NULL;
++	if (le)
++		*le = NULL;
+ 
+ 	/* Enumerate all names. */
+ next:
+@@ -1630,7 +1631,7 @@ struct ATTR_FILE_NAME *ni_fname_name(struct ntfs_inode *ni,
+ 		goto next;
+ 
+ 	if (!uni)
+-		goto next;
++		return fname;
+ 
+ 	if (uni->len != fname->name_len)
+ 		goto next;
+@@ -2969,7 +2970,7 @@ bool ni_remove_name_undo(struct ntfs_inode *dir_ni, struct ntfs_inode *ni,
+ }
+ 
+ /*
+- * ni_add_name - Add new name in MFT and in directory.
++ * ni_add_name - Add new name into MFT and into directory.
+  */
+ int ni_add_name(struct ntfs_inode *dir_ni, struct ntfs_inode *ni,
+ 		struct NTFS_DE *de)
+@@ -2978,13 +2979,20 @@ int ni_add_name(struct ntfs_inode *dir_ni, struct ntfs_inode *ni,
+ 	struct ATTRIB *attr;
+ 	struct ATTR_LIST_ENTRY *le;
+ 	struct mft_inode *mi;
++	struct ATTR_FILE_NAME *fname;
+ 	struct ATTR_FILE_NAME *de_name = (struct ATTR_FILE_NAME *)(de + 1);
+ 	u16 de_key_size = le16_to_cpu(de->key_size);
+ 
+ 	mi_get_ref(&ni->mi, &de->ref);
+ 	mi_get_ref(&dir_ni->mi, &de_name->home);
+ 
+-	/* Insert new name in MFT. */
++	/* Fill duplicate from any ATTR_NAME. */
++	fname = ni_fname_name(ni, NULL, NULL, NULL, NULL);
++	if (fname)
++		memcpy(&de_name->dup, &fname->dup, sizeof(fname->dup));
++	de_name->dup.fa = ni->std_fa;
++
++	/* Insert new name into MFT. */
+ 	err = ni_insert_resident(ni, de_key_size, ATTR_NAME, NULL, 0, &attr,
+ 				 &mi, &le);
+ 	if (err)
+@@ -2992,7 +3000,7 @@ int ni_add_name(struct ntfs_inode *dir_ni, struct ntfs_inode *ni,
+ 
+ 	memcpy(Add2Ptr(attr, SIZEOF_RESIDENT), de_name, de_key_size);
+ 
+-	/* Insert new name in directory. */
++	/* Insert new name into directory. */
+ 	err = indx_insert_entry(&dir_ni->dir, dir_ni, de, ni->mi.sbi, NULL, 0);
+ 	if (err)
+ 		ni_remove_attr_le(ni, attr, mi, le);
+@@ -3016,7 +3024,7 @@ int ni_rename(struct ntfs_inode *dir_ni, struct ntfs_inode *new_dir_ni,
+ 	 * 1) Add new name and remove old name.
+ 	 * 2) Remove old name and add new name.
+ 	 *
+-	 * In most cases (not all!) adding new name in MFT and in directory can
++	 * In most cases (not all!) adding new name into MFT and into directory can
+ 	 * allocate additional cluster(s).
+ 	 * Second way may result to bad inode if we can't add new name
+ 	 * and then can't restore (add) old name.
+diff --git a/fs/ntfs3/inode.c b/fs/ntfs3/inode.c
+index a49da4ec6dc382..3ed31966374746 100644
+--- a/fs/ntfs3/inode.c
++++ b/fs/ntfs3/inode.c
+@@ -1659,7 +1659,6 @@ int ntfs_link_inode(struct inode *inode, struct dentry *dentry)
+ 	struct ntfs_inode *ni = ntfs_i(inode);
+ 	struct ntfs_sb_info *sbi = inode->i_sb->s_fs_info;
+ 	struct NTFS_DE *de;
+-	struct ATTR_FILE_NAME *de_name;
+ 
+ 	/* Allocate PATH_MAX bytes. */
+ 	de = __getname();
+@@ -1674,15 +1673,6 @@ int ntfs_link_inode(struct inode *inode, struct dentry *dentry)
+ 	if (err)
+ 		goto out;
+ 
+-	de_name = (struct ATTR_FILE_NAME *)(de + 1);
+-	/* Fill duplicate info. */
+-	de_name->dup.cr_time = de_name->dup.m_time = de_name->dup.c_time =
+-		de_name->dup.a_time = kernel2nt(&inode->i_ctime);
+-	de_name->dup.alloc_size = de_name->dup.data_size =
+-		cpu_to_le64(inode->i_size);
+-	de_name->dup.fa = ni->std_fa;
+-	de_name->dup.ea_size = de_name->dup.reparse = 0;
+-
+ 	err = ni_add_name(ntfs_i(d_inode(dentry->d_parent)), ni, de);
+ out:
+ 	__putname(de);
+
+From 54033c135061b52d4405facba2e49177a5716a31 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Wed, 6 Jul 2022 20:01:11 +0300
+Subject: [PATCH 29/39] fs/ntfs3: Added comments to frecord functions
+
+Added some comments in frecord.c for more context.
+Also changed run_lookup to static because it's an internal function.
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/bitmap.c  | 3 +--
+ fs/ntfs3/frecord.c | 8 ++++----
+ fs/ntfs3/ntfs_fs.h | 1 -
+ fs/ntfs3/run.c     | 2 +-
+ 4 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/fs/ntfs3/bitmap.c b/fs/ntfs3/bitmap.c
+index e3b5680fd51689..bb9ebb160227b7 100644
+--- a/fs/ntfs3/bitmap.c
++++ b/fs/ntfs3/bitmap.c
+@@ -1393,9 +1393,8 @@ int wnd_extend(struct wnd_bitmap *wnd, size_t new_bits)
+ 
+ void wnd_zone_set(struct wnd_bitmap *wnd, size_t lcn, size_t len)
+ {
+-	size_t zlen;
++	size_t zlen = wnd->zone_end - wnd->zone_bit;
+ 
+-	zlen = wnd->zone_end - wnd->zone_bit;
+ 	if (zlen)
+ 		wnd_add_free_ext(wnd, wnd->zone_bit, zlen, false);
+ 
+diff --git a/fs/ntfs3/frecord.c b/fs/ntfs3/frecord.c
+index acd9f444bd642a..bc48923693a97e 100644
+--- a/fs/ntfs3/frecord.c
++++ b/fs/ntfs3/frecord.c
+@@ -1287,7 +1287,7 @@ static int ni_expand_mft_list(struct ntfs_inode *ni)
+ 	done = asize - run_size - SIZEOF_NONRESIDENT;
+ 	le32_sub_cpu(&ni->mi.mrec->used, done);
+ 
+-	/* Estimate the size of second part: run_buf=NULL. */
++	/* Estimate packed size (run_buf=NULL). */
+ 	err = run_pack(run, svcn, evcn + 1 - svcn, NULL, sbi->record_size,
+ 		       &plen);
+ 	if (err < 0)
+@@ -1317,6 +1317,7 @@ static int ni_expand_mft_list(struct ntfs_inode *ni)
+ 	attr->name_off = SIZEOF_NONRESIDENT_LE;
+ 	attr->flags = 0;
+ 
++	/* This function can't fail - cause already checked above. */
+ 	run_pack(run, svcn, evcn + 1 - svcn, Add2Ptr(attr, SIZEOF_NONRESIDENT),
+ 		 run_size, &plen);
+ 
+@@ -1392,8 +1393,6 @@ int ni_expand_list(struct ntfs_inode *ni)
+ 
+ 	/* Split MFT data as much as possible. */
+ 	err = ni_expand_mft_list(ni);
+-	if (err)
+-		goto out;
+ 
+ out:
+ 	return !err && !done ? -EOPNOTSUPP : err;
+@@ -1419,6 +1418,7 @@ int ni_insert_nonresident(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 	u32 run_size, asize;
+ 	struct ntfs_sb_info *sbi = ni->mi.sbi;
+ 
++	/* Estimate packed size (run_buf=NULL). */
+ 	err = run_pack(run, svcn, len, NULL, sbi->max_bytes_per_attr - run_off,
+ 		       &plen);
+ 	if (err < 0)
+@@ -1448,12 +1448,12 @@ int ni_insert_nonresident(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 	attr->name_off = cpu_to_le16(name_off);
+ 	attr->flags = flags;
+ 
++	/* This function can't fail - cause already checked above. */
+ 	run_pack(run, svcn, len, Add2Ptr(attr, run_off), run_size, &plen);
+ 
+ 	attr->nres.svcn = cpu_to_le64(svcn);
+ 	attr->nres.evcn = cpu_to_le64((u64)svcn + len - 1);
+ 
+-	err = 0;
+ 	if (new_attr)
+ 		*new_attr = attr;
+ 
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index 83ed27bb624e99..7a728d3589cfd6 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -773,7 +773,6 @@ bool run_lookup_entry(const struct runs_tree *run, CLST vcn, CLST *lcn,
+ void run_truncate(struct runs_tree *run, CLST vcn);
+ void run_truncate_head(struct runs_tree *run, CLST vcn);
+ void run_truncate_around(struct runs_tree *run, CLST vcn);
+-bool run_lookup(const struct runs_tree *run, CLST vcn, size_t *index);
+ bool run_add_entry(struct runs_tree *run, CLST vcn, CLST lcn, CLST len,
+ 		   bool is_mft);
+ bool run_collapse_range(struct runs_tree *run, CLST vcn, CLST len);
+diff --git a/fs/ntfs3/run.c b/fs/ntfs3/run.c
+index aba8ab1b9fcb99..4168b8adc13139 100644
+--- a/fs/ntfs3/run.c
++++ b/fs/ntfs3/run.c
+@@ -31,7 +31,7 @@ struct ntfs_run {
+  * Case of entry missing from list 'index' will be set to
+  * point to insertion position for the entry question.
+  */
+-bool run_lookup(const struct runs_tree *run, CLST vcn, size_t *index)
++static bool run_lookup(const struct runs_tree *run, CLST vcn, size_t *index)
+ {
+ 	size_t min_idx, max_idx, mid_idx;
+ 	struct ntfs_run *r;
+
+From e6d9398c077d8e21a2ca50efab5cbf7ff5aff728 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Wed, 6 Jul 2022 20:17:28 +0300
+Subject: [PATCH 30/39] fs/ntfs3: Check possible errors in run_pack in advance
+
+Checking in advance speeds things up in some cases.
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/run.c | 39 ++++++++++++++++++++++-----------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
+
+diff --git a/fs/ntfs3/run.c b/fs/ntfs3/run.c
+index 4168b8adc13139..987a150108df6e 100644
+--- a/fs/ntfs3/run.c
++++ b/fs/ntfs3/run.c
+@@ -820,26 +820,36 @@ int run_pack(const struct runs_tree *run, CLST svcn, CLST len, u8 *run_buf,
+ 	CLST next_vcn, vcn, lcn;
+ 	CLST prev_lcn = 0;
+ 	CLST evcn1 = svcn + len;
++	const struct ntfs_run *r, *r_end;
+ 	int packed_size = 0;
+ 	size_t i;
+-	bool ok;
+ 	s64 dlcn;
+ 	int offset_size, size_size, tmp;
+ 
+-	next_vcn = vcn = svcn;
+-
+ 	*packed_vcns = 0;
+ 
+ 	if (!len)
+ 		goto out;
+ 
+-	ok = run_lookup_entry(run, vcn, &lcn, &len, &i);
++	/* Check all required entries [svcn, encv1) available. */
++	if (!run_lookup(run, svcn, &i))
++		return -ENOENT;
+ 
+-	if (!ok)
+-		goto error;
++	r_end = run->runs + run->count;
++	r = run->runs + i;
+ 
+-	if (next_vcn != vcn)
+-		goto error;
++	for (next_vcn = r->vcn + r->len; next_vcn < evcn1;
++	     next_vcn = r->vcn + r->len) {
++		if (++r >= r_end || r->vcn != next_vcn)
++			return -ENOENT;
++	}
++
++	/* Repeat cycle above and pack runs. Assume no errors. */
++	r = run->runs + i;
++	len = svcn - r->vcn;
++	vcn = svcn;
++	lcn = r->lcn == SPARSE_LCN ? SPARSE_LCN : (r->lcn + len);
++	len = r->len - len;
+ 
+ 	for (;;) {
+ 		next_vcn = vcn + len;
+@@ -888,12 +898,10 @@ int run_pack(const struct runs_tree *run, CLST svcn, CLST len, u8 *run_buf,
+ 		if (packed_size + 1 >= run_buf_size || next_vcn >= evcn1)
+ 			goto out;
+ 
+-		ok = run_get_entry(run, ++i, &vcn, &lcn, &len);
+-		if (!ok)
+-			goto error;
+-
+-		if (next_vcn != vcn)
+-			goto error;
++		r += 1;
++		vcn = r->vcn;
++		lcn = r->lcn;
++		len = r->len;
+ 	}
+ 
+ out:
+@@ -902,9 +910,6 @@ int run_pack(const struct runs_tree *run, CLST svcn, CLST len, u8 *run_buf,
+ 		run_buf[0] = 0;
+ 
+ 	return packed_size + 1;
+-
+-error:
+-	return -EOPNOTSUPP;
+ }
+ 
+ /*
+
+From 8335ebe195dcc76ece418485a9f08b9a9ad7fe23 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Thu, 7 Jul 2022 19:25:43 +0300
+Subject: [PATCH 31/39] fs/ntfs3: Make MFT zone less fragmented
+
+Now we take free space after the MFT zone if the MFT zone shrinks.
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/fsntfs.c  | 39 +++++++++++++++++++++++++--------------
+ fs/ntfs3/ntfs_fs.h |  1 +
+ fs/ntfs3/super.c   |  7 +++++++
+ 3 files changed, 33 insertions(+), 14 deletions(-)
+
+diff --git a/fs/ntfs3/fsntfs.c b/fs/ntfs3/fsntfs.c
+index fa4ca8b9b499ee..af1dca273b598a 100644
+--- a/fs/ntfs3/fsntfs.c
++++ b/fs/ntfs3/fsntfs.c
+@@ -783,7 +783,7 @@ int ntfs_clear_mft_tail(struct ntfs_sb_info *sbi, size_t from, size_t to)
+  */
+ int ntfs_refresh_zone(struct ntfs_sb_info *sbi)
+ {
+-	CLST zone_limit, zone_max, lcn, vcn, len;
++	CLST lcn, vcn, len;
+ 	size_t lcn_s, zlen;
+ 	struct wnd_bitmap *wnd = &sbi->used.bitmap;
+ 	struct ntfs_inode *ni = sbi->mft.ni;
+@@ -792,16 +792,6 @@ int ntfs_refresh_zone(struct ntfs_sb_info *sbi)
+ 	if (wnd_zone_len(wnd))
+ 		return 0;
+ 
+-	/*
+-	 * Compute the MFT zone at two steps.
+-	 * It would be nice if we are able to allocate 1/8 of
+-	 * total clusters for MFT but not more then 512 MB.
+-	 */
+-	zone_limit = (512 * 1024 * 1024) >> sbi->cluster_bits;
+-	zone_max = wnd->nbits >> 3;
+-	if (zone_max > zone_limit)
+-		zone_max = zone_limit;
+-
+ 	vcn = bytes_to_cluster(sbi,
+ 			       (u64)sbi->mft.bitmap.nbits << sbi->record_bits);
+ 
+@@ -815,7 +805,7 @@ int ntfs_refresh_zone(struct ntfs_sb_info *sbi)
+ 	lcn_s = lcn + 1;
+ 
+ 	/* Try to allocate clusters after last MFT run. */
+-	zlen = wnd_find(wnd, zone_max, lcn_s, 0, &lcn_s);
++	zlen = wnd_find(wnd, sbi->zone_max, lcn_s, 0, &lcn_s);
+ 	if (!zlen) {
+ 		ntfs_notice(sbi->sb, "MftZone: unavailable");
+ 		return 0;
+@@ -1397,7 +1387,7 @@ int ntfs_write_bh(struct ntfs_sb_info *sbi, struct NTFS_RECORD_HEADER *rhdr,
+ 		if (buffer_locked(bh))
+ 			__wait_on_buffer(bh);
+ 
+-		lock_buffer(nb->bh[idx]);
++		lock_buffer(bh);
+ 
+ 		bh_data = bh->b_data + off;
+ 		end_data = Add2Ptr(bh_data, op);
+@@ -2426,7 +2416,7 @@ static inline void ntfs_unmap_and_discard(struct ntfs_sb_info *sbi, CLST lcn,
+ 
+ void mark_as_free_ex(struct ntfs_sb_info *sbi, CLST lcn, CLST len, bool trim)
+ {
+-	CLST end, i;
++	CLST end, i, zone_len, zlen;
+ 	struct wnd_bitmap *wnd = &sbi->used.bitmap;
+ 
+ 	down_write_nested(&wnd->rw_lock, BITMAP_MUTEX_CLUSTERS);
+@@ -2461,6 +2451,27 @@ void mark_as_free_ex(struct ntfs_sb_info *sbi, CLST lcn, CLST len, bool trim)
+ 		ntfs_unmap_and_discard(sbi, lcn, len);
+ 	wnd_set_free(wnd, lcn, len);
+ 
++	/* append to MFT zone, if possible. */
++	zone_len = wnd_zone_len(wnd);
++	zlen = min(zone_len + len, sbi->zone_max);
++
++	if (zlen == zone_len) {
++		/* MFT zone already has maximum size. */
++	} else if (!zone_len) {
++		/* Create MFT zone. */
++		wnd_zone_set(wnd, lcn, zlen);
++	} else {
++		CLST zone_lcn = wnd_zone_bit(wnd);
++
++		if (lcn + len == zone_lcn) {
++			/* Append into head MFT zone. */
++			wnd_zone_set(wnd, lcn, zlen);
++		} else if (zone_lcn + zone_len == lcn) {
++			/* Append into tail MFT zone. */
++			wnd_zone_set(wnd, zone_lcn, zlen);
++		}
++	}
++
+ out:
+ 	up_write(&wnd->rw_lock);
+ }
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index 7a728d3589cfd6..6a2bbf889faafe 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -220,6 +220,7 @@ struct ntfs_sb_info {
+ 
+ 	u32 flags; // See NTFS_FLAGS_XXX.
+ 
++	CLST zone_max; // Maximum MFT zone length in clusters
+ 	CLST bad_clusters; // The count of marked bad clusters.
+ 
+ 	u16 max_bytes_per_attr; // Maximum attribute size in record.
+diff --git a/fs/ntfs3/super.c b/fs/ntfs3/super.c
+index eacea72ff92f6a..6fad173a8b8f43 100644
+--- a/fs/ntfs3/super.c
++++ b/fs/ntfs3/super.c
+@@ -867,6 +867,13 @@ static int ntfs_init_from_boot(struct super_block *sb, u32 sector_size,
+ 	sb->s_maxbytes = 0xFFFFFFFFull << sbi->cluster_bits;
+ #endif
+ 
++	/*
++	 * Compute the MFT zone at two steps.
++	 * It would be nice if we are able to allocate 1/8 of
++	 * total clusters for MFT but not more then 512 MB.
++	 */
++	sbi->zone_max = min_t(CLST, 0x20000000 >> sbi->cluster_bits, clusters >> 3);
++
+ 	err = 0;
+ 
+ out:
+
+From c12df45ee690112782049b8e85dff2e6cb1b3853 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Wed, 13 Jul 2022 17:55:27 +0300
+Subject: [PATCH 32/39] fs/ntfs3: New function ntfs_bad_inode
+
+There are repetitive steps in case of bad inode
+This commit wraps them in function
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c  | 10 ++++------
+ fs/ntfs3/frecord.c |  6 ++----
+ fs/ntfs3/fsntfs.c  | 14 ++++++++++++++
+ fs/ntfs3/inode.c   |  6 ++----
+ fs/ntfs3/namei.c   |  4 +---
+ fs/ntfs3/ntfs_fs.h |  2 ++
+ 6 files changed, 25 insertions(+), 17 deletions(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index 7454bd3ea02d76..5ba83eb0fc0740 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -1912,7 +1912,7 @@ int attr_collapse_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ out:
+ 	up_write(&ni->file.run_lock);
+ 	if (err)
+-		make_bad_inode(&ni->vfs_inode);
++		_ntfs_bad_inode(&ni->vfs_inode);
+ 
+ 	return err;
+ }
+@@ -2092,10 +2092,8 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 
+ out:
+ 	up_write(&ni->file.run_lock);
+-	if (err) {
+-		ntfs_set_state(sbi, NTFS_DIRTY_ERROR);
+-		make_bad_inode(&ni->vfs_inode);
+-	}
++	if (err)
++		_ntfs_bad_inode(&ni->vfs_inode);
+ 
+ 	return err;
+ }
+@@ -2282,7 +2280,7 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 
+ 	up_write(&ni->file.run_lock);
+ 	if (err)
+-		make_bad_inode(&ni->vfs_inode);
++		_ntfs_bad_inode(&ni->vfs_inode);
+ 
+ 	return err;
+ }
+diff --git a/fs/ntfs3/frecord.c b/fs/ntfs3/frecord.c
+index bc48923693a97e..bdc568053fae2c 100644
+--- a/fs/ntfs3/frecord.c
++++ b/fs/ntfs3/frecord.c
+@@ -2328,10 +2328,8 @@ int ni_decompress_file(struct ntfs_inode *ni)
+ 
+ out:
+ 	kfree(pages);
+-	if (err) {
+-		make_bad_inode(inode);
+-		ntfs_set_state(sbi, NTFS_DIRTY_ERROR);
+-	}
++	if (err)
++		_ntfs_bad_inode(inode);
+ 
+ 	return err;
+ }
+diff --git a/fs/ntfs3/fsntfs.c b/fs/ntfs3/fsntfs.c
+index af1dca273b598a..3f9903baa53f84 100644
+--- a/fs/ntfs3/fsntfs.c
++++ b/fs/ntfs3/fsntfs.c
+@@ -877,6 +877,20 @@ void ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait)
+ 	sbi->flags &= ~NTFS_FLAGS_MFTMIRR;
+ }
+ 
++/*
++ * ntfs_bad_inode
++ *
++ * Marks inode as bad and marks fs as 'dirty'
++ */
++void ntfs_bad_inode(struct inode *inode, const char *hint)
++{
++	struct ntfs_sb_info *sbi = inode->i_sb->s_fs_info;
++
++	ntfs_inode_err(inode, "%s", hint);
++	make_bad_inode(inode);
++	ntfs_set_state(sbi, NTFS_DIRTY_ERROR);
++}
++
+ /*
+  * ntfs_set_state
+  *
+diff --git a/fs/ntfs3/inode.c b/fs/ntfs3/inode.c
+index 3ed31966374746..cd48687127c16f 100644
+--- a/fs/ntfs3/inode.c
++++ b/fs/ntfs3/inode.c
+@@ -501,7 +501,7 @@ struct inode *ntfs_iget5(struct super_block *sb, const struct MFT_REF *ref,
+ 		inode = ntfs_read_mft(inode, name, ref);
+ 	else if (ref->seq != ntfs_i(inode)->mi.mrec->seq) {
+ 		/* Inode overlaps? */
+-		make_bad_inode(inode);
++		_ntfs_bad_inode(inode);
+ 	}
+ 
+ 	return inode;
+@@ -1725,9 +1725,7 @@ int ntfs_unlink_inode(struct inode *dir, const struct dentry *dentry)
+ 		if (inode->i_nlink)
+ 			mark_inode_dirty(inode);
+ 	} else if (!ni_remove_name_undo(dir_ni, ni, de, de2, undo_remove)) {
+-		make_bad_inode(inode);
+-		ntfs_inode_err(inode, "failed to undo unlink");
+-		ntfs_set_state(sbi, NTFS_DIRTY_ERROR);
++		_ntfs_bad_inode(inode);
+ 	} else {
+ 		if (ni_is_dirty(dir))
+ 			mark_inode_dirty(dir);
+diff --git a/fs/ntfs3/namei.c b/fs/ntfs3/namei.c
+index 1cc700760c7ed6..bc22cc321a74bb 100644
+--- a/fs/ntfs3/namei.c
++++ b/fs/ntfs3/namei.c
+@@ -308,9 +308,7 @@ static int ntfs_rename(struct user_namespace *mnt_userns, struct inode *dir,
+ 	err = ni_rename(dir_ni, new_dir_ni, ni, de, new_de, &is_bad);
+ 	if (is_bad) {
+ 		/* Restore after failed rename failed too. */
+-		make_bad_inode(inode);
+-		ntfs_inode_err(inode, "failed to undo rename");
+-		ntfs_set_state(sbi, NTFS_DIRTY_ERROR);
++		_ntfs_bad_inode(inode);
+ 	} else if (!err) {
+ 		inode->i_ctime = dir->i_ctime = dir->i_mtime =
+ 			current_time(dir);
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index 6a2bbf889faafe..a9359675299f49 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -593,6 +593,8 @@ void ntfs_mark_rec_free(struct ntfs_sb_info *sbi, CLST rno, bool is_mft);
+ int ntfs_clear_mft_tail(struct ntfs_sb_info *sbi, size_t from, size_t to);
+ int ntfs_refresh_zone(struct ntfs_sb_info *sbi);
+ void ntfs_update_mftmirr(struct ntfs_sb_info *sbi, int wait);
++void ntfs_bad_inode(struct inode *inode, const char *hint);
++#define _ntfs_bad_inode(i) ntfs_bad_inode(i, __func__)
+ enum NTFS_DIRTY_FLAGS {
+ 	NTFS_DIRTY_CLEAR = 0,
+ 	NTFS_DIRTY_DIRTY = 1,
+
+From 0e5b044cbf3a41b4efad7d9616342338f88b373d Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Wed, 13 Jul 2022 18:00:03 +0300
+Subject: [PATCH 33/39] fs/ntfs3: Refactoring attr_set_size to restore after
+ errors
+
+Added comments to code
+Added two undo labels for restoring after errors
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c | 180 ++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 126 insertions(+), 54 deletions(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index 5ba83eb0fc0740..c29b2debc9099b 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -173,7 +173,6 @@ int attr_allocate_clusters(struct ntfs_sb_info *sbi, struct runs_tree *run,
+ {
+ 	int err;
+ 	CLST flen, vcn0 = vcn, pre = pre_alloc ? *pre_alloc : 0;
+-	struct wnd_bitmap *wnd = &sbi->used.bitmap;
+ 	size_t cnt = run->count;
+ 
+ 	for (;;) {
+@@ -196,9 +195,7 @@ int attr_allocate_clusters(struct ntfs_sb_info *sbi, struct runs_tree *run,
+ 		/* Add new fragment into run storage. */
+ 		if (!run_add_entry(run, vcn, lcn, flen, opt == ALLOCATE_MFT)) {
+ 			/* Undo last 'ntfs_look_for_free_space' */
+-			down_write_nested(&wnd->rw_lock, BITMAP_MUTEX_CLUSTERS);
+-			wnd_set_free(wnd, lcn, flen);
+-			up_write(&wnd->rw_lock);
++			mark_as_free_ex(sbi, lcn, len, false);
+ 			err = -ENOMEM;
+ 			goto out;
+ 		}
+@@ -419,40 +416,44 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 	struct mft_inode *mi, *mi_b;
+ 	CLST alen, vcn, lcn, new_alen, old_alen, svcn, evcn;
+ 	CLST next_svcn, pre_alloc = -1, done = 0;
+-	bool is_ext;
++	bool is_ext, is_bad = false;
+ 	u32 align;
+ 	struct MFT_REC *rec;
+ 
+ again:
++	alen = 0;
+ 	le_b = NULL;
+ 	attr_b = ni_find_attr(ni, NULL, &le_b, type, name, name_len, NULL,
+ 			      &mi_b);
+ 	if (!attr_b) {
+ 		err = -ENOENT;
+-		goto out;
++		goto bad_inode;
+ 	}
+ 
+ 	if (!attr_b->non_res) {
+ 		err = attr_set_size_res(ni, attr_b, le_b, mi_b, new_size, run,
+ 					&attr_b);
+-		if (err || !attr_b->non_res)
+-			goto out;
++		if (err)
++			return err;
++
++		/* Return if file is still resident. */
++		if (!attr_b->non_res)
++			goto ok1;
+ 
+ 		/* Layout of records may be changed, so do a full search. */
+ 		goto again;
+ 	}
+ 
+ 	is_ext = is_attr_ext(attr_b);
+-
+-again_1:
+ 	align = sbi->cluster_size;
+-
+ 	if (is_ext)
+ 		align <<= attr_b->nres.c_unit;
+ 
+ 	old_valid = le64_to_cpu(attr_b->nres.valid_size);
+ 	old_size = le64_to_cpu(attr_b->nres.data_size);
+ 	old_alloc = le64_to_cpu(attr_b->nres.alloc_size);
++
++again_1:
+ 	old_alen = old_alloc >> cluster_bits;
+ 
+ 	new_alloc = (new_size + align - 1) & ~(u64)(align - 1);
+@@ -475,24 +476,27 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 		mi = mi_b;
+ 	} else if (!le_b) {
+ 		err = -EINVAL;
+-		goto out;
++		goto bad_inode;
+ 	} else {
+ 		le = le_b;
+ 		attr = ni_find_attr(ni, attr_b, &le, type, name, name_len, &vcn,
+ 				    &mi);
+ 		if (!attr) {
+ 			err = -EINVAL;
+-			goto out;
++			goto bad_inode;
+ 		}
+ 
+ next_le_1:
+ 		svcn = le64_to_cpu(attr->nres.svcn);
+ 		evcn = le64_to_cpu(attr->nres.evcn);
+ 	}
+-
++	/*
++	 * Here we have:
++	 * attr,mi,le - last attribute segment (containing 'vcn').
++	 * attr_b,mi_b,le_b - base (primary) attribute segment.
++	 */
+ next_le:
+ 	rec = mi->mrec;
+-
+ 	err = attr_load_runs(attr, ni, run, NULL);
+ 	if (err)
+ 		goto out;
+@@ -507,6 +511,13 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 			goto ok;
+ 		}
+ 
++		/*
++		 * Add clusters. In simple case we have to:
++		 *  - allocate space (vcn, lcn, len)
++		 *  - update packed run in 'mi'
++		 *  - update attr->nres.evcn
++		 *  - update attr_b->nres.data_size/attr_b->nres.alloc_size
++		 */
+ 		to_allocate = new_alen - old_alen;
+ add_alloc_in_same_attr_seg:
+ 		lcn = 0;
+@@ -520,9 +531,11 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 			pre_alloc = 0;
+ 			if (type == ATTR_DATA && !name_len &&
+ 			    sbi->options->prealloc) {
+-				CLST new_alen2 = bytes_to_cluster(
+-					sbi, get_pre_allocated(new_size));
+-				pre_alloc = new_alen2 - new_alen;
++				pre_alloc =
++					bytes_to_cluster(
++						sbi,
++						get_pre_allocated(new_size)) -
++					new_alen;
+ 			}
+ 
+ 			/* Get the last LCN to allocate from. */
+@@ -580,7 +593,7 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ pack_runs:
+ 		err = mi_pack_runs(mi, attr, run, vcn - svcn);
+ 		if (err)
+-			goto out;
++			goto undo_1;
+ 
+ 		next_svcn = le64_to_cpu(attr->nres.evcn) + 1;
+ 		new_alloc_tmp = (u64)next_svcn << cluster_bits;
+@@ -614,7 +627,7 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 		if (type == ATTR_LIST) {
+ 			err = ni_expand_list(ni);
+ 			if (err)
+-				goto out;
++				goto undo_2;
+ 			if (next_svcn < vcn)
+ 				goto pack_runs;
+ 
+@@ -624,8 +637,9 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 
+ 		if (!ni->attr_list.size) {
+ 			err = ni_create_attr_list(ni);
++			/* In case of error layout of records is not changed. */
+ 			if (err)
+-				goto out;
++				goto undo_2;
+ 			/* Layout of records is changed. */
+ 		}
+ 
+@@ -638,47 +652,56 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 		err = ni_insert_nonresident(ni, type, name, name_len, run,
+ 					    next_svcn, vcn - next_svcn,
+ 					    attr_b->flags, &attr, &mi, NULL);
+-		if (err)
+-			goto out;
+-
+-		if (!is_mft)
+-			run_truncate_head(run, evcn + 1);
+ 
+-		svcn = le64_to_cpu(attr->nres.svcn);
+-		evcn = le64_to_cpu(attr->nres.evcn);
+-
+-		le_b = NULL;
+ 		/*
+ 		 * Layout of records maybe changed.
+ 		 * Find base attribute to update.
+ 		 */
++		le_b = NULL;
+ 		attr_b = ni_find_attr(ni, NULL, &le_b, type, name, name_len,
+ 				      NULL, &mi_b);
+ 		if (!attr_b) {
+-			err = -ENOENT;
+-			goto out;
++			err = -EINVAL;
++			goto bad_inode;
+ 		}
+ 
+-		attr_b->nres.alloc_size = cpu_to_le64((u64)vcn << cluster_bits);
+-		attr_b->nres.data_size = attr_b->nres.alloc_size;
+-		attr_b->nres.valid_size = attr_b->nres.alloc_size;
++		if (err) {
++			/* ni_insert_nonresident failed. */
++			attr = NULL;
++			goto undo_2;
++		}
++
++		if (!is_mft)
++			run_truncate_head(run, evcn + 1);
++
++		svcn = le64_to_cpu(attr->nres.svcn);
++		evcn = le64_to_cpu(attr->nres.evcn);
++
++		/*
++		 * Attribute is in consistency state.
++		 * Save this point to restore to if next steps fail.
++		 */
++		old_valid = old_size = old_alloc = (u64)vcn << cluster_bits;
++		attr_b->nres.valid_size = attr_b->nres.data_size =
++			attr_b->nres.alloc_size = cpu_to_le64(old_size);
+ 		mi_b->dirty = true;
+ 		goto again_1;
+ 	}
+ 
+ 	if (new_size != old_size ||
+ 	    (new_alloc != old_alloc && !keep_prealloc)) {
++		/*
++		 * Truncate clusters. In simple case we have to:
++		 *  - update packed run in 'mi'
++		 *  - update attr->nres.evcn
++		 *  - update attr_b->nres.data_size/attr_b->nres.alloc_size
++		 *  - mark and trim clusters as free (vcn, lcn, len)
++		 */
++		CLST dlen = 0;
++
+ 		vcn = max(svcn, new_alen);
+ 		new_alloc_tmp = (u64)vcn << cluster_bits;
+ 
+-		alen = 0;
+-		err = run_deallocate_ex(sbi, run, vcn, evcn - vcn + 1, &alen,
+-					true);
+-		if (err)
+-			goto out;
+-
+-		run_truncate(run, vcn);
+-
+ 		if (vcn > svcn) {
+ 			err = mi_pack_runs(mi, attr, run, vcn - svcn);
+ 			if (err)
+@@ -697,7 +720,7 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 
+ 			if (!al_remove_le(ni, le)) {
+ 				err = -EINVAL;
+-				goto out;
++				goto bad_inode;
+ 			}
+ 
+ 			le = (struct ATTR_LIST_ENTRY *)((u8 *)le - le_sz);
+@@ -723,12 +746,20 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 				attr_b->nres.valid_size =
+ 					attr_b->nres.alloc_size;
+ 		}
++		mi_b->dirty = true;
+ 
+-		if (is_ext)
++		err = run_deallocate_ex(sbi, run, vcn, evcn - vcn + 1, &dlen,
++					true);
++		if (err)
++			goto out;
++
++		if (is_ext) {
++			/* dlen - really deallocated clusters. */
+ 			le64_sub_cpu(&attr_b->nres.total_size,
+-				     ((u64)alen << cluster_bits));
++				     ((u64)dlen << cluster_bits));
++		}
+ 
+-		mi_b->dirty = true;
++		run_truncate(run, vcn);
+ 
+ 		if (new_alloc_tmp <= new_alloc)
+ 			goto ok;
+@@ -747,7 +778,7 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 		if (le->type != type || le->name_len != name_len ||
+ 		    memcmp(le_name(le), name, name_len * sizeof(short))) {
+ 			err = -EINVAL;
+-			goto out;
++			goto bad_inode;
+ 		}
+ 
+ 		err = ni_load_mi(ni, le, &mi);
+@@ -757,7 +788,7 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 		attr = mi_find_attr(mi, NULL, type, name, name_len, &le->id);
+ 		if (!attr) {
+ 			err = -EINVAL;
+-			goto out;
++			goto bad_inode;
+ 		}
+ 		goto next_le_1;
+ 	}
+@@ -772,13 +803,13 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 		}
+ 	}
+ 
+-out:
+-	if (!err && attr_b && ret)
++ok1:
++	if (ret)
+ 		*ret = attr_b;
+ 
+ 	/* Update inode_set_bytes. */
+-	if (!err && ((type == ATTR_DATA && !name_len) ||
+-		     (type == ATTR_ALLOC && name == I30_NAME))) {
++	if (((type == ATTR_DATA && !name_len) ||
++	     (type == ATTR_ALLOC && name == I30_NAME))) {
+ 		bool dirty = false;
+ 
+ 		if (ni->vfs_inode.i_size != new_size) {
+@@ -786,7 +817,7 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 			dirty = true;
+ 		}
+ 
+-		if (attr_b && attr_b->non_res) {
++		if (attr_b->non_res) {
+ 			new_alloc = le64_to_cpu(attr_b->nres.alloc_size);
+ 			if (inode_get_bytes(&ni->vfs_inode) != new_alloc) {
+ 				inode_set_bytes(&ni->vfs_inode, new_alloc);
+@@ -800,6 +831,47 @@ int attr_set_size(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 		}
+ 	}
+ 
++	return 0;
++
++undo_2:
++	vcn -= alen;
++	attr_b->nres.data_size = cpu_to_le64(old_size);
++	attr_b->nres.valid_size = cpu_to_le64(old_valid);
++	attr_b->nres.alloc_size = cpu_to_le64(old_alloc);
++
++	/* Restore 'attr' and 'mi'. */
++	if (attr)
++		goto restore_run;
++
++	if (le64_to_cpu(attr_b->nres.svcn) <= svcn &&
++	    svcn <= le64_to_cpu(attr_b->nres.evcn)) {
++		attr = attr_b;
++		le = le_b;
++		mi = mi_b;
++	} else if (!le_b) {
++		err = -EINVAL;
++		goto bad_inode;
++	} else {
++		le = le_b;
++		attr = ni_find_attr(ni, attr_b, &le, type, name, name_len,
++				    &svcn, &mi);
++		if (!attr)
++			goto bad_inode;
++	}
++
++restore_run:
++	if (mi_pack_runs(mi, attr, run, evcn - svcn + 1))
++		is_bad = true;
++
++undo_1:
++	run_deallocate_ex(sbi, run, vcn, alen, NULL, false);
++
++	run_truncate(run, vcn);
++out:
++	if (is_bad) {
++bad_inode:
++		_ntfs_bad_inode(&ni->vfs_inode);
++	}
+ 	return err;
+ }
+ 
+
+From 20abc64f78346ac591344133301661b77e1c8253 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Wed, 13 Jul 2022 18:18:48 +0300
+Subject: [PATCH 34/39] fs/ntfs3: Refactoring attr_punch_hole to restore after
+ errors
+
+Added comments to code
+Added new function run_clone to make a copy of run
+Added done and undo labels for restoring after errors
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c  | 117 ++++++++++++++++++++++++++++++---------------
+ fs/ntfs3/ntfs_fs.h |   1 +
+ fs/ntfs3/run.c     |  25 ++++++++++
+ 3 files changed, 105 insertions(+), 38 deletions(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index c29b2debc9099b..cf3729ce771bbe 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -140,7 +140,10 @@ static int run_deallocate_ex(struct ntfs_sb_info *sbi, struct runs_tree *run,
+ 		}
+ 
+ 		if (lcn != SPARSE_LCN) {
+-			mark_as_free_ex(sbi, lcn, clen, trim);
++			if (sbi) {
++				/* mark bitmap range [lcn + clen) as free and trim clusters. */
++				mark_as_free_ex(sbi, lcn, clen, trim);
++			}
+ 			dn += clen;
+ 		}
+ 
+@@ -2002,10 +2005,11 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 	struct ATTRIB *attr = NULL, *attr_b;
+ 	struct ATTR_LIST_ENTRY *le, *le_b;
+ 	struct mft_inode *mi, *mi_b;
+-	CLST svcn, evcn1, vcn, len, end, alen, dealloc, next_svcn;
++	CLST svcn, evcn1, vcn, len, end, alen, hole, next_svcn;
+ 	u64 total_size, alloc_size;
+ 	u32 mask;
+ 	__le16 a_flags;
++	struct runs_tree run2;
+ 
+ 	if (!bytes)
+ 		return 0;
+@@ -2057,6 +2061,9 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 	}
+ 
+ 	down_write(&ni->file.run_lock);
++	run_init(&run2);
++	run_truncate(run, 0);
++
+ 	/*
+ 	 * Enumerate all attribute segments and punch hole where necessary.
+ 	 */
+@@ -2064,7 +2071,7 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 	vcn = vbo >> sbi->cluster_bits;
+ 	len = bytes >> sbi->cluster_bits;
+ 	end = vcn + len;
+-	dealloc = 0;
++	hole = 0;
+ 
+ 	svcn = le64_to_cpu(attr_b->nres.svcn);
+ 	evcn1 = le64_to_cpu(attr_b->nres.evcn) + 1;
+@@ -2076,14 +2083,14 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 		mi = mi_b;
+ 	} else if (!le_b) {
+ 		err = -EINVAL;
+-		goto out;
++		goto bad_inode;
+ 	} else {
+ 		le = le_b;
+ 		attr = ni_find_attr(ni, attr_b, &le, ATTR_DATA, NULL, 0, &vcn,
+ 				    &mi);
+ 		if (!attr) {
+ 			err = -EINVAL;
+-			goto out;
++			goto bad_inode;
+ 		}
+ 
+ 		svcn = le64_to_cpu(attr->nres.svcn);
+@@ -2091,69 +2098,91 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 	}
+ 
+ 	while (svcn < end) {
+-		CLST vcn1, zero, dealloc2;
++		CLST vcn1, zero, hole2 = hole;
+ 
+ 		err = attr_load_runs(attr, ni, run, &svcn);
+ 		if (err)
+-			goto out;
++			goto done;
+ 		vcn1 = max(vcn, svcn);
+ 		zero = min(end, evcn1) - vcn1;
+ 
+-		dealloc2 = dealloc;
+-		err = run_deallocate_ex(sbi, run, vcn1, zero, &dealloc, true);
++		/*
++		 * Check range [vcn1 + zero).
++		 * Calculate how many clusters there are.
++		 * Don't do any destructive actions.
++		 */
++		err = run_deallocate_ex(NULL, run, vcn1, zero, &hole2, false);
+ 		if (err)
+-			goto out;
++			goto done;
+ 
+-		if (dealloc2 == dealloc) {
+-			/* Looks like the required range is already sparsed. */
+-		} else {
+-			if (!run_add_entry(run, vcn1, SPARSE_LCN, zero,
+-					   false)) {
+-				err = -ENOMEM;
+-				goto out;
+-			}
++		/* Check if required range is already hole. */
++		if (hole2 == hole)
++			goto next_attr;
+ 
+-			err = mi_pack_runs(mi, attr, run, evcn1 - svcn);
++		/* Make a clone of run to undo. */
++		err = run_clone(run, &run2);
++		if (err)
++			goto done;
++
++		/* Make a hole range (sparse) [vcn1 + zero). */
++		if (!run_add_entry(run, vcn1, SPARSE_LCN, zero, false)) {
++			err = -ENOMEM;
++			goto done;
++		}
++
++		/* Update run in attribute segment. */
++		err = mi_pack_runs(mi, attr, run, evcn1 - svcn);
++		if (err)
++			goto done;
++		next_svcn = le64_to_cpu(attr->nres.evcn) + 1;
++		if (next_svcn < evcn1) {
++			/* Insert new attribute segment. */
++			err = ni_insert_nonresident(ni, ATTR_DATA, NULL, 0, run,
++						    next_svcn,
++						    evcn1 - next_svcn, a_flags,
++						    &attr, &mi, &le);
+ 			if (err)
+-				goto out;
+-			next_svcn = le64_to_cpu(attr->nres.evcn) + 1;
+-			if (next_svcn < evcn1) {
+-				err = ni_insert_nonresident(ni, ATTR_DATA, NULL,
+-							    0, run, next_svcn,
+-							    evcn1 - next_svcn,
+-							    a_flags, &attr, &mi,
+-							    &le);
+-				if (err)
+-					goto out;
+-				/* Layout of records maybe changed. */
+-				attr_b = NULL;
+-			}
++				goto undo_punch;
++
++			/* Layout of records maybe changed. */
++			attr_b = NULL;
+ 		}
++
++		/* Real deallocate. Should not fail. */
++		run_deallocate_ex(sbi, &run2, vcn1, zero, &hole, true);
++
++next_attr:
+ 		/* Free all allocated memory. */
+ 		run_truncate(run, 0);
+ 
+ 		if (evcn1 >= alen)
+ 			break;
+ 
++		/* Get next attribute segment. */
+ 		attr = ni_enum_attr_ex(ni, attr, &le, &mi);
+ 		if (!attr) {
+ 			err = -EINVAL;
+-			goto out;
++			goto bad_inode;
+ 		}
+ 
+ 		svcn = le64_to_cpu(attr->nres.svcn);
+ 		evcn1 = le64_to_cpu(attr->nres.evcn) + 1;
+ 	}
+ 
+-	total_size -= (u64)dealloc << sbi->cluster_bits;
++done:
++	if (!hole)
++		goto out;
++
+ 	if (!attr_b) {
+ 		attr_b = ni_find_attr(ni, NULL, NULL, ATTR_DATA, NULL, 0, NULL,
+ 				      &mi_b);
+ 		if (!attr_b) {
+ 			err = -EINVAL;
+-			goto out;
++			goto bad_inode;
+ 		}
+ 	}
++
++	total_size -= (u64)hole << sbi->cluster_bits;
+ 	attr_b->nres.total_size = cpu_to_le64(total_size);
+ 	mi_b->dirty = true;
+ 
+@@ -2163,11 +2192,23 @@ int attr_punch_hole(struct ntfs_inode *ni, u64 vbo, u64 bytes, u32 *frame_size)
+ 	mark_inode_dirty(&ni->vfs_inode);
+ 
+ out:
++	run_close(&run2);
+ 	up_write(&ni->file.run_lock);
+-	if (err)
+-		_ntfs_bad_inode(&ni->vfs_inode);
+-
+ 	return err;
++
++bad_inode:
++	_ntfs_bad_inode(&ni->vfs_inode);
++	goto out;
++
++undo_punch:
++	/*
++	 * Restore packed runs.
++	 * 'mi_pack_runs' should not fail, cause we restore original.
++	 */
++	if (mi_pack_runs(mi, attr, &run2, evcn1 - svcn))
++		goto bad_inode;
++
++	goto done;
+ }
+ 
+ /*
+diff --git a/fs/ntfs3/ntfs_fs.h b/fs/ntfs3/ntfs_fs.h
+index a9359675299f49..c37fa9ca56896d 100644
+--- a/fs/ntfs3/ntfs_fs.h
++++ b/fs/ntfs3/ntfs_fs.h
+@@ -798,6 +798,7 @@ int run_unpack_ex(struct runs_tree *run, struct ntfs_sb_info *sbi, CLST ino,
+ #define run_unpack_ex run_unpack
+ #endif
+ int run_get_highest_vcn(CLST vcn, const u8 *run_buf, u64 *highest_vcn);
++int run_clone(const struct runs_tree *run, struct runs_tree *new_run);
+ 
+ /* Globals from super.c */
+ void *ntfs_set_shared(void *ptr, u32 bytes);
+diff --git a/fs/ntfs3/run.c b/fs/ntfs3/run.c
+index 987a150108df6e..aaaa0d3d35a24f 100644
+--- a/fs/ntfs3/run.c
++++ b/fs/ntfs3/run.c
+@@ -1156,3 +1156,28 @@ int run_get_highest_vcn(CLST vcn, const u8 *run_buf, u64 *highest_vcn)
+ 	*highest_vcn = vcn64 - 1;
+ 	return 0;
+ }
++
++/*
++ * run_clone
++ *
++ * Make a copy of run
++ */
++int run_clone(const struct runs_tree *run, struct runs_tree *new_run)
++{
++	size_t bytes = run->count * sizeof(struct ntfs_run);
++
++	if (bytes > new_run->allocated) {
++		struct ntfs_run *new_ptr = kvmalloc(bytes, GFP_KERNEL);
++
++		if (!new_ptr)
++			return -ENOMEM;
++
++		kvfree(new_run->runs);
++		new_run->runs = new_ptr;
++		new_run->allocated = bytes;
++	}
++
++	memcpy(new_run->runs, run->runs, bytes);
++	new_run->count = run->count;
++	return 0;
++}
+
+From 9256ec35359f52c1e390cf419873cf519ee332b6 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Wed, 13 Jul 2022 18:44:24 +0300
+Subject: [PATCH 35/39] fs/ntfs3: Refactoring attr_insert_range to restore
+ after errors
+
+Added done and undo labels for restoring after errors
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/attrib.c | 117 ++++++++++++++++++++++++++++++++++------------
+ 1 file changed, 86 insertions(+), 31 deletions(-)
+
+diff --git a/fs/ntfs3/attrib.c b/fs/ntfs3/attrib.c
+index cf3729ce771bbe..71f870d497aed7 100644
+--- a/fs/ntfs3/attrib.c
++++ b/fs/ntfs3/attrib.c
+@@ -2275,30 +2275,29 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 
+ 	if (!attr_b->non_res) {
+ 		err = attr_set_size(ni, ATTR_DATA, NULL, 0, run,
+-				    data_size + bytes, NULL, false, &attr);
+-		if (err)
+-			goto out;
+-		if (!attr->non_res) {
+-			/* Still resident. */
+-			char *data = Add2Ptr(attr, attr->res.data_off);
++				    data_size + bytes, NULL, false, NULL);
+ 
+-			memmove(data + bytes, data, bytes);
+-			memset(data, 0, bytes);
+-			err = 0;
+-			goto out;
+-		}
+-		/* Resident files becomes nonresident. */
+ 		le_b = NULL;
+ 		attr_b = ni_find_attr(ni, NULL, &le_b, ATTR_DATA, NULL, 0, NULL,
+ 				      &mi_b);
+ 		if (!attr_b) {
+-			err = -ENOENT;
+-			goto out;
+-		}
+-		if (!attr_b->non_res) {
+ 			err = -EINVAL;
++			goto bad_inode;
++		}
++
++		if (err)
+ 			goto out;
++
++		if (!attr_b->non_res) {
++			/* Still resident. */
++			char *data = Add2Ptr(attr_b, attr_b->res.data_off);
++
++			memmove(data + bytes, data, bytes);
++			memset(data, 0, bytes);
++			goto done;
+ 		}
++
++		/* Resident files becomes nonresident. */
+ 		data_size = le64_to_cpu(attr_b->nres.data_size);
+ 		alloc_size = le64_to_cpu(attr_b->nres.alloc_size);
+ 	}
+@@ -2316,14 +2315,14 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 		mi = mi_b;
+ 	} else if (!le_b) {
+ 		err = -EINVAL;
+-		goto out;
++		goto bad_inode;
+ 	} else {
+ 		le = le_b;
+ 		attr = ni_find_attr(ni, attr_b, &le, ATTR_DATA, NULL, 0, &vcn,
+ 				    &mi);
+ 		if (!attr) {
+ 			err = -EINVAL;
+-			goto out;
++			goto bad_inode;
+ 		}
+ 
+ 		svcn = le64_to_cpu(attr->nres.svcn);
+@@ -2346,7 +2345,6 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 		goto out;
+ 
+ 	next_svcn = le64_to_cpu(attr->nres.evcn) + 1;
+-	run_truncate_head(run, next_svcn);
+ 
+ 	while ((attr = ni_enum_attr_ex(ni, attr, &le, &mi)) &&
+ 	       attr->type == ATTR_DATA && !attr->name_len) {
+@@ -2359,9 +2357,27 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 		mi->dirty = true;
+ 	}
+ 
++	if (next_svcn < evcn1 + len) {
++		err = ni_insert_nonresident(ni, ATTR_DATA, NULL, 0, run,
++					    next_svcn, evcn1 + len - next_svcn,
++					    a_flags, NULL, NULL, NULL);
++
++		le_b = NULL;
++		attr_b = ni_find_attr(ni, NULL, &le_b, ATTR_DATA, NULL, 0, NULL,
++				      &mi_b);
++		if (!attr_b) {
++			err = -EINVAL;
++			goto bad_inode;
++		}
++
++		if (err) {
++			/* ni_insert_nonresident failed. Try to undo. */
++			goto undo_insert_range;
++		}
++	}
++
+ 	/*
+-	 * Update primary attribute segment in advance.
+-	 * pointer attr_b may become invalid (layout of mft is changed)
++	 * Update primary attribute segment.
+ 	 */
+ 	if (vbo <= ni->i_valid)
+ 		ni->i_valid += bytes;
+@@ -2376,14 +2392,7 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 		attr_b->nres.valid_size = cpu_to_le64(ni->i_valid);
+ 	mi_b->dirty = true;
+ 
+-	if (next_svcn < evcn1 + len) {
+-		err = ni_insert_nonresident(ni, ATTR_DATA, NULL, 0, run,
+-					    next_svcn, evcn1 + len - next_svcn,
+-					    a_flags, NULL, NULL, NULL);
+-		if (err)
+-			goto out;
+-	}
+-
++done:
+ 	ni->vfs_inode.i_size += bytes;
+ 	ni->ni_flags |= NI_FLAG_UPDATE_PARENT;
+ 	mark_inode_dirty(&ni->vfs_inode);
+@@ -2392,8 +2401,54 @@ int attr_insert_range(struct ntfs_inode *ni, u64 vbo, u64 bytes)
+ 	run_truncate(run, 0); /* clear cached values. */
+ 
+ 	up_write(&ni->file.run_lock);
+-	if (err)
+-		_ntfs_bad_inode(&ni->vfs_inode);
+ 
+ 	return err;
++
++bad_inode:
++	_ntfs_bad_inode(&ni->vfs_inode);
++	goto out;
++
++undo_insert_range:
++	svcn = le64_to_cpu(attr_b->nres.svcn);
++	evcn1 = le64_to_cpu(attr_b->nres.evcn) + 1;
++
++	if (svcn <= vcn && vcn < evcn1) {
++		attr = attr_b;
++		le = le_b;
++		mi = mi_b;
++	} else if (!le_b) {
++		goto bad_inode;
++	} else {
++		le = le_b;
++		attr = ni_find_attr(ni, attr_b, &le, ATTR_DATA, NULL, 0, &vcn,
++				    &mi);
++		if (!attr) {
++			goto bad_inode;
++		}
++
++		svcn = le64_to_cpu(attr->nres.svcn);
++		evcn1 = le64_to_cpu(attr->nres.evcn) + 1;
++	}
++
++	if (attr_load_runs(attr, ni, run, NULL))
++		goto bad_inode;
++
++	if (!run_collapse_range(run, vcn, len))
++		goto bad_inode;
++
++	if (mi_pack_runs(mi, attr, run, evcn1 + len - svcn))
++		goto bad_inode;
++
++	while ((attr = ni_enum_attr_ex(ni, attr, &le, &mi)) &&
++	       attr->type == ATTR_DATA && !attr->name_len) {
++		le64_sub_cpu(&attr->nres.svcn, len);
++		le64_sub_cpu(&attr->nres.evcn, len);
++		if (le) {
++			le->vcn = attr->nres.svcn;
++			ni->attr_list.dirty = true;
++		}
++		mi->dirty = true;
++	}
++
++	goto out;
+ }
+
+From 8039edba043d1eaee74bd76e0280a49ba5e195d7 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Wed, 13 Jul 2022 19:11:15 +0300
+Subject: [PATCH 36/39] fs/ntfs3: Create MFT zone only if length is large
+ enough
+
+Also removed uninformative print
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/fsntfs.c | 11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
+
+diff --git a/fs/ntfs3/fsntfs.c b/fs/ntfs3/fsntfs.c
+index 3f9903baa53f84..209ca71c3ba0cc 100644
+--- a/fs/ntfs3/fsntfs.c
++++ b/fs/ntfs3/fsntfs.c
+@@ -806,12 +806,6 @@ int ntfs_refresh_zone(struct ntfs_sb_info *sbi)
+ 
+ 	/* Try to allocate clusters after last MFT run. */
+ 	zlen = wnd_find(wnd, sbi->zone_max, lcn_s, 0, &lcn_s);
+-	if (!zlen) {
+-		ntfs_notice(sbi->sb, "MftZone: unavailable");
+-		return 0;
+-	}
+-
+-	/* Truncate too large zone. */
+ 	wnd_zone_set(wnd, lcn_s, zlen);
+ 
+ 	return 0;
+@@ -2472,8 +2466,9 @@ void mark_as_free_ex(struct ntfs_sb_info *sbi, CLST lcn, CLST len, bool trim)
+ 	if (zlen == zone_len) {
+ 		/* MFT zone already has maximum size. */
+ 	} else if (!zone_len) {
+-		/* Create MFT zone. */
+-		wnd_zone_set(wnd, lcn, zlen);
++		/* Create MFT zone only if 'zlen' is large enough. */
++		if (zlen == sbi->zone_max)
++			wnd_zone_set(wnd, lcn, zlen);
+ 	} else {
+ 		CLST zone_lcn = wnd_zone_bit(wnd);
+ 
+
+From 451e45a0e6df21e63acfd493feb5194f4697ce11 Mon Sep 17 00:00:00 2001
+From: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+Date: Wed, 13 Jul 2022 19:18:19 +0300
+Subject: [PATCH 37/39] fs/ntfs3: Make ni_ins_new_attr return error
+
+Function ni_ins_new_attr now returns ERR_PTR(err),
+so we check it now in other functions like ni_expand_mft_list
+
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/frecord.c | 29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
+
+diff --git a/fs/ntfs3/frecord.c b/fs/ntfs3/frecord.c
+index bdc568053fae2c..381a38a06ec220 100644
+--- a/fs/ntfs3/frecord.c
++++ b/fs/ntfs3/frecord.c
+@@ -469,7 +469,7 @@ ni_ins_new_attr(struct ntfs_inode *ni, struct mft_inode *mi,
+ 				&ref, &le);
+ 		if (err) {
+ 			/* No memory or no space. */
+-			return NULL;
++			return ERR_PTR(err);
+ 		}
+ 		le_added = true;
+ 
+@@ -1011,6 +1011,8 @@ static int ni_ins_attr_ext(struct ntfs_inode *ni, struct ATTR_LIST_ENTRY *le,
+ 				       name_off, svcn, ins_le);
+ 		if (!attr)
+ 			continue;
++		if (IS_ERR(attr))
++			return PTR_ERR(attr);
+ 
+ 		if (ins_attr)
+ 			*ins_attr = attr;
+@@ -1032,8 +1034,15 @@ static int ni_ins_attr_ext(struct ntfs_inode *ni, struct ATTR_LIST_ENTRY *le,
+ 
+ 	attr = ni_ins_new_attr(ni, mi, le, type, name, name_len, asize,
+ 			       name_off, svcn, ins_le);
+-	if (!attr)
++	if (!attr) {
++		err = -EINVAL;
+ 		goto out2;
++	}
++
++	if (IS_ERR(attr)) {
++		err = PTR_ERR(attr);
++		goto out2;
++	}
+ 
+ 	if (ins_attr)
+ 		*ins_attr = attr;
+@@ -1045,7 +1054,6 @@ static int ni_ins_attr_ext(struct ntfs_inode *ni, struct ATTR_LIST_ENTRY *le,
+ out2:
+ 	ni_remove_mi(ni, mi);
+ 	mi_put(mi);
+-	err = -EINVAL;
+ 
+ out1:
+ 	ntfs_mark_rec_free(sbi, rno, is_mft);
+@@ -1101,6 +1109,11 @@ static int ni_insert_attr(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 	if (asize <= free) {
+ 		attr = ni_ins_new_attr(ni, &ni->mi, NULL, type, name, name_len,
+ 				       asize, name_off, svcn, ins_le);
++		if (IS_ERR(attr)) {
++			err = PTR_ERR(attr);
++			goto out;
++		}
++
+ 		if (attr) {
+ 			if (ins_attr)
+ 				*ins_attr = attr;
+@@ -1198,6 +1211,11 @@ static int ni_insert_attr(struct ntfs_inode *ni, enum ATTR_TYPE type,
+ 		goto out;
+ 	}
+ 
++	if (IS_ERR(attr)) {
++		err = PTR_ERR(attr);
++		goto out;
++	}
++
+ 	if (ins_attr)
+ 		*ins_attr = attr;
+ 	if (ins_mi)
+@@ -1313,6 +1331,11 @@ static int ni_expand_mft_list(struct ntfs_inode *ni)
+ 		goto out;
+ 	}
+ 
++	if (IS_ERR(attr)) {
++		err = PTR_ERR(attr);
++		goto out;
++	}
++
+ 	attr->non_res = 1;
+ 	attr->name_off = SIZEOF_NONRESIDENT_LE;
+ 	attr->flags = 0;
+
+From 96964352e21962f5e51ecad87527ae9b6fec9670 Mon Sep 17 00:00:00 2001
+From: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+Date: Thu, 21 Jul 2022 11:18:41 +0800
+Subject: [PATCH 38/39] fs/ntfs3: Remove unused function wnd_bits
+
+Since the function wnd_bits is defined but not called in any file, it is
+a useless function, and we delete it in view of the brevity of the code.
+
+Remove some warnings found by running scripts/kernel-doc, which is
+caused by using 'make W=1'.
+
+fs/ntfs3/bitmap.c:54:19: warning: unused function 'wnd_bits' [-Wunused-function].
+
+Reported-by: Abaci Robot <abaci@linux.alibaba.com>
+Signed-off-by: Jiapeng Chong <jiapeng.chong@linux.alibaba.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/bitmap.c | 5 -----
+ 1 file changed, 5 deletions(-)
+
+diff --git a/fs/ntfs3/bitmap.c b/fs/ntfs3/bitmap.c
+index bb9ebb160227b7..5d44ceac855b74 100644
+--- a/fs/ntfs3/bitmap.c
++++ b/fs/ntfs3/bitmap.c
+@@ -51,11 +51,6 @@ void ntfs3_exit_bitmap(void)
+ 	kmem_cache_destroy(ntfs_enode_cachep);
+ }
+ 
+-static inline u32 wnd_bits(const struct wnd_bitmap *wnd, size_t i)
+-{
+-	return i + 1 == wnd->nwnd ? wnd->bits_last : wnd->sb->s_blocksize * 8;
+-}
+-
+ /*
+  * wnd_scan
+  *
+
+From d4073595d0c61463ec3a87411b19e2a90f76d3f8 Mon Sep 17 00:00:00 2001
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 8 Aug 2022 11:34:41 +0300
+Subject: [PATCH 39/39] fs/ntfs3: uninitialized variable in ntfs_set_acl_ex()
+
+The goto out calls kfree(value) on an uninitialized pointer.  Just
+return directly as the other error paths do.
+
+Fixes: 460bbf2990b3 ("fs/ntfs3: Do not change mode if ntfs_set_ea failed")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Konstantin Komarov <almaz.alexandrovich@paragon-software.com>
+---
+ fs/ntfs3/xattr.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/ntfs3/xattr.c b/fs/ntfs3/xattr.c
+index 02f6a933ee7977..5bdff12a1232db 100644
+--- a/fs/ntfs3/xattr.c
++++ b/fs/ntfs3/xattr.c
+@@ -568,7 +568,7 @@ static noinline int ntfs_set_acl_ex(struct user_namespace *mnt_userns,
+ 			err = posix_acl_update_mode(mnt_userns, inode, &mode,
+ 						    &acl);
+ 			if (err)
+-				goto out;
++				return err;
+ 		}
+ 		name = XATTR_NAME_POSIX_ACL_ACCESS;
+ 		name_len = sizeof(XATTR_NAME_POSIX_ACL_ACCESS) - 1;
