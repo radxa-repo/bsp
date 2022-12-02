@@ -249,7 +249,6 @@ main() {
             then
                 DOCKER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
             fi
-            docker commit bsp "${DOCKER_REGISTRY}bsp:builder"
             docker container rm bsp
         fi
         return $DOCKER_EXIT_CODE
