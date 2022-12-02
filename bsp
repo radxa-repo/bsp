@@ -170,11 +170,21 @@ main() {
                 return
                 ;;
             --export)
-                find "linux/$1" "u-boot/$1" | tar acvf "$1.tar.xz" --files-from -
+                pushd "$SCRIPT_DIR"
+                echo "PROFILE_BSP_COMMIT='$(git rev-parse HEAD)'" > "$SCRIPT_DIR/.profile"
+                find "$SCRIPT_DIR/linux/$1" "$SCRIPT_DIR/u-boot/$1" "$SCRIPT_DIR/.profile" | tar acvf "$OLDPWD/$1.tar.xz" --files-from -
+                popd
                 return
                 ;;
             --import)
-                tar axvf "$1"
+                tar axvf "$1" -C "$SCRIPT_DIR"
+                pushd "$SCRIPT_DIR"
+                if source "$SCRIPT_DIR/.profile" && [[ -n "${PROFILE_BSP_COMMIT:-}" ]] && [[ "$(git rev-parse HEAD)" != "$PROFILE_BSP_COMMIT" ]]
+                then
+                    echo "Profile was exported when bsp is at commit $PROFILE_BSP_COMMIT."
+                    echo "You can use 'git switch -d $PROFILE_BSP_COMMIT' to ensure the best compatability."
+                fi
+                popd
                 return
                 ;;
             --)
