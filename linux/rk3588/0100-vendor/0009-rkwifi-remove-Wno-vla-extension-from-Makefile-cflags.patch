@@ -1,0 +1,27 @@
+From 975e2d1db08067688c28308362c92deb5aeb1c1d Mon Sep 17 00:00:00 2001
+From: Azkali <a.ffcc7@gmail.com>
+Date: Mon, 5 Dec 2022 21:36:00 +0100
+Subject: [PATCH 1/2] rkwifi: remove -Wno-vla-extension from Makefile cflags
+
+GCC-12 doesn't recognize this flags, preventing compilation.
+Simply remove it.
+---
+ drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/Makefile | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/Makefile b/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/Makefile
+index 40736d3c85b2..266baac93ce8 100755
+--- a/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/Makefile
++++ b/drivers/net/wireless/rockchip_wlan/rkwifi/bcmdhd/Makefile
+@@ -30,8 +30,7 @@ CONFIG_MACH_PLATFORM := y
+ #CONFIG_BCMDHD_DTS := y
+ 
+ DHDCFLAGS = -Wall -Wstrict-prototypes -Wno-date-time                      \
+-	-Wno-implicit-fallthrough -Wno-declaration-after-statement            \
+-	-Wno-vla -Wno-vla-extension                                           \
++	-Wno-implicit-fallthrough -Wno-declaration-after-statement -Wno-vla   \
+ 	-Dlinux -DLINUX -DBCMDRIVER                                           \
+ 	-DBCMDONGLEHOST -DBCMDMA32 -DBCMFILEIMAGE                             \
+ 	-DDHDTHREAD -DDHD_DEBUG -DSHOW_EVENTS -DGET_OTP_MAC_ENABLE            \
+-- 
+2.38.1
