@@ -128,12 +128,12 @@ rkpack_rkboot() {
     if [[ -f "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL.ini" ]]
     then
         $SCRIPT_DIR/.src/rkbin/tools/boot_merger "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL.ini"
-        mv ./${BSP_TRUST_OVERRIDE}loader_v*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/rkboot.bin"
+        mv ./${BSP_TRUST_OVERRIDE}_loader_v*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/rkboot.bin"
     fi
     if [[ -f "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL_SPINOR.ini" ]]
     then
-        $SCRIPT_DIR/.src/rkbin/tools/boot_merger "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALLSPINOR.ini"
-        mv ./${BSP_TRUST_OVERRIDE}loader_spinor_v*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/rkboot_spinor.bin"
+        $SCRIPT_DIR/.src/rkbin/tools/boot_merger "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL_SPINOR.ini"
+        mv ./${BSP_TRUST_OVERRIDE}_loader_spinor_v*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/rkboot_spinor.bin"
     fi
     popd
 }
