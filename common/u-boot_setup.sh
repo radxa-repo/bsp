@@ -17,6 +17,25 @@ maskrom() {
     esac
 }
 
+maskrom_spinor() {
+    local SOC=${1:-$(dtsoc)}
+
+    case "$SOC" in
+        amlogic*)
+            echo "Amlogic device supports running U-Boot binary from maskrom mode." >&2
+            echo "Please retry with maskrom command." >&2
+            return 3
+            ;;
+        rockchip*)
+            rkdeveloptool db "$SCRIPT_DIR/rkboot_spinor.bin"
+            ;;
+        *)
+            echo "Unknown SOC." >&2
+            return 1
+            ;;
+    esac
+}
+
 maskrom_update_bootloader() {
     local SOC=${1:-$(dtsoc)}
 
@@ -35,6 +54,32 @@ maskrom_update_bootloader() {
             then
                 rkdeveloptool wl 16384 "$SCRIPT_DIR/uboot.img"
                 rkdeveloptool wl 24576 "$SCRIPT_DIR/trust.img"
+            else
+                echo "Missing U-Boot binary!" >&2
+                return 2
+            fi
+            ;;
+        *)
+            echo "Unknown SOC." >&2
+            return 1
+            ;;
+    esac
+}
+
+maskrom_update_spinor() {
+    local SOC=${1:-$(dtsoc)}
+
+    case "$SOC" in
+        rockchip*)
+            rkdeveloptool ef
+            rkdeveloptool wl 64 "$SCRIPT_DIR/idbloader-spi.img"
+            if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
+            then
+                rkdeveloptool wl 4096 "$SCRIPT_DIR/u-boot.itb"
+            elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
+            then
+                rkdeveloptool wl 4096 "$SCRIPT_DIR/uboot.img"
+                rkdeveloptool wl 6144 "$SCRIPT_DIR/trust.img"
             else
                 echo "Missing U-Boot binary!" >&2
                 return 2
@@ -101,7 +146,7 @@ update_bootloader() {
     esac
 }
 
-update_spi() {
+update_spinor() {
     if [[ ! -e /dev/mtdblock0 ]]
     then
         echo "/dev/mtdblock0 is missing." >&2
