@@ -35,19 +35,26 @@ bsp_makedeb() {
     mv $SCRIPT_DIR/.src/*.deb ./
     for BOARD in ${SUPPORTED_BOARDS[@]}
     do
-        local NAMES=("linux-image-$BOARD" "linux-headers-$BOARD")
-        local DESCRIPTIONS=("Radxa virtual Linux package for $BOARD" "Radxa virtual Linux header package for $BOARD")
-        local DEPENDS=("linux-image-$kernelversion-$PKG_REVISION-$FORK" "linux-headers-$kernelversion-$PKG_REVISION-$FORK")
-        for i in {0..1}
+        local NAMES=("linux-image-$BOARD" "linux-headers-$BOARD" "linux-libc-dev-$BOARD")
+        local DESCRIPTIONS=("Radxa virtual Linux package for $BOARD" "Radxa virtual Linux header package for $BOARD" "Radxa virtual userspace header package for $BOARD")
+        local DEPENDS=("linux-image-$kernelversion-$PKG_REVISION-$FORK" "linux-headers-$kernelversion-$PKG_REVISION-$FORK" "linux-libc-dev-$kernelversion-$PKG_REVISION-$FORK")
+        local PROVIDES=("" "" "linux-libc-dev")
+        for i in {0..2}
         do
             local NAME=${NAMES[$i]}
             local VERSION="$kernelversion-$PKG_REVISION-$BSP_GITREV"
             local URL="https://github.com/radxa-pkg/linux-image-$FORK"
             local DESCRIPTION=${DESCRIPTIONS[$i]}
             local DEPEND=${DEPENDS[$i]}
+            local PROVIDE=()
+            if [[ -n "${PROVIDES[$i]}" ]]
+            then
+                PROVIDE=("--provides" "${PROVIDES[$i]}")
+            fi
             fpm -s empty -t deb -n "$NAME" -v "$VERSION" \
                 --deb-compression xz \
                 --depends "$DEPEND" \
+                "${PROVIDE[@]}" \
                 --url "$URL" \
                 --description "$DESCRIPTION" \
                 --license "GPL-2+" \
