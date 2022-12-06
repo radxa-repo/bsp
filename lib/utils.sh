@@ -82,8 +82,6 @@ git_source() {
         git init
         git_repo_config
         git am --abort &>/dev/null || true
-        git reset --hard FETCH_HEAD || true
-        git clean -ffd || true
 
         local origin=$(sha1sum <(echo "$git_url") | cut -d' ' -f1)
         git remote add $origin $git_url 2>/dev/null && true
@@ -93,16 +91,17 @@ git_source() {
             if [[ "$(git rev-parse FETCH_HEAD)" != "$2" ]]
             then
                 git fetch --depth 1 $origin $2
+                git reset --hard FETCH_HEAD
+                git clean -ffd
                 git switch --detach $2
                 git tag -f tag_$2
             fi
         else
             git fetch --depth 1 $origin tag $2
+            git reset --hard FETCH_HEAD
+            git clean -ffd
             git switch --detach tags/$2
         fi
-
-        git reset --hard FETCH_HEAD
-        git clean -ffd
     popd
 }
 
@@ -145,11 +144,6 @@ prepare_source() {
         git init
         git_repo_config
         git am --abort &>/dev/null || true
-        if [[ -n $(git status -s) ]]
-        then
-            git reset --hard FETCH_HEAD || true
-            git clean -ffd
-        fi
 
         local origin=$(sha1sum <(echo "$BSP_GIT") | cut -d' ' -f1)
         git remote add $origin $BSP_GIT 2>/dev/null && true
@@ -159,21 +153,25 @@ prepare_source() {
             if [[ "$(git rev-parse FETCH_HEAD)" != "$BSP_COMMIT" ]]
             then
                 git fetch --depth 1 $origin $BSP_COMMIT
+                git reset --hard FETCH_HEAD
+                git clean -ffd
                 git switch --detach $BSP_COMMIT
                 git tag -f tag_$BSP_COMMIT
             fi
         elif [[ -n $BSP_TAG ]]
         then
             git fetch --depth 1 $origin tag $BSP_TAG
+            git reset --hard FETCH_HEAD
+            git clean -ffd
             git switch --detach tags/$BSP_TAG
         elif [[ -n $BSP_BRANCH ]]
         then
             git fetch --depth 1 $origin $BSP_BRANCH
+            git reset --hard FETCH_HEAD
+            git clean -ffd
             git switch --detach $origin/$BSP_BRANCH
         fi
 
-        git reset --hard FETCH_HEAD
-        git clean -ffd
         SOURCE_GITREV="$(git rev-parse --short FETCH_HEAD^{commit})"
 
         for d in $(find -L $fork_dir -type d | sort -r)
