@@ -91,11 +91,11 @@ git_source() {
             if [[ "$(git rev-parse FETCH_HEAD)" != "$2" ]]
             then
                 git fetch --depth 1 $origin $2
-                git reset --hard FETCH_HEAD
-                git clean -ffd
-                git switch --detach $2
-                git tag -f tag_$2
             fi
+            git reset --hard FETCH_HEAD
+            git clean -ffd
+            git switch --detach $2
+            git tag -f tag_$2
         else
             git fetch --depth 1 $origin tag $2
             git reset --hard FETCH_HEAD
