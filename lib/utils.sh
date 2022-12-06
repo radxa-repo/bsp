@@ -82,11 +82,8 @@ git_source() {
         git init
         git_repo_config
         git am --abort &>/dev/null || true
-        if [[ -n $(git status -s) ]]
-        then
-            git reset --hard FETCH_HEAD || true
-            git clean -ffd
-        fi
+        git reset --hard FETCH_HEAD || true
+        git clean -ffd || true
 
         local origin=$(sha1sum <(echo "$git_url") | cut -d' ' -f1)
         git remote add $origin $git_url 2>/dev/null && true
