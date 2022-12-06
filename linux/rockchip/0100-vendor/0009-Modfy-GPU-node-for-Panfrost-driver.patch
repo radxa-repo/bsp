@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntan <yt@radxa.com>
 Date: Mon, 5 Dec 2022 17:35:53 +0800
 Subject: [PATCH] Modfy GPU node for Panfrost driver
 
