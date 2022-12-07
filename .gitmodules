@@ -1,0 +1,3 @@
+[submodule "linux/rockchip/0200-panfork"]
+	path = linux/rockchip/0200-panfork
+	url = https://gitlab.com/panfork/rk3588-implicit-sync.git
