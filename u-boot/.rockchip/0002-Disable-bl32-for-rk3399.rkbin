@@ -4,13 +4,12 @@ Date: Tue, 30 Aug 2022 17:41:34 +0800
 Subject: [PATCH] Disable bl32 for rk3399
 
 This causes mainline kernel to panic.
-
 ---
  RKTRUST/RK3399TRUST.ini | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/RKTRUST/RK3399TRUST.ini b/RKTRUST/RK3399TRUST.ini
-index dbb7564..a2bf7b8 100644
+index 707e8c9..0af883a 100644
 --- a/RKTRUST/RK3399TRUST.ini
 +++ b/RKTRUST/RK3399TRUST.ini
 @@ -8,9 +8,7 @@ SEC=1
@@ -25,5 +24,5 @@ index dbb7564..a2bf7b8 100644
  SEC=0
  [OUTPUT]
 -- 
-2.37.2
+2.38.1
 
