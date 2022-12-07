@@ -22,6 +22,7 @@ runs:
       uses: actions/checkout@v3
       with:
         repository: radxa-repo/bsp
+        submodules: true
     - name: Install dependency
       shell: bash
       run: |
