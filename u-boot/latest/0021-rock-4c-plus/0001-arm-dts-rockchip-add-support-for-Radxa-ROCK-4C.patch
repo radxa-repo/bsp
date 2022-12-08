@@ -4,20 +4,22 @@ Date: Thu, 6 Oct 2022 10:58:52 +0000
 Subject: [PATCH] arm: dts: rockchip: add support for Radxa ROCK 4C+
 
 Signed-off-by: FUKAUMI Naoki <naoki@radxa.com>
+Signed-off-by: WANG Zejian <ken@radxa.com>
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
 ---
  arch/arm/dts/Makefile                        |   1 +
  arch/arm/dts/rk3399-rock-4c-plus-u-boot.dtsi |   6 +
- arch/arm/dts/rk3399-rock-4c-plus.dts         | 703 +++++++++++++++++++
+ arch/arm/dts/rk3399-rock-4c-plus.dts         | 733 +++++++++++++++++++
  arch/arm/dts/rk3399-t-opp.dtsi               | 114 +++
  configs/rock-4c-plus-rk3399_defconfig        |  87 +++
- 5 files changed, 911 insertions(+)
+ 5 files changed, 941 insertions(+)
  create mode 100644 arch/arm/dts/rk3399-rock-4c-plus-u-boot.dtsi
  create mode 100644 arch/arm/dts/rk3399-rock-4c-plus.dts
  create mode 100644 arch/arm/dts/rk3399-t-opp.dtsi
  create mode 100644 configs/rock-4c-plus-rk3399_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 965895bc2a..74904599d7 100644
+index 717be756..536e9ffd 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -156,6 +156,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
@@ -30,7 +32,7 @@ index 965895bc2a..74904599d7 100644
  	rk3399-rock-pi-4c.dtb \
 diff --git a/arch/arm/dts/rk3399-rock-4c-plus-u-boot.dtsi b/arch/arm/dts/rk3399-rock-4c-plus-u-boot.dtsi
 new file mode 100644
-index 0000000000..b7dcd2e05d
+index 00000000..b7dcd2e0
 --- /dev/null
 +++ b/arch/arm/dts/rk3399-rock-4c-plus-u-boot.dtsi
 @@ -0,0 +1,6 @@
@@ -42,10 +44,10 @@ index 0000000000..b7dcd2e05d
 +#include "rk3399-rock-pi-4-u-boot.dtsi"
 diff --git a/arch/arm/dts/rk3399-rock-4c-plus.dts b/arch/arm/dts/rk3399-rock-4c-plus.dts
 new file mode 100644
-index 0000000000..f9884902f8
+index 00000000..70759e94
 --- /dev/null
 +++ b/arch/arm/dts/rk3399-rock-4c-plus.dts
-@@ -0,0 +1,703 @@
+@@ -0,0 +1,733 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2019 Fuzhou Rockchip Electronics Co., Ltd
@@ -117,6 +119,18 @@ index 0000000000..f9884902f8
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
 +		vin-supply = <&vcc3v3_sys>;
++	};
++
++	vcc3v3_pcie: vcc3v3-pcie-regulator {
++		compatible = "regulator-fixed";
++		enable-active-high;
++		gpio = <&gpio2 RK_PA2 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pcie_drv>;
++		regulator-name = "vcc3v3_pcie";
++		regulator-always-on;
++		regulator-boot-on;
++		vin-supply = <&vcc5v0_sys>;
 +	};
 +
 +	vcc3v3_phy1: vcc3v3-phy1-regulator {
@@ -504,6 +518,18 @@ index 0000000000..f9884902f8
 +	status = "okay";
 +};
 +
++&pcie_phy {
++	status = "okay";
++};
++
++&pcie0 {
++	ep-gpios = <&gpio4 RK_PD3 GPIO_ACTIVE_HIGH>;
++	num-lanes = <4>;
++	pinctrl-names = "default";
++	pinctrl-0 = <&pcie_clkreqnb_cpm>;
++	status = "okay";
++};
++
 +&pinctrl {
 +	bt {
 +		bt_enable_h: bt-enable-h {
@@ -526,6 +552,12 @@ index 0000000000..f9884902f8
 +
 +		user_led2: user-led2 {
 +			rockchip,pins = <3 RK_PD5 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
++	pcie {
++		pcie_drv: pcie-drv {
++			rockchip,pins = <2 RK_PA2 RK_FUNC_GPIO &pcfg_pull_up_20ma>;
 +		};
 +	};
 +
@@ -751,7 +783,7 @@ index 0000000000..f9884902f8
 +};
 diff --git a/arch/arm/dts/rk3399-t-opp.dtsi b/arch/arm/dts/rk3399-t-opp.dtsi
 new file mode 100644
-index 0000000000..1ababadda9
+index 00000000..1ababadd
 --- /dev/null
 +++ b/arch/arm/dts/rk3399-t-opp.dtsi
 @@ -0,0 +1,114 @@
@@ -871,7 +903,7 @@ index 0000000000..1ababadda9
 +};
 diff --git a/configs/rock-4c-plus-rk3399_defconfig b/configs/rock-4c-plus-rk3399_defconfig
 new file mode 100644
-index 0000000000..f864c732f1
+index 00000000..f864c732
 --- /dev/null
 +++ b/configs/rock-4c-plus-rk3399_defconfig
 @@ -0,0 +1,87 @@
@@ -963,5 +995,5 @@ index 0000000000..f864c732f1
 +CONFIG_ERRNO_STR=y
 +CONFIG_OF_LIBFDT_OVERLAY=y
 -- 
-2.35.1
+2.38.1
 
