@@ -18,6 +18,7 @@ Supported package generation options:
     -n, --native-build      Build without using Docker
     -l, --local-docker      Using locally built Docker image
     -s, --docker-shell      Start a shell inside the container instead of the build
+    -d, --debug             Build debug package as well
 
 Alternative functionalities
     --json [catagory]   Print supported options in json format
@@ -97,6 +98,10 @@ build() {
             apply_kconfig "$d/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
         done
         apply_kconfig "$SCRIPT_DIR/$TARGET/$FORK/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        if $DEBUG_BUILD
+        then
+            apply_kconfig "$SCRIPT_DIR/$TARGET/.debug/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        fi
         # Cannot run `bsp_make olddefconfig` seperately here
         # as it will break the build in the next step
         BSP_MAKE_TARGETS=("olddefconfig" "${BSP_MAKE_TARGETS[@]}")
@@ -112,7 +117,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnls" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker,docker-shell" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker,docker-shell,debug" -n "$0" -- "$@")"
     then
         usage
         return
@@ -127,6 +132,7 @@ main() {
     local NATIVE_BUILD="false"
     local DOCKER_REGISTRY="ghcr.io/radxa-repo/"
     local DOCKER_SHELL="false"
+    local DEBUG_BUILD="false"
 
     while true
     do
@@ -160,6 +166,9 @@ main() {
                 ;;
             -s|--docker-shell)
                 DOCKER_SHELL="true"
+                ;;
+            -d|--debug)
+                DEBUG_BUILD="true"
                 ;;
             --json)
                 json "$@"
