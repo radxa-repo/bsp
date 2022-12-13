@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntan <yt@radxa.com>
 Date: Fri, 9 Dec 2022 19:42:52 +0800
 Subject: [PATCH] Fix mouse cursor drawing out of bound
 
