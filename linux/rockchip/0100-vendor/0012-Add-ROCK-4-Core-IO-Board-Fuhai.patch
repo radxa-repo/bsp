@@ -6,8 +6,8 @@ Subject: [PATCH] Add ROCK 4 Core IO Board (Fuhai)
 ---
  arch/arm64/boot/dts/rockchip/Makefile         |   1 +
  .../dts/rockchip/rk3399-rock-4-core-io.dts    | 562 +++++++++++++++++
- .../boot/dts/rockchip/rk3399-rock-4-core.dtsi | 592 ++++++++++++++++++
- 3 files changed, 1155 insertions(+)
+ .../boot/dts/rockchip/rk3399-rock-4-core.dtsi | 591 ++++++++++++++++++
+ 3 files changed, 1154 insertions(+)
  create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-rock-4-core-io.dts
  create mode 100644 arch/arm64/boot/dts/rockchip/rk3399-rock-4-core.dtsi
 
@@ -596,7 +596,7 @@ new file mode 100644
 index 000000000000..daa480da841b
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-4-core.dtsi
-@@ -0,0 +1,592 @@
+@@ -0,0 +1,591 @@
 +/*
 + * Copyright (c) 2016 Fuzhou Rockchip Electronics Co., Ltd
 + *
