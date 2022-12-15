@@ -1,17 +1,28 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: ZHANG Yuntan <yt@radxa.com>
-Date: Fri, 9 Dec 2022 19:42:52 +0800
-Subject: [PATCH] Fix mouse cursor drawing out of bound
+From 2edabfb2562a8899b7f00194f536a6f6bef0cc8b Mon Sep 17 00:00:00 2001
+From: Damon Ding <damon.ding@rock-chips.com>
+Date: Tue, 13 Dec 2022 11:04:42 +0800
+Subject: [PATCH] drm/rockchip: vop: Use clipped src/dst coordinates
 
+Some linux app(cusor) may set negative coordinates(crtc_x/y)
+
+And some linux app(mpv) may set coordinates outside the screen.
+
+These are both unsupported on rockchip vop.
+
+so we use clipped coordinates here.
+
+Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+Signed-off-by: Damon Ding <damon.ding@rock-chips.com>
+Change-Id: Id2322113f0973271997575678cda478a9987266b
 ---
- drivers/gpu/drm/rockchip/rockchip_drm_vop.c | 37 ++++++++++++---------
- 1 file changed, 22 insertions(+), 15 deletions(-)
+ drivers/gpu/drm/rockchip/rockchip_drm_vop.c | 35 ++++++++++++---------
+ 1 file changed, 21 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
-index 6490626c5e49..13b10490b821 100644
+index d7ea1f80ea12..96099755633f 100644
 --- a/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
 +++ b/drivers/gpu/drm/rockchip/rockchip_drm_vop.c
-@@ -1747,14 +1747,6 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
+@@ -1758,14 +1758,6 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
  	if (WARN_ON(!crtc_state))
  		return -EINVAL;
  
@@ -26,7 +37,7 @@ index 6490626c5e49..13b10490b821 100644
  	vop_plane_state->zpos = state->zpos;
  	vop_plane_state->blend_mode = state->pixel_blend_mode;
  
-@@ -1764,8 +1756,22 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
+@@ -1775,8 +1767,22 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
  	if (ret)
  		return ret;
  
@@ -50,19 +61,18 @@ index 6490626c5e49..13b10490b821 100644
  
  	vop_plane_state->format = vop_convert_format(fb->format->format);
  	if (vop_plane_state->format < 0)
-@@ -1774,12 +1780,13 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
+@@ -1785,12 +1791,13 @@ static int vop_plane_atomic_check(struct drm_plane *plane,
  	vop = to_vop(crtc);
  	vop_data = vop->data;
  
 -	if (state->src_w >> 16 < 4 || state->src_h >> 16 < 4 ||
 -	    state->crtc_w < 4 || state->crtc_h < 4) {
--		DRM_ERROR("Invalid size: %dx%d->%dx%d, min size is 4x4\n",
++	if (drm_rect_width(src) >> 16 < 4 || drm_rect_height(src) >> 16 < 4 ||
++	    drm_rect_width(dest) < 4 || drm_rect_width(dest) < 4) {
+ 		DRM_ERROR("Invalid size: %dx%d->%dx%d, min size is 4x4\n",
 -			  state->src_w >> 16, state->src_h >> 16,
 -			  state->crtc_w, state->crtc_h);
 -		return -EINVAL;
-+	if (drm_rect_width(src) >> 16 < 4 || drm_rect_height(src) >> 16 < 4 ||
-+	    drm_rect_width(dest) < 4 || drm_rect_width(dest) < 4) {
-+		DRM_ERROR("Invalid source: %dx%d. max input: %dx%d\n",
 +			  drm_rect_width(src) >> 16, drm_rect_height(src) >> 16,
 +			  drm_rect_width(dest), drm_rect_height(dest));
 +		state->visible = false;
@@ -71,5 +81,5 @@ index 6490626c5e49..13b10490b821 100644
  
  	if (drm_rect_width(src) >> 16 > vop_data->max_input.width ||
 -- 
-2.38.1
+2.34.1
 
