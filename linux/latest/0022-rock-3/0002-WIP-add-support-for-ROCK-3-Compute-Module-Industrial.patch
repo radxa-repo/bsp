@@ -7,8 +7,8 @@ Subject: [PATCH] [WIP] add support for ROCK 3 Compute Module Industrial /
 Signed-off-by: FUKAUMI Naoki <naoki@radxa.com>
 ---
  arch/arm64/boot/dts/rockchip/Makefile         |   1 +
- .../boot/dts/rockchip/rk3568-radxa-e25.dts    | 557 ++++++++++++++++++
- 2 files changed, 558 insertions(+)
+ .../boot/dts/rockchip/rk3568-radxa-e25.dts    | 578 ++++++++++++++++++
+ 2 files changed, 579 insertions(+)
  create mode 100644 arch/arm64/boot/dts/rockchip/rk3568-radxa-e25.dts
 
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
@@ -23,10 +23,10 @@ index 4b90450ce936..62e3af23b803 100644
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-rock-3a.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/rk3568-radxa-e25.dts b/arch/arm64/boot/dts/rockchip/rk3568-radxa-e25.dts
 new file mode 100644
-index 000000000000..0cf6fc576393
+index 000000000000..769824128e7a
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3568-radxa-e25.dts
-@@ -0,0 +1,557 @@
+@@ -0,0 +1,578 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2022 Radxa Limited
@@ -34,6 +34,7 @@ index 000000000000..0cf6fc576393
 +
 +/dts-v1/;
 +#include <dt-bindings/gpio/gpio.h>
++#include <dt-bindings/input/input.h>
 +#include <dt-bindings/leds/common.h>
 +#include <dt-bindings/pinctrl/rockchip.h>
 +#include "rk3568.dtsi"
@@ -49,6 +50,19 @@ index 000000000000..0cf6fc576393
 +
 +	chosen: chosen {
 +		stdout-path = "serial2:115200n8";
++	};
++
++	adc-keys {
++		compatible = "adc-keys";
++		io-channels = <&saradc 0>;
++		io-channel-names = "buttons";
++		keyup-threshold-microvolt = <1750000>;
++
++		button-power {
++			label = "Power";
++			linux,code = <KEY_POWER>;
++			press-threshold-microvolt = <0>;
++		};
 +	};
 +
 +	dc5v_input: dc5v-input {
@@ -132,7 +146,7 @@ index 000000000000..0cf6fc576393
 +		regulator-name = "vcc3v3_pcie30x1";
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
-+		vin-supply = <&vcc3v3_pi6c_05>;
++		vin-supply = <&vcc5v0_sys>;
 +	};
 +
 +	vcc3v3_pi6c_05: vcc3v3-pi6c-05-regulator {
@@ -531,7 +545,14 @@ index 000000000000..0cf6fc576393
 +	status = "okay";
 +};
 +
++&saradc {
++	vref-supply = <&vcca_1v8>;
++	status = "okay";
++};
++
 +&sata1 {
++	ahci-supply = <&vcc3v3_pi6c_05>;
++	target-supply = <&vcc3v3_pcie30x1>;
 +	status = "okay";
 +};
 +
