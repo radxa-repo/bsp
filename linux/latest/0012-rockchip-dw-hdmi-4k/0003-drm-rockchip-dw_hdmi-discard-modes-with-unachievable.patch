@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Date: Wed, 18 Jan 2023 14:22:13 +0100
+Subject: [PATCH] drm/rockchip: dw_hdmi: discard modes with unachievable
+ pixelclocks
+
+The Rockchip PLL drivers are currently table based and support only
+the most common pixelclocks. Discard all modes we cannot achieve
+at all. Normally the desired pixelclocks have an exact match in the
+PLL driver, nevertheless allow for a 0.1% error just in case.
+
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c b/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
+index feba6b9be..725952811 100644
+--- a/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
++++ b/drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c
+@@ -256,10 +256,14 @@ dw_hdmi_rockchip_mode_valid(struct dw_hdmi *dw_hdmi, void *data,
+ {
+ 	struct rockchip_hdmi *hdmi = data;
+ 	const struct dw_hdmi_mpll_config *mpll_cfg = rockchip_mpll_cfg;
+-	int pclk = mode->clock * 1000;
++	int rpclk, pclk = mode->clock * 1000;
+ 	bool exact_match = hdmi->plat_data->phy_force_vendor;
+ 	int i;
+ 
++	rpclk = clk_round_rate(hdmi->ref_clk, pclk);
++	if (abs(rpclk - pclk) > pclk / 1000)
++		return MODE_NOCLOCK;
++
+ 	for (i = 0; mpll_cfg[i].mpixelclock != (~0UL); i++) {
+ 		/*
+ 		 * For vendor specific phys force an exact match of the pixelclock
+-- 
+2.34.1
+
