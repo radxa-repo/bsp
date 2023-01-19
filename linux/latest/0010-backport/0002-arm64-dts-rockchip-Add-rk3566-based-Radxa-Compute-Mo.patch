@@ -1,99 +1,84 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: FUKAUMI Naoki <naoki@radxa.com>
-Date: Tue, 18 Oct 2022 06:36:48 +0000
-Subject: [PATCH] [WIP] add support for ROCK 3 Compute Module SODIMM / IO Board
+From: Jagan Teki <jagan@amarulasolutions.com>
+Date: Thu, 12 Jan 2023 16:29:01 +0530
+Subject: [PATCH] arm64: dts: rockchip: Add rk3566 based Radxa Compute Module 3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+Radxa Compute Module 3(CM3) is one of the modules from a series
+System On Module based on the Radxa ROCK 3 series and is compatible
+with Raspberry Pi CM4 pinout and form factor.
+
+Specification:
+- Rockchip RK3566
+- up to 8GB LPDDR4
+- up to 128GB high performance eMMC
+- Optional wireless LAN, 2.4GHz and 5.0GHz IEEE 802.11b/g/n/ac wireless,
+  BT 5.0, BLE with onboard and external antenna.
+- Gigabit Ethernet PHY
+
+Radxa CM3 needs to mount on top of this IO board in order to create
+complete Radxa CM3 IO board platform.
+
+Since Radxa CM3 is compatible with Raspberry Pi CM4 pinout so it is
+possible to mount Radxa CM3 on top of the Rasberry Pi CM4 IO board.
+
+Add support for Radxa CM3.
+
+Co-developed-by: FUKAUMI Naoki <naoki@radxa.com>
 Signed-off-by: FUKAUMI Naoki <naoki@radxa.com>
+Signed-off-by: Jagan Teki <jagan@amarulasolutions.com>
+Link: https://lore.kernel.org/r/20230112105902.192852-2-jagan@amarulasolutions.com
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
 ---
- arch/arm64/boot/dts/rockchip/Makefile         |   1 +
- .../rockchip/rk3566-radxa-cm3-sodimm-io.dts   | 556 ++++++++++++++++++
- 2 files changed, 557 insertions(+)
- create mode 100644 arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3-sodimm-io.dts
+ .../boot/dts/rockchip/rk3566-radxa-cm3.dtsi   | 345 ++++++++++++++++++
+ 1 file changed, 345 insertions(+)
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3.dtsi
 
-diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
-index 8c15593c0ca4..4b90450ce936 100644
---- a/arch/arm64/boot/dts/rockchip/Makefile
-+++ b/arch/arm64/boot/dts/rockchip/Makefile
-@@ -67,6 +67,7 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-pinenote-v1.2.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-quartz64-a.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-quartz64-b.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-radxa-cm3-io.dtb
-+dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-radxa-cm3-sodimm-io.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-roc-pc.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3566-soquartz-cm4.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-bpi-r2-pro.dtb
-diff --git a/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3-sodimm-io.dts b/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3-sodimm-io.dts
+diff --git a/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3.dtsi b/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3.dtsi
 new file mode 100644
-index 000000000000..83d05e3682e8
+index 000000000000..23a85a13311a
 --- /dev/null
-+++ b/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3-sodimm-io.dts
-@@ -0,0 +1,556 @@
++++ b/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3.dtsi
+@@ -0,0 +1,345 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2022 Radxa Limited
++ * Copyright (c) 2022 Amarula Solutions(India)
 + */
 +
-+/dts-v1/;
 +#include <dt-bindings/gpio/gpio.h>
 +#include <dt-bindings/leds/common.h>
-+#include <dt-bindings/pinctrl/rockchip.h>
-+#include <dt-bindings/soc/rockchip,vop2.h>
-+#include "rk3566.dtsi"
 +
 +/ {
-+	model = "Radxa ROCK 3 Compute Module SODIMM IO Board";
-+	compatible = "radxa,cm3-sodimm-io", "rockchip,rk3566";
++	compatible = "radxa,radxa-cm3", "rockchip,rk3566";
 +
 +	aliases {
-+		mmc0 = &sdmmc0;
-+		mmc1 = &sdhci;
-+		mmc2 = &sdmmc1;
-+	};
-+
-+	chosen: chosen {
-+		stdout-path = "serial2:1500000n8";
-+	};
-+
-+	hdmi-con {
-+		compatible = "hdmi-connector";
-+		type = "a";
-+
-+		port {
-+			hdmi_con_in: endpoint {
-+				remote-endpoint = <&hdmi_out_con>;
-+			};
-+		};
++		mmc0 = &sdhci;
 +	};
 +
 +	leds {
 +		compatible = "gpio-leds";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pi_nled_activity &user_led2>;
 +
 +		led-0 {
-+			color = <LED_COLOR_ID_GREEN>;
-+			function = LED_FUNCTION_ACTIVITY;
-+			gpios = <&gpio4 RK_PA4 GPIO_ACTIVE_LOW>;
-+			linux,default-trigger = "heartbeat";
-+		};
-+
-+		led-1 {
++			gpios = <&gpio0 RK_PA6 GPIO_ACTIVE_HIGH>;
 +			color = <LED_COLOR_ID_GREEN>;
 +			function = LED_FUNCTION_STATUS;
-+			gpios = <&gpio0 RK_PA6 GPIO_ACTIVE_HIGH>;
 +			linux,default-trigger = "timer";
 +			default-state = "on";
++			pinctrl-names = "default";
++			pinctrl-0 = <&user_led2>;
 +		};
 +	};
 +
-+	sdio_pwrseq: sdio-pwrseq {
-+		compatible = "mmc-pwrseq-simple";
-+		clocks = <&rk817 1>;
-+		clock-names = "ext_clock";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&wifi_reg_on_h>;
-+		reset-gpios = <&gpio2 RK_PB7 GPIO_ACTIVE_LOW>;
-+		status = "okay";
++	vcc_sys: vcc-sys-regulator {
++		compatible = "regulator-fixed";
++		regulator-name = "vcc_sys";
++		regulator-always-on;
++		regulator-boot-on;
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
 +	};
 +
 +	vcc_1v8: vcc-1v8-regulator {
@@ -116,15 +101,6 @@ index 000000000000..83d05e3682e8
 +		vin-supply = <&vcc3v3_sys>;
 +	};
 +
-+	vcc_sys: vcc-sys-regulator {
-+		compatible = "regulator-fixed";
-+		regulator-name = "vcc_sys";
-+		regulator-always-on;
-+		regulator-boot-on;
-+		regulator-min-microvolt = <5000000>;
-+		regulator-max-microvolt = <5000000>;
-+	};
-+
 +	vcca_1v8: vcca-1v8-regulator {
 +		compatible = "regulator-fixed";
 +		regulator-name = "vcca_1v8";
@@ -133,26 +109,6 @@ index 000000000000..83d05e3682e8
 +		regulator-min-microvolt = <1800000>;
 +		regulator-max-microvolt = <1800000>;
 +		vin-supply = <&vcc_1v8_p>;
-+	};
-+
-+	vcca1v8_image: vcca1v8-image-regulator {
-+		compatible = "regulator-fixed";
-+		regulator-name = "vcca1v8_image";
-+		regulator-always-on;
-+		regulator-boot-on;
-+		regulator-min-microvolt = <1800000>;
-+		regulator-max-microvolt = <1800000>;
-+		vin-supply = <&vcc_1v8_p>;
-+	};
-+
-+	vdda0v9_image: vdda0v9-image-regulator {
-+		compatible = "regulator-fixed";
-+		regulator-name = "vcca0v9_image";
-+		regulator-always-on;
-+		regulator-boot-on;
-+		regulator-min-microvolt = <900000>;
-+		regulator-max-microvolt = <900000>;
-+		vin-supply = <&vdda_0v9>;
 +	};
 +};
 +
@@ -174,28 +130,6 @@ index 000000000000..83d05e3682e8
 +
 +&gpu {
 +	mali-supply = <&vdd_gpu_npu>;
-+	status = "okay";
-+};
-+
-+&hdmi {
-+	avdd-0v9-supply = <&vdda0v9_image>;
-+	avdd-1v8-supply = <&vcca1v8_image>;
-+	status = "okay";
-+};
-+
-+&hdmi_in {
-+	hdmi_in_vp0: endpoint {
-+		remote-endpoint = <&vp0_out_hdmi>;
-+	};
-+};
-+
-+&hdmi_out {
-+	hdmi_out_con: endpoint {
-+		remote-endpoint = <&hdmi_con_in>;
-+	};
-+};
-+
-+&hdmi_sound {
 +	status = "okay";
 +};
 +
@@ -244,12 +178,10 @@ index 000000000000..83d05e3682e8
 +				regulator-name = "vdd_logic";
 +				regulator-always-on;
 +				regulator-boot-on;
-+				regulator-init-microvolt = <900000>;
 +				regulator-initial-mode = <0x2>;
 +				regulator-min-microvolt = <500000>;
 +				regulator-max-microvolt = <1350000>;
 +				regulator-ramp-delay = <6001>;
-+
 +				regulator-state-mem {
 +					regulator-on-in-suspend;
 +					regulator-suspend-microvolt = <900000>;
@@ -260,13 +192,11 @@ index 000000000000..83d05e3682e8
 +				regulator-name = "vdd_gpu_npu";
 +				regulator-always-on;
 +				regulator-boot-on;
-+				regulator-init-microvolt = <900000>;
 +				regulator-initial-mode = <0x2>;
 +				regulator-min-microvolt = <500000>;
 +				regulator-max-microvolt = <1350000>;
 +				regulator-ramp-delay = <6001>;
-+
-+					regulator-state-mem {
++				regulator-state-mem {
 +					regulator-off-in-suspend;
 +				};
 +			};
@@ -276,7 +206,6 @@ index 000000000000..83d05e3682e8
 +				regulator-always-on;
 +				regulator-boot-on;
 +				regulator-initial-mode = <0x2>;
-+
 +				regulator-state-mem {
 +					regulator-on-in-suspend;
 +				};
@@ -289,7 +218,6 @@ index 000000000000..83d05e3682e8
 +				regulator-initial-mode = <0x2>;
 +				regulator-min-microvolt = <3300000>;
 +				regulator-max-microvolt = <3300000>;
-+
 +				regulator-state-mem {
 +					regulator-on-in-suspend;
 +					regulator-suspend-microvolt = <3300000>;
@@ -302,7 +230,6 @@ index 000000000000..83d05e3682e8
 +				regulator-boot-on;
 +				regulator-min-microvolt = <1800000>;
 +				regulator-max-microvolt = <1800000>;
-+
 +				regulator-state-mem {
 +					regulator-on-in-suspend;
 +					regulator-suspend-microvolt = <1800000>;
@@ -315,7 +242,6 @@ index 000000000000..83d05e3682e8
 +				regulator-boot-on;
 +				regulator-min-microvolt = <900000>;
 +				regulator-max-microvolt = <900000>;
-+
 +				regulator-state-mem {
 +					regulator-off-in-suspend;
 +				};
@@ -327,7 +253,6 @@ index 000000000000..83d05e3682e8
 +				regulator-boot-on;
 +				regulator-min-microvolt = <900000>;
 +				regulator-max-microvolt = <900000>;
-+
 +				regulator-state-mem {
 +					regulator-on-in-suspend;
 +					regulator-suspend-microvolt = <900000>;
@@ -340,7 +265,6 @@ index 000000000000..83d05e3682e8
 +				regulator-boot-on;
 +				regulator-min-microvolt = <3300000>;
 +				regulator-max-microvolt = <3300000>;
-+
 +				regulator-state-mem {
 +					regulator-off-in-suspend;
 +				};
@@ -352,7 +276,6 @@ index 000000000000..83d05e3682e8
 +				regulator-boot-on;
 +				regulator-min-microvolt = <1800000>;
 +				regulator-max-microvolt = <3300000>;
-+
 +				regulator-state-mem {
 +					regulator-off-in-suspend;
 +				};
@@ -364,7 +287,6 @@ index 000000000000..83d05e3682e8
 +				regulator-boot-on;
 +				regulator-min-microvolt = <3300000>;
 +				regulator-max-microvolt = <3300000>;
-+
 +				regulator-state-mem {
 +					regulator-on-in-suspend;
 +					regulator-suspend-microvolt = <3300000>;
@@ -377,7 +299,6 @@ index 000000000000..83d05e3682e8
 +				regulator-boot-on;
 +				regulator-min-microvolt = <1800000>;
 +				regulator-max-microvolt = <1800000>;
-+
 +				regulator-state-mem {
 +					regulator-off-in-suspend;
 +				};
@@ -389,7 +310,6 @@ index 000000000000..83d05e3682e8
 +				regulator-boot-on;
 +				regulator-min-microvolt = <1800000>;
 +				regulator-max-microvolt = <1800000>;
-+
 +				regulator-state-mem {
 +					regulator-off-in-suspend;
 +				};
@@ -401,7 +321,6 @@ index 000000000000..83d05e3682e8
 +				regulator-boot-on;
 +				regulator-min-microvolt = <2800000>;
 +				regulator-max-microvolt = <2800000>;
-+
 +				regulator-state-mem {
 +					regulator-off-in-suspend;
 +				};
@@ -411,60 +330,29 @@ index 000000000000..83d05e3682e8
 +	};
 +};
 +
-+&i2s0_8ch {
-+	status = "okay";
-+};
-+
 +&pinctrl {
-+	bluetooth {
-+		bt_host_wake_h: bt-host-wake-h {
-+			rockchip,pins = <2 RK_PB2 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+		bt_reg_on_h: bt-reg-on-h {
-+			rockchip,pins = <2 RK_PC0 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+		bt_wake_host_h: bt-wake-host-h {
-+			rockchip,pins = <2 RK_PB1 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+	};
-+
-+	leds {
-+		pi_nled_activity: pi-nled-activity {
-+			rockchip,pins = <4 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+		user_led2: user-led2 {
-+			rockchip,pins = <0 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+	};
-+
 +	pmic {
 +		pmic_int_l: pmic-int-l {
 +			rockchip,pins = <0 RK_PA3 RK_FUNC_GPIO &pcfg_pull_up>;
 +		};
 +	};
 +
-+	sdio-pwrseq {
-+		wifi_reg_on_h: wifi-reg-on-h {
-+			rockchip,pins = <2 RK_PB7 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+	};
-+
-+	wifi {
-+		wifi_host_wake_h: wifi-host-wake-h {
-+			rockchip,pins = <2 RK_PC1 RK_FUNC_GPIO &pcfg_pull_none>;
++	leds {
++		user_led2: user-led2 {
++			rockchip,pins = <0 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
 +	};
 +};
 +
 +&pmu_io_domains {
 +	pmuio1-supply = <&vcc3v3_pmu>;
-+	pmuio2-supply = <&vcca1v8_pmu>;
++	pmuio2-supply = <&vcc_3v3>;
 +	vccio1-supply = <&vccio_acodec>;
 +	vccio2-supply = <&vcc_1v8>;
 +	vccio3-supply = <&vccio_sd>;
 +	vccio4-supply = <&vcc_1v8>;
-+	vccio5-supply = <&vcc_1v8>;
-+	vccio6-supply = <&vcc_1v8>;
++	vccio5-supply = <&vcc_3v3>;
++	vccio6-supply = <&vcc_3v3>;
 +	vccio7-supply = <&vcc_3v3>;
 +	status = "okay";
 +};
@@ -486,63 +374,12 @@ index 000000000000..83d05e3682e8
 +	status = "okay";
 +};
 +
-+&sdmmc0 {
-+	broken-cd;
-+	bus-width = <4>;
-+	cap-mmc-highspeed;
-+	cap-sd-highspeed;
-+	disable-wp;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd>;
-+	sd-uhs-sdr104;
-+	vmmc-supply = <&vcc_3v3>;
-+	vqmmc-supply = <&vccio_sd>;
++&usb2phy0 {
 +	status = "okay";
-+
 +};
 +
-+&sdmmc1 {
-+	#address-cells = <1>;
-+	#size-cells = <0>;
-+	bus-width = <4>;
-+	cap-sd-highspeed;
-+	cap-sdio-irq;
-+	keep-power-in-suspend;
-+	mmc-pwrseq = <&sdio_pwrseq>;
-+	non-removable;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&sdmmc1_bus4 &sdmmc1_clk &sdmmc1_cmd>;
-+	sd-uhs-sdr104;
++&usb2phy1 {
 +	status = "okay";
-+
-+	wifi@1 {
-+		compatible = "brcm,bcm4329-fmac";
-+		reg = <1>;
-+		interrupt-parent = <&gpio2>;
-+		interrupts = <RK_PC1 IRQ_TYPE_LEVEL_HIGH>;
-+		interrupt-names = "host-wake";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&wifi_host_wake_h>;
-+	};
-+};
-+
-+&uart1 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&uart1m0_ctsn &uart1m0_rtsn &uart1m0_xfer>;
-+	status = "okay";
-+
-+	bluetooth {
-+		compatible = "brcm,bcm43430a1-bt";
-+		clocks = <&rk817 1>;
-+		clock-names = "lpo";
-+		device-wakeup-gpios = <&gpio2 RK_PB2 GPIO_ACTIVE_HIGH>;
-+		host-wakeup-gpios = <&gpio2 RK_PB1 GPIO_ACTIVE_HIGH>;
-+		reset-gpios = <&gpio2 RK_PC0 GPIO_ACTIVE_LOW>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&bt_host_wake_h &bt_reg_on_h &bt_wake_host_h>;
-+		vbat-supply = <&vcc_3v3>;
-+		vddio-supply = <&vcc_1v8>;
-+	};
 +};
 +
 +&tsadc {
@@ -550,40 +387,6 @@ index 000000000000..83d05e3682e8
 +	rockchip,hw-tshut-polarity = <0>;
 +	status = "okay";
 +};
-+
-+&uart2 {
-+	status = "okay";
-+};
-+
-+&usb2phy0 {
-+	status = "okay";
-+};
-+
-+&usb2phy0_otg {
-+	phy-supply = <&vcc_sys>;
-+	status = "okay";
-+};
-+
-+&usb_host0_xhci {
-+	status = "okay";
-+};
-+
-+&vop {
-+	assigned-clocks = <&cru DCLK_VOP0>, <&cru DCLK_VOP1>;
-+	assigned-clock-parents = <&pmucru PLL_HPLL>, <&cru PLL_VPLL>;
-+	status = "okay";
-+};
-+
-+&vop_mmu {
-+	status = "okay";
-+};
-+
-+&vp0 {
-+	vp0_out_hdmi: endpoint@ROCKCHIP_VOP2_EP_HDMI0 {
-+		reg = <ROCKCHIP_VOP2_EP_HDMI0>;
-+		remote-endpoint = <&hdmi_in_vp0>;
-+	};
-+};
 -- 
-2.35.1
+2.39.0
 
