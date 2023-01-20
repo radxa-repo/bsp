@@ -44,8 +44,8 @@ index 000000000000..769824128e7a
 +	compatible = "radxa,e25", "rockchip,rk3568";
 +
 +	aliases {
-+		mmc0 = &sdmmc0;
-+		mmc1 = &sdhci;
++		mmc0 = &sdhci;
++		mmc1 = &sdmmc0;
 +	};
 +
 +	chosen: chosen {
