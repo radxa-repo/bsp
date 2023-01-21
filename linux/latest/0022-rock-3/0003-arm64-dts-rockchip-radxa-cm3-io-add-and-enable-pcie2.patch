@@ -30,7 +30,7 @@ index 3e6578f27..62eab382a 100644
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&pcie20m2_pins>;
 +	reset-gpios = <&gpio1 RK_PB2 GPIO_ACTIVE_HIGH>;
-+	vpcie3v3-supply = <&vcc_3v3>;
++	vpcie3v3-supply = <&vcc3v3_sys>;
 +	status = "okay";
 +};
 +
