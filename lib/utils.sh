@@ -198,10 +198,41 @@ prepare_source() {
 
         for d in $(find -L $fork_dir -type d | sort)
         do
-            local patches=( $d/*.patch )
+            local patches=()
+
+            if [[ -f $d/PKGBUILD ]]
+            then
+                echo "Found PKGBUILD"
+                local source
+                source $d/PKGBUILD
+                if (( ${#source[@]} ))
+                then
+                    for p in "${source[@]}"
+                    do
+                        if [[ "$p" == *.patch ]]
+                        then
+                            patches+=("$d/$p")
+                        fi
+                    done
+                fi
+            else
+                patches=( $d/*.patch )
+            fi
+
             if (( ${#patches[@]} ))
             then
-                git am --reject --whitespace=fix "${patches[@]}"
+                if [[ -f $d/PKGBUILD ]]
+                then
+                    for p in "${patches[@]}"
+                    do
+                        # Manjaro uses patch for fuzzy matching
+                        patch -N -p1 < "$p"
+                    done
+                    git add .
+                    git commit -m "bsp patchset $(basename $d)"
+                else
+                    git am --reject --whitespace=fix "${patches[@]}"
+                fi
                 echo "Patchset $(basename $d) has been applied."
                 if $PATCH_PAUSE
                 then
