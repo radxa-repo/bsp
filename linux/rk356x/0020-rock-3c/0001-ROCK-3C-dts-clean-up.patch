@@ -1,0 +1,74 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Fri, 3 Feb 2023 16:32:34 +0800
+Subject: [PATCH] ROCK 3C dts clean up
+
+---
+ .../boot/dts/rockchip/rk3566-rock-3c.dts      | 25 ++++---------------
+ 1 file changed, 5 insertions(+), 20 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3566-rock-3c.dts b/arch/arm64/boot/dts/rockchip/rk3566-rock-3c.dts
+index 91e5bcf2d9ae..74f21ca3f486 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3566-rock-3c.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3566-rock-3c.dts
+@@ -30,7 +30,7 @@
+ 		interrupts = <GIC_SPI 252 IRQ_TYPE_LEVEL_LOW>;
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&uart2m0_xfer>;
+-		status = "disabled";
++		status = "okay";
+ 	};
+ 
+ 	debug: debug@fd904000 {
+@@ -53,8 +53,8 @@
+ 		compatible = "simple-audio-card";
+ 		simple-audio-card,format = "i2s";
+ 		simple-audio-card,mclk-fs = <128>;
+-		simple-audio-card,name = "rockchip,hdmi";
+-		status = "disabled";
++		simple-audio-card,name = "rockchip-hdmi0";
++		status = "okay";
+ 
+ 		simple-audio-card,cpu {
+ 			sound-dai = <&i2s0_8ch>;
+@@ -82,25 +82,11 @@
+ 		};
+ 	};
+ 
+-	reserved-memory {
+-		#address-cells = <2>;
+-		#size-cells = <2>;
+-		ranges;
+-
+-		rknpu_reserved: rknpu {
+-			compatible = "shared-dma-pool";
+-			inactive;
+-			reusable;
+-			size = <0x0 0x08000000>;
+-			alignment = <0x0 0x1000>;
+-		};
+-	};
+-
+ 	rk809_sound: rk809-sound {
+ 		status = "okay";
+ 		compatible = "simple-audio-card";
+ 		simple-audio-card,format = "i2s";
+-		simple-audio-card,name = "rockchip,rk809-codec";
++		simple-audio-card,name = "rockchip-rk809";
+ 		simple-audio-card,mclk-fs = <256>;
+ 
+ 		simple-audio-card,cpu {
+@@ -660,9 +646,8 @@
+ };
+ 
+ &rknpu {
+-	memory-region = <&rknpu_reserved>;
+ 	rknpu-supply = <&vdd_npu>;
+-	status = "okay";
++	status = "disabled";
+ };
+ 
+ &rknpu_mmu {
+-- 
+2.39.1
+

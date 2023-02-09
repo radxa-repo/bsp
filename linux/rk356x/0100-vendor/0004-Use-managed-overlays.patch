@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Thu, 9 Feb 2023 20:40:05 +0800
+Subject: [PATCH] Use managed overlays
+
+---
+ arch/arm64/boot/dts/rockchip/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+index dbe11e2c8c4b..58ef6a457258 100644
+--- a/arch/arm64/boot/dts/rockchip/Makefile
++++ b/arch/arm64/boot/dts/rockchip/Makefile
+@@ -120,4 +120,4 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-rock-3b.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-rock-3-a.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3568-rock-3-b.dtb
+ 
+-subdir-y	:= $(dts-dirs) overlay
++subdir-y	:= $(dts-dirs) overlays
+-- 
+2.39.1
+
