@@ -5,7 +5,8 @@ Subject: [PATCH] Use managed overlays
 
 ---
  arch/arm64/boot/dts/rockchip/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ scripts/Makefile.dtbinst              | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
 index dbe11e2c8c4b..58ef6a457258 100644
@@ -17,6 +18,19 @@ index dbe11e2c8c4b..58ef6a457258 100644
  
 -subdir-y	:= $(dts-dirs) overlay
 +subdir-y	:= $(dts-dirs) overlays
+diff --git a/scripts/Makefile.dtbinst b/scripts/Makefile.dtbinst
+index a08f9bee3e55..08c8752e4a0c 100644
+--- a/scripts/Makefile.dtbinst
++++ b/scripts/Makefile.dtbinst
+@@ -34,7 +34,7 @@ install-dir = $(patsubst $(dtbinst_root)%,$(INSTALL_DTBS_PATH)%,$(obj))
+ $(dtbinst-files): %.dtb: $(obj)/%.dtb
+ 	$(call cmd,dtb_install,$(install-dir))
+ 
+-$(dtboinst-files): %.dtbo: $(obj)/%.dtbo
++$(dtbinst-files): %.dtbo: $(obj)/%.dtbo
+ 	$(call cmd,dtb_install,$(install-dir))
+ 
+ $(script-files): %.scr: $(obj)/%.scr
 -- 
 2.39.1
 
