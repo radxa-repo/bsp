@@ -1,0 +1,315 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 29 Jun 2020 12:15:13 -0600
+Subject: [PATCH] scripts/dtc: Update to upstream version
+ v1.6.0-11-g9d7888cbf19c
+
+Sync with upstream dtc primarily to pickup the I2C bus check fixes. The
+interrupt_provider check is noisy, so turn it off for now.
+
+This adds the following commits from upstream:
+
+9d7888cbf19c dtc: Consider one-character strings as strings
+8259d59f59de checks: Improve i2c reg property checking
+fdabcf2980a4 checks: Remove warning for I2C_OWN_SLAVE_ADDRESS
+2478b1652c8d libfdt: add extern "C" for C++
+f68bfc2668b2 libfdt: trivial typo fix
+7be250b4d059 libfdt: Correct condition for reordering blocks
+81e0919a3e21 checks: Add interrupt provider test
+85e5d839847a Makefile: when building libfdt only, do not add unneeded deps
+b28464a550c5 Fix some potential unaligned accesses in dtc
+
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ scripts/Makefile.lib        |  4 +++-
+ scripts/dtc/checks.c        | 39 ++++++++++++++++++++++++++++++++++---
+ scripts/dtc/dtc.h           | 31 +++++++++++++++++++++++++++++
+ scripts/dtc/flattree.c      |  2 +-
+ scripts/dtc/libfdt/fdt_rw.c |  2 +-
+ scripts/dtc/libfdt/fdt_sw.c |  2 +-
+ scripts/dtc/libfdt/libfdt.h |  8 ++++++++
+ scripts/dtc/treesource.c    |  8 ++++----
+ scripts/dtc/version_gen.h   |  2 +-
+ scripts/dtc/yamltree.c      |  6 +++---
+ 10 files changed, 89 insertions(+), 15 deletions(-)
+
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index a5ae0dd416ec..d21694321898 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -246,6 +246,7 @@ cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -n -f -9 > $@) || \
+ # DTC
+ # ---------------------------------------------------------------------------
+ DTC ?= $(objtree)/scripts/dtc/dtc
++DTC_FLAGS += -Wno-interrupt_provider
+ 
+ # Generation of symbols for Android
+ ifeq ($(CONFIG_DTC_SYMBOLS),y)
+@@ -275,7 +276,8 @@ endif
+ 
+ ifneq ($(findstring 2,$(KBUILD_ENABLE_EXTRA_GCC_CHECKS)),)
+ DTC_FLAGS += -Wnode_name_chars_strict \
+-	-Wproperty_name_chars_strict
++	-Wproperty_name_chars_strict \
++	-Winterrupt_provider
+ endif
+ 
+ DTC_FLAGS += $(DTC_FLAGS_$(basetarget))
+diff --git a/scripts/dtc/checks.c b/scripts/dtc/checks.c
+index fa5e15d42d47..9801438b9232 100644
+--- a/scripts/dtc/checks.c
++++ b/scripts/dtc/checks.c
+@@ -1060,6 +1060,9 @@ static void check_i2c_bus_bridge(struct check *c, struct dt_info *dti, struct no
+ }
+ WARNING(i2c_bus_bridge, check_i2c_bus_bridge, NULL, &addr_size_cells);
+ 
++#define I2C_OWN_SLAVE_ADDRESS	(1U << 30)
++#define I2C_TEN_BIT_ADDRESS	(1U << 31)
++
+ static void check_i2c_bus_reg(struct check *c, struct dt_info *dti, struct node *node)
+ {
+ 	struct property *prop;
+@@ -1082,6 +1085,8 @@ static void check_i2c_bus_reg(struct check *c, struct dt_info *dti, struct node
+ 	}
+ 
+ 	reg = fdt32_to_cpu(*cells);
++	/* Ignore I2C_OWN_SLAVE_ADDRESS */
++	reg &= ~I2C_OWN_SLAVE_ADDRESS;
+ 	snprintf(unit_addr, sizeof(unit_addr), "%x", reg);
+ 	if (!streq(unitname, unit_addr))
+ 		FAIL(c, dti, node, "I2C bus unit address format error, expected \"%s\"",
+@@ -1089,10 +1094,15 @@ static void check_i2c_bus_reg(struct check *c, struct dt_info *dti, struct node
+ 
+ 	for (len = prop->val.len; len > 0; len -= 4) {
+ 		reg = fdt32_to_cpu(*(cells++));
+-		if (reg > 0x3ff)
++		/* Ignore I2C_OWN_SLAVE_ADDRESS */
++		reg &= ~I2C_OWN_SLAVE_ADDRESS;
++
++		if ((reg & I2C_TEN_BIT_ADDRESS) && ((reg & ~I2C_TEN_BIT_ADDRESS) > 0x3ff))
+ 			FAIL_PROP(c, dti, node, prop, "I2C address must be less than 10-bits, got \"0x%x\"",
+ 				  reg);
+-
++		else if (reg > 0x7f)
++			FAIL_PROP(c, dti, node, prop, "I2C address must be less than 7-bits, got \"0x%x\". Set I2C_TEN_BIT_ADDRESS for 10 bit addresses or fix the property",
++				  reg);
+ 	}
+ }
+ WARNING(i2c_bus_reg, check_i2c_bus_reg, NULL, &reg_format, &i2c_bus_bridge);
+@@ -1585,6 +1595,28 @@ static bool node_is_interrupt_provider(struct node *node)
+ 
+ 	return false;
+ }
++
++static void check_interrupt_provider(struct check *c,
++				     struct dt_info *dti,
++				     struct node *node)
++{
++	struct property *prop;
++
++	if (!node_is_interrupt_provider(node))
++		return;
++
++	prop = get_property(node, "#interrupt-cells");
++	if (!prop)
++		FAIL(c, dti, node,
++		     "Missing #interrupt-cells in interrupt provider");
++
++	prop = get_property(node, "#address-cells");
++	if (!prop)
++		FAIL(c, dti, node,
++		     "Missing #address-cells in interrupt provider");
++}
++WARNING(interrupt_provider, check_interrupt_provider, NULL);
++
+ static void check_interrupts_property(struct check *c,
+ 				      struct dt_info *dti,
+ 				      struct node *node)
+@@ -1642,7 +1674,7 @@ static void check_interrupts_property(struct check *c,
+ 
+ 	prop = get_property(irq_node, "#interrupt-cells");
+ 	if (!prop) {
+-		FAIL(c, dti, irq_node, "Missing #interrupt-cells in interrupt-parent");
++		/* We warn about that already in another test. */
+ 		return;
+ 	}
+ 
+@@ -1867,6 +1899,7 @@ static struct check *check_table[] = {
+ 	&deprecated_gpio_property,
+ 	&gpios_property,
+ 	&interrupts_property,
++	&interrupt_provider,
+ 
+ 	&alias_paths,
+ 
+diff --git a/scripts/dtc/dtc.h b/scripts/dtc/dtc.h
+index 6e74ecea55a3..a08f4159cd03 100644
+--- a/scripts/dtc/dtc.h
++++ b/scripts/dtc/dtc.h
+@@ -51,6 +51,37 @@ extern int annotate;		/* annotate .dts with input source location */
+ 
+ typedef uint32_t cell_t;
+ 
++static inline uint16_t dtb_ld16(const void *p)
++{
++	const uint8_t *bp = (const uint8_t *)p;
++
++	return ((uint16_t)bp[0] << 8)
++		| bp[1];
++}
++
++static inline uint32_t dtb_ld32(const void *p)
++{
++	const uint8_t *bp = (const uint8_t *)p;
++
++	return ((uint32_t)bp[0] << 24)
++		| ((uint32_t)bp[1] << 16)
++		| ((uint32_t)bp[2] << 8)
++		| bp[3];
++}
++
++static inline uint64_t dtb_ld64(const void *p)
++{
++	const uint8_t *bp = (const uint8_t *)p;
++
++	return ((uint64_t)bp[0] << 56)
++		| ((uint64_t)bp[1] << 48)
++		| ((uint64_t)bp[2] << 40)
++		| ((uint64_t)bp[3] << 32)
++		| ((uint64_t)bp[4] << 24)
++		| ((uint64_t)bp[5] << 16)
++		| ((uint64_t)bp[6] << 8)
++		| bp[7];
++}
+ 
+ #define streq(a, b)	(strcmp((a), (b)) == 0)
+ #define strstarts(s, prefix)	(strncmp((s), (prefix), strlen(prefix)) == 0)
+diff --git a/scripts/dtc/flattree.c b/scripts/dtc/flattree.c
+index bd6977eedcb8..07f10d2b5d79 100644
+--- a/scripts/dtc/flattree.c
++++ b/scripts/dtc/flattree.c
+@@ -156,7 +156,7 @@ static void asm_emit_data(void *e, struct data d)
+ 		emit_offset_label(f, m->ref, m->offset);
+ 
+ 	while ((d.len - off) >= sizeof(uint32_t)) {
+-		asm_emit_cell(e, fdt32_to_cpu(*((fdt32_t *)(d.val+off))));
++		asm_emit_cell(e, dtb_ld32(d.val + off));
+ 		off += sizeof(uint32_t);
+ 	}
+ 
+diff --git a/scripts/dtc/libfdt/fdt_rw.c b/scripts/dtc/libfdt/fdt_rw.c
+index 524b520c8486..93e4a2b56348 100644
+--- a/scripts/dtc/libfdt/fdt_rw.c
++++ b/scripts/dtc/libfdt/fdt_rw.c
+@@ -436,7 +436,7 @@ int fdt_open_into(const void *fdt, void *buf, int bufsize)
+ 			return struct_size;
+ 	}
+ 
+-	if (can_assume(LIBFDT_ORDER) |
++	if (can_assume(LIBFDT_ORDER) ||
+ 	    !fdt_blocks_misordered_(fdt, mem_rsv_size, struct_size)) {
+ 		/* no further work necessary */
+ 		err = fdt_move(fdt, buf, bufsize);
+diff --git a/scripts/dtc/libfdt/fdt_sw.c b/scripts/dtc/libfdt/fdt_sw.c
+index 26759d5dfb8c..94ce4bb91a00 100644
+--- a/scripts/dtc/libfdt/fdt_sw.c
++++ b/scripts/dtc/libfdt/fdt_sw.c
+@@ -32,7 +32,7 @@ static int fdt_sw_probe_(void *fdt)
+ /* 'memrsv' state:	Initial state after fdt_create()
+  *
+  * Allowed functions:
+- *	fdt_add_reservmap_entry()
++ *	fdt_add_reservemap_entry()
+  *	fdt_finish_reservemap()		[moves to 'struct' state]
+  */
+ static int fdt_sw_probe_memrsv_(void *fdt)
+diff --git a/scripts/dtc/libfdt/libfdt.h b/scripts/dtc/libfdt/libfdt.h
+index 36fadcdea516..fe49b5d78938 100644
+--- a/scripts/dtc/libfdt/libfdt.h
++++ b/scripts/dtc/libfdt/libfdt.h
+@@ -9,6 +9,10 @@
+ #include "libfdt_env.h"
+ #include "fdt.h"
+ 
++#ifdef __cplusplus
++extern "C" {
++#endif
++
+ #define FDT_FIRST_SUPPORTED_VERSION	0x02
+ #define FDT_LAST_SUPPORTED_VERSION	0x11
+ 
+@@ -2069,4 +2073,8 @@ int fdt_overlay_apply(void *fdt, void *fdto);
+ 
+ const char *fdt_strerror(int errval);
+ 
++#ifdef __cplusplus
++}
++#endif
++
+ #endif /* LIBFDT_H */
+diff --git a/scripts/dtc/treesource.c b/scripts/dtc/treesource.c
+index c9d980c8abfc..061ba8c9c5e8 100644
+--- a/scripts/dtc/treesource.c
++++ b/scripts/dtc/treesource.c
+@@ -110,13 +110,13 @@ static void write_propval_int(FILE *f, const char *p, size_t len, size_t width)
+ 			fprintf(f, "%02"PRIx8, *(const uint8_t*)p);
+ 			break;
+ 		case 2:
+-			fprintf(f, "0x%02"PRIx16, fdt16_to_cpu(*(const fdt16_t*)p));
++			fprintf(f, "0x%02"PRIx16, dtb_ld16(p));
+ 			break;
+ 		case 4:
+-			fprintf(f, "0x%02"PRIx32, fdt32_to_cpu(*(const fdt32_t*)p));
++			fprintf(f, "0x%02"PRIx32, dtb_ld32(p));
+ 			break;
+ 		case 8:
+-			fprintf(f, "0x%02"PRIx64, fdt64_to_cpu(*(const fdt64_t*)p));
++			fprintf(f, "0x%02"PRIx64, dtb_ld64(p));
+ 			break;
+ 		}
+ 		if (p + width < end)
+@@ -183,7 +183,7 @@ static enum markertype guess_value_type(struct property *prop)
+ 			nnotcelllbl++;
+ 	}
+ 
+-	if ((p[len-1] == '\0') && (nnotstring == 0) && (nnul < (len-nnul))
++	if ((p[len-1] == '\0') && (nnotstring == 0) && (nnul <= (len-nnul))
+ 	    && (nnotstringlbl == 0)) {
+ 		return TYPE_STRING;
+ 	} else if (((len % sizeof(cell_t)) == 0) && (nnotcelllbl == 0)) {
+diff --git a/scripts/dtc/version_gen.h b/scripts/dtc/version_gen.h
+index 61dd7112d6e4..0714799446f8 100644
+--- a/scripts/dtc/version_gen.h
++++ b/scripts/dtc/version_gen.h
+@@ -1 +1 @@
+-#define DTC_VERSION "DTC 1.6.0-g87a656ae"
++#define DTC_VERSION "DTC 1.6.0-g9d7888cb"
+diff --git a/scripts/dtc/yamltree.c b/scripts/dtc/yamltree.c
+index 43ca869dd6a8..261561f3c5cb 100644
+--- a/scripts/dtc/yamltree.c
++++ b/scripts/dtc/yamltree.c
+@@ -59,10 +59,10 @@ static void yaml_propval_int(yaml_emitter_t *emitter, struct marker *markers, ch
+ 			sprintf(buf, "0x%"PRIx8, *(uint8_t*)(data + off));
+ 			break;
+ 		case 2:
+-			sprintf(buf, "0x%"PRIx16, fdt16_to_cpu(*(fdt16_t*)(data + off)));
++			sprintf(buf, "0x%"PRIx16, dtb_ld16(data + off));
+ 			break;
+ 		case 4:
+-			sprintf(buf, "0x%"PRIx32, fdt32_to_cpu(*(fdt32_t*)(data + off)));
++			sprintf(buf, "0x%"PRIx32, dtb_ld32(data + off));
+ 			m = markers;
+ 			is_phandle = false;
+ 			for_each_marker_of_type(m, REF_PHANDLE) {
+@@ -73,7 +73,7 @@ static void yaml_propval_int(yaml_emitter_t *emitter, struct marker *markers, ch
+ 			}
+ 			break;
+ 		case 8:
+-			sprintf(buf, "0x%"PRIx64, fdt64_to_cpu(*(fdt64_t*)(data + off)));
++			sprintf(buf, "0x%"PRIx64, dtb_ld64(data + off));
+ 			break;
+ 		}
+ 
+-- 
+2.39.1
+

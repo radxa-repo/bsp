@@ -1,0 +1,2182 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 13 Sep 2018 08:59:25 -0500
+Subject: [PATCH] scripts/dtc: Update to upstream version
+ v1.4.7-14-gc86da84d30e4
+
+Major changes are I2C and SPI bus checks, YAML output format (for
+future validation), some new libfdt functions, and more libfdt
+validation of dtbs.
+
+The YAML addition adds an optional dependency on libyaml. pkg-config is
+used to test for it and pkg-config became a kconfig dependency in 4.18.
+
+This adds the following commits from upstream:
+
+c86da84d30e4 Add support for YAML encoded output
+361b5e7d8067 Make type_marker_length helper public
+bfbfab047e45 pylibfdt: Add a means to add and delete notes
+9005f4108e7c pylibfdt: Allow delprop() to return errors
+b94c056b137e Make valgrind optional
+fd06c54d4711 tests: Better testing of dtc -I fs mode
+c3f50c9a86d9 tests: Allow dtbs_equal_unordered to ignore mem reserves
+0ac9fdee37c7 dtc: trivial '-I fs -O dts' test
+0fd1c8c783f3 pylibfdt: fdt_get_mem_rsv returns 2 uint64_t values
+04853cad18f4 pylibfdt: Don't incorrectly / unnecessarily override uint64_t typemap
+9619c8619c37 Kill bogus TYPE_BLOB marker type
+ac68ff92ae20 parser: add TYPE_STRING marker to path references
+90a190eb04d9 checks: add SPI bus checks
+53a1bd546905 checks: add I2C bus checks
+88f18909db73 dtc: Bump version to v1.4.7
+85bce8b2f06d tests: Correction to vg_prepare_blob()
+57f7f9e7bc7c tests: Don't call memcmp() with NULL arguments
+c12b2b0c20eb libfdt: fdt_address_cells() and fdt_size_cells()
+3fe0eeda0b7f livetree: Set phandle properties type to uint32
+853649acceba pylibfdt: Support the sequential-write interface
+9b0e4fe26093 tests: Improve fdt_resize() tests
+1087504bb3e8 libfdt: Add necessary header padding in fdt_create()
+c72fa777e613 libfdt: Copy the struct region in fdt_resize()
+32b9c6130762 Preserve datatype markers when emitting dts format
+6dcb8ba408ec libfdt: Add helpers for accessing unaligned words
+42607f21d43e tests: Fix incorrect check name 'prop_name_chars'
+9d78c33bf8a1 tests: fix grep for checks error messages
+b770f3d1c13f pylibfdt: Support setting the name of a node
+2f0d07e678e0 pylibfdt: Add functions to set and get properties as strings
+354d3dc55939 pylibfdt: Update the bytearray size with pack()
+3c374d46acce pylibfdt: Allow reading integer values from properties
+49d32ce40bb4 pylibfdt: Use an unsigned type for fdt32_t
+481246a0c13a pylibfdt: Avoid accessing the internal _fdt member in tests
+9aafa33d99ed pylibfdt: Add functions to update properties
+5a598671fdbf pylibfdt: Support device-tree creation/expansion
+483e170625e1 pylibfdt: Add support for reading the memory reserve map
+29bb05aa4200 pylibfdt: Add support for the rest of the header functions
+582a7159a5d0 pylibfdt: Add support for fdt_next_node()
+f0f8c9169819 pylibfdt: Reorder functions to match libfdt.h
+64a69d123935 pylibfdt: Return string instead of bytearray from getprop()
+4d09a83420df fdtput: Add documentation
+e617cbe1bd67 fdtget: Add documentation
+180a93924014 Use <inttypes.h> format specifiers in a bunch of places we should
+b9af3b396576 scripts/dtc: Fixed format mismatch in fprintf
+4b8fcc3d015c libfdt: Add fdt_check_full() function
+c14223fb2292 tests: Use valgrind client requests for better checking
+5b67d2b955a3 tests: Better handling of valgrind errors saving blobs
+e2556aaeb506 tests: Remove unused #define
+fb9c6abddaa8 Use size_t for blob lengths in utilfdt_read*
+0112fda03bf6 libfdt: Add fdt_header_size()
+6473a21d8bfe Consolidate utilfdt_read_len() variants
+d5db5382c5e5 libfdt: Safer access to memory reservations
+719d582e98ec libfdt: Propagate name errors in fdt_getprop_by_offset()
+70166d62a27f libfdt: Safer access to strings section
+eb890c0f77dc libfdt: Make fdt_check_header() more thorough
+899d6fad93f3 libfdt: Improve sequential write state checking
+04b5b4062ccd libfdt: Clean up header checking functions
+44d3efedc816 Preserve datatype information when parsing dts
+f0be81bd8de0 Make Property a subclass of bytearray
+24b1f3f064d4 pylibfdt: Add a method to access the device tree directly
+
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ scripts/dtc/Makefile                 |   7 +
+ scripts/dtc/Makefile.dtc             |   4 +
+ scripts/dtc/checks.c                 | 143 ++++++++++++++++
+ scripts/dtc/data.c                   |   4 +-
+ scripts/dtc/dtc-parser.y             |  16 +-
+ scripts/dtc/dtc.c                    |  11 ++
+ scripts/dtc/dtc.h                    |  13 ++
+ scripts/dtc/flattree.c               |   2 +-
+ scripts/dtc/libfdt/fdt.c             |  81 ++++++++-
+ scripts/dtc/libfdt/fdt_addresses.c   |  35 ++--
+ scripts/dtc/libfdt/fdt_overlay.c     |   6 +-
+ scripts/dtc/libfdt/fdt_ro.c          | 199 ++++++++++++++++++---
+ scripts/dtc/libfdt/fdt_rw.c          |  28 +--
+ scripts/dtc/libfdt/fdt_sw.c          | 109 +++++++++---
+ scripts/dtc/libfdt/libfdt.h          |  76 ++++++++-
+ scripts/dtc/libfdt/libfdt_env.h      |   1 +
+ scripts/dtc/libfdt/libfdt_internal.h |   5 +-
+ scripts/dtc/livetree.c               |  12 +-
+ scripts/dtc/treesource.c             | 225 ++++++++++++++----------
+ scripts/dtc/util.c                   |  23 +--
+ scripts/dtc/util.h                   |  20 +--
+ scripts/dtc/version_gen.h            |   2 +-
+ scripts/dtc/yamltree.c               | 247 +++++++++++++++++++++++++++
+ 23 files changed, 1033 insertions(+), 236 deletions(-)
+ create mode 100644 scripts/dtc/yamltree.c
+
+diff --git a/scripts/dtc/Makefile b/scripts/dtc/Makefile
+index 1c943e03eaf2..81c6f5132f12 100644
+--- a/scripts/dtc/Makefile
++++ b/scripts/dtc/Makefile
+@@ -11,6 +11,13 @@ dtc-objs	+= dtc-lexer.lex.o dtc-parser.tab.o
+ # Source files need to get at the userspace version of libfdt_env.h to compile
+ HOST_EXTRACFLAGS := -I$(src)/libfdt
+ 
++ifeq ($(wildcard /usr/include/yaml.h),)
++HOST_EXTRACFLAGS += -DNO_YAML
++else
++dtc-objs	+= yamltree.o
++HOSTLDLIBS_dtc	:= -lyaml
++endif
++
+ # Generated files need one more search path to include headers in source tree
+ HOSTCFLAGS_dtc-lexer.lex.o := -I$(src)
+ HOSTCFLAGS_dtc-parser.tab.o := -I$(src)
+diff --git a/scripts/dtc/Makefile.dtc b/scripts/dtc/Makefile.dtc
+index bece49b35535..d4375630a7f7 100644
+--- a/scripts/dtc/Makefile.dtc
++++ b/scripts/dtc/Makefile.dtc
+@@ -14,5 +14,9 @@ DTC_SRCS = \
+ 	treesource.c \
+ 	util.c
+ 
++ifneq ($(NO_YAML),1)
++DTC_SRCS += yamltree.c
++endif
++
+ DTC_GEN_SRCS = dtc-lexer.lex.c dtc-parser.tab.c
+ DTC_OBJS = $(DTC_SRCS:%.c=%.o) $(DTC_GEN_SRCS:%.c=%.o)
+diff --git a/scripts/dtc/checks.c b/scripts/dtc/checks.c
+index d2165587da1c..feddbef813c7 100644
+--- a/scripts/dtc/checks.c
++++ b/scripts/dtc/checks.c
+@@ -1002,6 +1002,143 @@ static void check_simple_bus_reg(struct check *c, struct dt_info *dti, struct no
+ }
+ WARNING(simple_bus_reg, check_simple_bus_reg, NULL, &reg_format, &simple_bus_bridge);
+ 
++static const struct bus_type i2c_bus = {
++	.name = "i2c-bus",
++};
++
++static void check_i2c_bus_bridge(struct check *c, struct dt_info *dti, struct node *node)
++{
++	if (strprefixeq(node->name, node->basenamelen, "i2c-bus") ||
++	    strprefixeq(node->name, node->basenamelen, "i2c-arb")) {
++		node->bus = &i2c_bus;
++	} else if (strprefixeq(node->name, node->basenamelen, "i2c")) {
++		struct node *child;
++		for_each_child(node, child) {
++			if (strprefixeq(child->name, node->basenamelen, "i2c-bus"))
++				return;
++		}
++		node->bus = &i2c_bus;
++	} else
++		return;
++
++	if (!node->children)
++		return;
++
++	if (node_addr_cells(node) != 1)
++		FAIL(c, dti, node, "incorrect #address-cells for I2C bus");
++	if (node_size_cells(node) != 0)
++		FAIL(c, dti, node, "incorrect #size-cells for I2C bus");
++
++}
++WARNING(i2c_bus_bridge, check_i2c_bus_bridge, NULL, &addr_size_cells);
++
++static void check_i2c_bus_reg(struct check *c, struct dt_info *dti, struct node *node)
++{
++	struct property *prop;
++	const char *unitname = get_unitname(node);
++	char unit_addr[17];
++	uint32_t reg = 0;
++	int len;
++	cell_t *cells = NULL;
++
++	if (!node->parent || (node->parent->bus != &i2c_bus))
++		return;
++
++	prop = get_property(node, "reg");
++	if (prop)
++		cells = (cell_t *)prop->val.val;
++
++	if (!cells) {
++		FAIL(c, dti, node, "missing or empty reg property");
++		return;
++	}
++
++	reg = fdt32_to_cpu(*cells);
++	snprintf(unit_addr, sizeof(unit_addr), "%x", reg);
++	if (!streq(unitname, unit_addr))
++		FAIL(c, dti, node, "I2C bus unit address format error, expected \"%s\"",
++		     unit_addr);
++
++	for (len = prop->val.len; len > 0; len -= 4) {
++		reg = fdt32_to_cpu(*(cells++));
++		if (reg > 0x3ff)
++			FAIL_PROP(c, dti, node, prop, "I2C address must be less than 10-bits, got \"0x%x\"",
++				  reg);
++
++	}
++}
++WARNING(i2c_bus_reg, check_i2c_bus_reg, NULL, &reg_format, &i2c_bus_bridge);
++
++static const struct bus_type spi_bus = {
++	.name = "spi-bus",
++};
++
++static void check_spi_bus_bridge(struct check *c, struct dt_info *dti, struct node *node)
++{
++
++	if (strprefixeq(node->name, node->basenamelen, "spi")) {
++		node->bus = &spi_bus;
++	} else {
++		/* Try to detect SPI buses which don't have proper node name */
++		struct node *child;
++
++		if (node_addr_cells(node) != 1 || node_size_cells(node) != 0)
++			return;
++
++		for_each_child(node, child) {
++			struct property *prop;
++			for_each_property(child, prop) {
++				if (strprefixeq(prop->name, 4, "spi-")) {
++					node->bus = &spi_bus;
++					break;
++				}
++			}
++			if (node->bus == &spi_bus)
++				break;
++		}
++
++		if (node->bus == &spi_bus && get_property(node, "reg"))
++			FAIL(c, dti, node, "node name for SPI buses should be 'spi'");
++	}
++	if (node->bus != &spi_bus || !node->children)
++		return;
++
++	if (node_addr_cells(node) != 1)
++		FAIL(c, dti, node, "incorrect #address-cells for SPI bus");
++	if (node_size_cells(node) != 0)
++		FAIL(c, dti, node, "incorrect #size-cells for SPI bus");
++
++}
++WARNING(spi_bus_bridge, check_spi_bus_bridge, NULL, &addr_size_cells);
++
++static void check_spi_bus_reg(struct check *c, struct dt_info *dti, struct node *node)
++{
++	struct property *prop;
++	const char *unitname = get_unitname(node);
++	char unit_addr[9];
++	uint32_t reg = 0;
++	cell_t *cells = NULL;
++
++	if (!node->parent || (node->parent->bus != &spi_bus))
++		return;
++
++	prop = get_property(node, "reg");
++	if (prop)
++		cells = (cell_t *)prop->val.val;
++
++	if (!cells) {
++		FAIL(c, dti, node, "missing or empty reg property");
++		return;
++	}
++
++	reg = fdt32_to_cpu(*cells);
++	snprintf(unit_addr, sizeof(unit_addr), "%x", reg);
++	if (!streq(unitname, unit_addr))
++		FAIL(c, dti, node, "SPI bus unit address format error, expected \"%s\"",
++		     unit_addr);
++}
++WARNING(spi_bus_reg, check_spi_bus_reg, NULL, &reg_format, &spi_bus_bridge);
++
+ static void check_unit_address_format(struct check *c, struct dt_info *dti,
+ 				      struct node *node)
+ {
+@@ -1623,6 +1760,12 @@ static struct check *check_table[] = {
+ 	&simple_bus_bridge,
+ 	&simple_bus_reg,
+ 
++	&i2c_bus_bridge,
++	&i2c_bus_reg,
++
++	&spi_bus_bridge,
++	&spi_bus_reg,
++
+ 	&avoid_default_addr_size,
+ 	&avoid_unnecessary_addr_size,
+ 	&unique_unit_address,
+diff --git a/scripts/dtc/data.c b/scripts/dtc/data.c
+index aa37a16c8891..4a204145cc7b 100644
+--- a/scripts/dtc/data.c
++++ b/scripts/dtc/data.c
+@@ -74,7 +74,8 @@ struct data data_copy_escape_string(const char *s, int len)
+ 	struct data d;
+ 	char *q;
+ 
+-	d = data_grow_for(empty_data, len + 1);
++	d = data_add_marker(empty_data, TYPE_STRING, NULL);
++	d = data_grow_for(d, len + 1);
+ 
+ 	q = d.val;
+ 	while (i < len) {
+@@ -94,6 +95,7 @@ struct data data_copy_file(FILE *f, size_t maxlen)
+ {
+ 	struct data d = empty_data;
+ 
++	d = data_add_marker(d, TYPE_NONE, NULL);
+ 	while (!feof(f) && (d.len < maxlen)) {
+ 		size_t chunksize, ret;
+ 
+diff --git a/scripts/dtc/dtc-parser.y b/scripts/dtc/dtc-parser.y
+index 011a5b25539a..dd70ebf386f4 100644
+--- a/scripts/dtc/dtc-parser.y
++++ b/scripts/dtc/dtc-parser.y
+@@ -287,6 +287,7 @@ propdata:
+ 		}
+ 	| propdataprefix DT_REF
+ 		{
++			$1 = data_add_marker($1, TYPE_STRING, $2);
+ 			$$ = data_add_marker($1, REF_PATH, $2);
+ 		}
+ 	| propdataprefix DT_INCBIN '(' DT_STRING ',' integer_prim ',' integer_prim ')'
+@@ -340,22 +341,27 @@ arrayprefix:
+ 	DT_BITS DT_LITERAL '<'
+ 		{
+ 			unsigned long long bits;
++			enum markertype type = TYPE_UINT32;
+ 
+ 			bits = $2;
+ 
+-			if ((bits !=  8) && (bits != 16) &&
+-			    (bits != 32) && (bits != 64)) {
++			switch (bits) {
++			case 8: type = TYPE_UINT8; break;
++			case 16: type = TYPE_UINT16; break;
++			case 32: type = TYPE_UINT32; break;
++			case 64: type = TYPE_UINT64; break;
++			default:
+ 				ERROR(&@2, "Array elements must be"
+ 				      " 8, 16, 32 or 64-bits");
+ 				bits = 32;
+ 			}
+ 
+-			$$.data = empty_data;
++			$$.data = data_add_marker(empty_data, type, NULL);
+ 			$$.bits = bits;
+ 		}
+ 	| '<'
+ 		{
+-			$$.data = empty_data;
++			$$.data = data_add_marker(empty_data, TYPE_UINT32, NULL);
+ 			$$.bits = 32;
+ 		}
+ 	| arrayprefix integer_prim
+@@ -499,7 +505,7 @@ integer_unary:
+ bytestring:
+ 	  /* empty */
+ 		{
+-			$$ = empty_data;
++			$$ = data_add_marker(empty_data, TYPE_UINT8, NULL);
+ 		}
+ 	| bytestring DT_BYTE
+ 		{
+diff --git a/scripts/dtc/dtc.c b/scripts/dtc/dtc.c
+index c36994e6eac5..64134aadb997 100644
+--- a/scripts/dtc/dtc.c
++++ b/scripts/dtc/dtc.c
+@@ -95,6 +95,9 @@ static const char * const usage_opts_help[] = {
+ 	"\n\tOutput formats are:\n"
+ 	 "\t\tdts - device tree source text\n"
+ 	 "\t\tdtb - device tree blob\n"
++#ifndef NO_YAML
++	 "\t\tyaml - device tree encoded as YAML\n"
++#endif
+ 	 "\t\tasm - assembler source",
+ 	"\n\tBlob version to produce, defaults to "stringify(DEFAULT_FDT_VERSION)" (for dtb and asm output)",
+ 	"\n\tOutput dependency file",
+@@ -128,6 +131,8 @@ static const char *guess_type_by_name(const char *fname, const char *fallback)
+ 		return fallback;
+ 	if (!strcasecmp(s, ".dts"))
+ 		return "dts";
++	if (!strcasecmp(s, ".yaml"))
++		return "yaml";
+ 	if (!strcasecmp(s, ".dtb"))
+ 		return "dtb";
+ 	return fallback;
+@@ -350,6 +355,12 @@ int main(int argc, char *argv[])
+ 
+ 	if (streq(outform, "dts")) {
+ 		dt_to_source(outf, dti);
++#ifndef NO_YAML
++	} else if (streq(outform, "yaml")) {
++		if (!streq(inform, "dts"))
++			die("YAML output format requires dts input format\n");
++		dt_to_yaml(outf, dti);
++#endif
+ 	} else if (streq(outform, "dtb")) {
+ 		dt_to_blob(outf, dti, outversion);
+ 	} else if (streq(outform, "asm")) {
+diff --git a/scripts/dtc/dtc.h b/scripts/dtc/dtc.h
+index 6d667701ab6a..cbe541525c2c 100644
+--- a/scripts/dtc/dtc.h
++++ b/scripts/dtc/dtc.h
+@@ -74,10 +74,17 @@ typedef uint32_t cell_t;
+ 
+ /* Data blobs */
+ enum markertype {
++	TYPE_NONE,
+ 	REF_PHANDLE,
+ 	REF_PATH,
+ 	LABEL,
++	TYPE_UINT8,
++	TYPE_UINT16,
++	TYPE_UINT32,
++	TYPE_UINT64,
++	TYPE_STRING,
+ };
++extern const char *markername(enum markertype markertype);
+ 
+ struct  marker {
+ 	enum markertype type;
+@@ -101,6 +108,8 @@ struct data {
+ 	for_each_marker(m) \
+ 		if ((m)->type == (t))
+ 
++size_t type_marker_length(struct marker *m);
++
+ void data_free(struct data d);
+ 
+ struct data data_grow_for(struct data d, int xlen);
+@@ -290,6 +299,10 @@ struct dt_info *dt_from_blob(const char *fname);
+ void dt_to_source(FILE *f, struct dt_info *dti);
+ struct dt_info *dt_from_source(const char *f);
+ 
++/* YAML source */
++
++void dt_to_yaml(FILE *f, struct dt_info *dti);
++
+ /* FS trees */
+ 
+ struct dt_info *dt_from_fs(const char *dirname);
+diff --git a/scripts/dtc/flattree.c b/scripts/dtc/flattree.c
+index 8d268fb785db..851ea87dbc0f 100644
+--- a/scripts/dtc/flattree.c
++++ b/scripts/dtc/flattree.c
+@@ -393,7 +393,7 @@ void dt_to_blob(FILE *f, struct dt_info *dti, int version)
+ 			padlen = 0;
+ 			if (quiet < 1)
+ 				fprintf(stderr,
+-					"Warning: blob size %d >= minimum size %d\n",
++					"Warning: blob size %"PRIu32" >= minimum size %d\n",
+ 					fdt32_to_cpu(fdt.totalsize), minsize);
+ 		}
+ 	}
+diff --git a/scripts/dtc/libfdt/fdt.c b/scripts/dtc/libfdt/fdt.c
+index 7855a1787763..ae03b1112961 100644
+--- a/scripts/dtc/libfdt/fdt.c
++++ b/scripts/dtc/libfdt/fdt.c
+@@ -55,7 +55,12 @@
+ 
+ #include "libfdt_internal.h"
+ 
+-int fdt_check_header(const void *fdt)
++/*
++ * Minimal sanity check for a read-only tree. fdt_ro_probe_() checks
++ * that the given buffer contains what appears to be a flattened
++ * device tree with sane information in its header.
++ */
++int fdt_ro_probe_(const void *fdt)
+ {
+ 	if (fdt_magic(fdt) == FDT_MAGIC) {
+ 		/* Complete tree */
+@@ -74,6 +79,78 @@ int fdt_check_header(const void *fdt)
+ 	return 0;
+ }
+ 
++static int check_off_(uint32_t hdrsize, uint32_t totalsize, uint32_t off)
++{
++	return (off >= hdrsize) && (off <= totalsize);
++}
++
++static int check_block_(uint32_t hdrsize, uint32_t totalsize,
++			uint32_t base, uint32_t size)
++{
++	if (!check_off_(hdrsize, totalsize, base))
++		return 0; /* block start out of bounds */
++	if ((base + size) < base)
++		return 0; /* overflow */
++	if (!check_off_(hdrsize, totalsize, base + size))
++		return 0; /* block end out of bounds */
++	return 1;
++}
++
++size_t fdt_header_size_(uint32_t version)
++{
++	if (version <= 1)
++		return FDT_V1_SIZE;
++	else if (version <= 2)
++		return FDT_V2_SIZE;
++	else if (version <= 3)
++		return FDT_V3_SIZE;
++	else if (version <= 16)
++		return FDT_V16_SIZE;
++	else
++		return FDT_V17_SIZE;
++}
++
++int fdt_check_header(const void *fdt)
++{
++	size_t hdrsize;
++
++	if (fdt_magic(fdt) != FDT_MAGIC)
++		return -FDT_ERR_BADMAGIC;
++	hdrsize = fdt_header_size(fdt);
++	if ((fdt_version(fdt) < FDT_FIRST_SUPPORTED_VERSION)
++	    || (fdt_last_comp_version(fdt) > FDT_LAST_SUPPORTED_VERSION))
++		return -FDT_ERR_BADVERSION;
++	if (fdt_version(fdt) < fdt_last_comp_version(fdt))
++		return -FDT_ERR_BADVERSION;
++
++	if ((fdt_totalsize(fdt) < hdrsize)
++	    || (fdt_totalsize(fdt) > INT_MAX))
++		return -FDT_ERR_TRUNCATED;
++
++	/* Bounds check memrsv block */
++	if (!check_off_(hdrsize, fdt_totalsize(fdt), fdt_off_mem_rsvmap(fdt)))
++		return -FDT_ERR_TRUNCATED;
++
++	/* Bounds check structure block */
++	if (fdt_version(fdt) < 17) {
++		if (!check_off_(hdrsize, fdt_totalsize(fdt),
++				fdt_off_dt_struct(fdt)))
++			return -FDT_ERR_TRUNCATED;
++	} else {
++		if (!check_block_(hdrsize, fdt_totalsize(fdt),
++				  fdt_off_dt_struct(fdt),
++				  fdt_size_dt_struct(fdt)))
++			return -FDT_ERR_TRUNCATED;
++	}
++
++	/* Bounds check strings block */
++	if (!check_block_(hdrsize, fdt_totalsize(fdt),
++			  fdt_off_dt_strings(fdt), fdt_size_dt_strings(fdt)))
++		return -FDT_ERR_TRUNCATED;
++
++	return 0;
++}
++
+ const void *fdt_offset_ptr(const void *fdt, int offset, unsigned int len)
+ {
+ 	unsigned absoffset = offset + fdt_off_dt_struct(fdt);
+@@ -244,7 +321,7 @@ const char *fdt_find_string_(const char *strtab, int tabsize, const char *s)
+ 
+ int fdt_move(const void *fdt, void *buf, int bufsize)
+ {
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	if (fdt_totalsize(fdt) > bufsize)
+ 		return -FDT_ERR_NOSPACE;
+diff --git a/scripts/dtc/libfdt/fdt_addresses.c b/scripts/dtc/libfdt/fdt_addresses.c
+index eff4dbcc729d..49537b578d03 100644
+--- a/scripts/dtc/libfdt/fdt_addresses.c
++++ b/scripts/dtc/libfdt/fdt_addresses.c
+@@ -1,6 +1,7 @@
+ /*
+  * libfdt - Flat Device Tree manipulation
+  * Copyright (C) 2014 David Gibson <david@gibson.dropbear.id.au>
++ * Copyright (C) 2018 embedded brains GmbH
+  *
+  * libfdt is dual licensed: you can use it either under the terms of
+  * the GPL, or the BSD license, at your option.
+@@ -55,42 +56,32 @@
+ 
+ #include "libfdt_internal.h"
+ 
+-int fdt_address_cells(const void *fdt, int nodeoffset)
++static int fdt_cells(const void *fdt, int nodeoffset, const char *name)
+ {
+-	const fdt32_t *ac;
++	const fdt32_t *c;
+ 	int val;
+ 	int len;
+ 
+-	ac = fdt_getprop(fdt, nodeoffset, "#address-cells", &len);
+-	if (!ac)
++	c = fdt_getprop(fdt, nodeoffset, name, &len);
++	if (!c)
+ 		return 2;
+ 
+-	if (len != sizeof(*ac))
++	if (len != sizeof(*c))
+ 		return -FDT_ERR_BADNCELLS;
+ 
+-	val = fdt32_to_cpu(*ac);
++	val = fdt32_to_cpu(*c);
+ 	if ((val <= 0) || (val > FDT_MAX_NCELLS))
+ 		return -FDT_ERR_BADNCELLS;
+ 
+ 	return val;
+ }
+ 
+-int fdt_size_cells(const void *fdt, int nodeoffset)
++int fdt_address_cells(const void *fdt, int nodeoffset)
+ {
+-	const fdt32_t *sc;
+-	int val;
+-	int len;
+-
+-	sc = fdt_getprop(fdt, nodeoffset, "#size-cells", &len);
+-	if (!sc)
+-		return 2;
+-
+-	if (len != sizeof(*sc))
+-		return -FDT_ERR_BADNCELLS;
+-
+-	val = fdt32_to_cpu(*sc);
+-	if ((val < 0) || (val > FDT_MAX_NCELLS))
+-		return -FDT_ERR_BADNCELLS;
++	return fdt_cells(fdt, nodeoffset, "#address-cells");
++}
+ 
+-	return val;
++int fdt_size_cells(const void *fdt, int nodeoffset)
++{
++	return fdt_cells(fdt, nodeoffset, "#size-cells");
+ }
+diff --git a/scripts/dtc/libfdt/fdt_overlay.c b/scripts/dtc/libfdt/fdt_overlay.c
+index bf75388ec9a2..5fdab6c6371d 100644
+--- a/scripts/dtc/libfdt/fdt_overlay.c
++++ b/scripts/dtc/libfdt/fdt_overlay.c
+@@ -697,7 +697,7 @@ static int get_path_len(const void *fdt, int nodeoffset)
+ 	int len = 0, namelen;
+ 	const char *name;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	for (;;) {
+ 		name = fdt_get_name(fdt, nodeoffset, &namelen);
+@@ -866,8 +866,8 @@ int fdt_overlay_apply(void *fdt, void *fdto)
+ 	uint32_t delta = fdt_get_max_phandle(fdt);
+ 	int ret;
+ 
+-	FDT_CHECK_HEADER(fdt);
+-	FDT_CHECK_HEADER(fdto);
++	FDT_RO_PROBE(fdt);
++	FDT_RO_PROBE(fdto);
+ 
+ 	ret = overlay_adjust_local_phandles(fdto, delta);
+ 	if (ret)
+diff --git a/scripts/dtc/libfdt/fdt_ro.c b/scripts/dtc/libfdt/fdt_ro.c
+index dfb3236da388..eafc14282892 100644
+--- a/scripts/dtc/libfdt/fdt_ro.c
++++ b/scripts/dtc/libfdt/fdt_ro.c
+@@ -76,17 +76,72 @@ static int fdt_nodename_eq_(const void *fdt, int offset,
+ 		return 0;
+ }
+ 
++const char *fdt_get_string(const void *fdt, int stroffset, int *lenp)
++{
++	uint32_t absoffset = stroffset + fdt_off_dt_strings(fdt);
++	size_t len;
++	int err;
++	const char *s, *n;
++
++	err = fdt_ro_probe_(fdt);
++	if (err != 0)
++		goto fail;
++
++	err = -FDT_ERR_BADOFFSET;
++	if (absoffset >= fdt_totalsize(fdt))
++		goto fail;
++	len = fdt_totalsize(fdt) - absoffset;
++
++	if (fdt_magic(fdt) == FDT_MAGIC) {
++		if (stroffset < 0)
++			goto fail;
++		if (fdt_version(fdt) >= 17) {
++			if (stroffset >= fdt_size_dt_strings(fdt))
++				goto fail;
++			if ((fdt_size_dt_strings(fdt) - stroffset) < len)
++				len = fdt_size_dt_strings(fdt) - stroffset;
++		}
++	} else if (fdt_magic(fdt) == FDT_SW_MAGIC) {
++		if ((stroffset >= 0)
++		    || (stroffset < -fdt_size_dt_strings(fdt)))
++			goto fail;
++		if ((-stroffset) < len)
++			len = -stroffset;
++	} else {
++		err = -FDT_ERR_INTERNAL;
++		goto fail;
++	}
++
++	s = (const char *)fdt + absoffset;
++	n = memchr(s, '\0', len);
++	if (!n) {
++		/* missing terminating NULL */
++		err = -FDT_ERR_TRUNCATED;
++		goto fail;
++	}
++
++	if (lenp)
++		*lenp = n - s;
++	return s;
++
++fail:
++	if (lenp)
++		*lenp = err;
++	return NULL;
++}
++
+ const char *fdt_string(const void *fdt, int stroffset)
+ {
+-	return (const char *)fdt + fdt_off_dt_strings(fdt) + stroffset;
++	return fdt_get_string(fdt, stroffset, NULL);
+ }
+ 
+ static int fdt_string_eq_(const void *fdt, int stroffset,
+ 			  const char *s, int len)
+ {
+-	const char *p = fdt_string(fdt, stroffset);
++	int slen;
++	const char *p = fdt_get_string(fdt, stroffset, &slen);
+ 
+-	return (strlen(p) == len) && (memcmp(p, s, len) == 0);
++	return p && (slen == len) && (memcmp(p, s, len) == 0);
+ }
+ 
+ uint32_t fdt_get_max_phandle(const void *fdt)
+@@ -115,21 +170,42 @@ uint32_t fdt_get_max_phandle(const void *fdt)
+ 	return 0;
+ }
+ 
++static const struct fdt_reserve_entry *fdt_mem_rsv(const void *fdt, int n)
++{
++	int offset = n * sizeof(struct fdt_reserve_entry);
++	int absoffset = fdt_off_mem_rsvmap(fdt) + offset;
++
++	if (absoffset < fdt_off_mem_rsvmap(fdt))
++		return NULL;
++	if (absoffset > fdt_totalsize(fdt) - sizeof(struct fdt_reserve_entry))
++		return NULL;
++	return fdt_mem_rsv_(fdt, n);
++}
++
+ int fdt_get_mem_rsv(const void *fdt, int n, uint64_t *address, uint64_t *size)
+ {
+-	FDT_CHECK_HEADER(fdt);
+-	*address = fdt64_to_cpu(fdt_mem_rsv_(fdt, n)->address);
+-	*size = fdt64_to_cpu(fdt_mem_rsv_(fdt, n)->size);
++	const struct fdt_reserve_entry *re;
++
++	FDT_RO_PROBE(fdt);
++	re = fdt_mem_rsv(fdt, n);
++	if (!re)
++		return -FDT_ERR_BADOFFSET;
++
++	*address = fdt64_ld(&re->address);
++	*size = fdt64_ld(&re->size);
+ 	return 0;
+ }
+ 
+ int fdt_num_mem_rsv(const void *fdt)
+ {
+-	int i = 0;
++	int i;
++	const struct fdt_reserve_entry *re;
+ 
+-	while (fdt64_to_cpu(fdt_mem_rsv_(fdt, i)->size) != 0)
+-		i++;
+-	return i;
++	for (i = 0; (re = fdt_mem_rsv(fdt, i)) != NULL; i++) {
++		if (fdt64_ld(&re->size) == 0)
++			return i;
++	}
++	return -FDT_ERR_TRUNCATED;
+ }
+ 
+ static int nextprop_(const void *fdt, int offset)
+@@ -161,7 +237,7 @@ int fdt_subnode_offset_namelen(const void *fdt, int offset,
+ {
+ 	int depth;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	for (depth = 0;
+ 	     (offset >= 0) && (depth >= 0);
+@@ -187,7 +263,7 @@ int fdt_path_offset_namelen(const void *fdt, const char *path, int namelen)
+ 	const char *p = path;
+ 	int offset = 0;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* see if we have an alias */
+ 	if (*path != '/') {
+@@ -237,7 +313,7 @@ const char *fdt_get_name(const void *fdt, int nodeoffset, int *len)
+ 	const char *nameptr;
+ 	int err;
+ 
+-	if (((err = fdt_check_header(fdt)) != 0)
++	if (((err = fdt_ro_probe_(fdt)) != 0)
+ 	    || ((err = fdt_check_node_offset_(fdt, nodeoffset)) < 0))
+ 			goto fail;
+ 
+@@ -303,7 +379,7 @@ static const struct fdt_property *fdt_get_property_by_offset_(const void *fdt,
+ 	prop = fdt_offset_ptr_(fdt, offset);
+ 
+ 	if (lenp)
+-		*lenp = fdt32_to_cpu(prop->len);
++		*lenp = fdt32_ld(&prop->len);
+ 
+ 	return prop;
+ }
+@@ -340,7 +416,7 @@ static const struct fdt_property *fdt_get_property_namelen_(const void *fdt,
+ 			offset = -FDT_ERR_INTERNAL;
+ 			break;
+ 		}
+-		if (fdt_string_eq_(fdt, fdt32_to_cpu(prop->nameoff),
++		if (fdt_string_eq_(fdt, fdt32_ld(&prop->nameoff),
+ 				   name, namelen)) {
+ 			if (poffset)
+ 				*poffset = offset;
+@@ -393,7 +469,7 @@ const void *fdt_getprop_namelen(const void *fdt, int nodeoffset,
+ 
+ 	/* Handle realignment */
+ 	if (fdt_version(fdt) < 0x10 && (poffset + sizeof(*prop)) % 8 &&
+-	    fdt32_to_cpu(prop->len) >= 8)
++	    fdt32_ld(&prop->len) >= 8)
+ 		return prop->data + 4;
+ 	return prop->data;
+ }
+@@ -406,12 +482,22 @@ const void *fdt_getprop_by_offset(const void *fdt, int offset,
+ 	prop = fdt_get_property_by_offset_(fdt, offset, lenp);
+ 	if (!prop)
+ 		return NULL;
+-	if (namep)
+-		*namep = fdt_string(fdt, fdt32_to_cpu(prop->nameoff));
++	if (namep) {
++		const char *name;
++		int namelen;
++		name = fdt_get_string(fdt, fdt32_ld(&prop->nameoff),
++				      &namelen);
++		if (!name) {
++			if (lenp)
++				*lenp = namelen;
++			return NULL;
++		}
++		*namep = name;
++	}
+ 
+ 	/* Handle realignment */
+ 	if (fdt_version(fdt) < 0x10 && (offset + sizeof(*prop)) % 8 &&
+-	    fdt32_to_cpu(prop->len) >= 8)
++	    fdt32_ld(&prop->len) >= 8)
+ 		return prop->data + 4;
+ 	return prop->data;
+ }
+@@ -436,7 +522,7 @@ uint32_t fdt_get_phandle(const void *fdt, int nodeoffset)
+ 			return 0;
+ 	}
+ 
+-	return fdt32_to_cpu(*php);
++	return fdt32_ld(php);
+ }
+ 
+ const char *fdt_get_alias_namelen(const void *fdt,
+@@ -462,7 +548,7 @@ int fdt_get_path(const void *fdt, int nodeoffset, char *buf, int buflen)
+ 	int offset, depth, namelen;
+ 	const char *name;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	if (buflen < 2)
+ 		return -FDT_ERR_NOSPACE;
+@@ -514,7 +600,7 @@ int fdt_supernode_atdepth_offset(const void *fdt, int nodeoffset,
+ 	int offset, depth;
+ 	int supernodeoffset = -FDT_ERR_INTERNAL;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	if (supernodedepth < 0)
+ 		return -FDT_ERR_NOTFOUND;
+@@ -573,7 +659,7 @@ int fdt_node_offset_by_prop_value(const void *fdt, int startoffset,
+ 	const void *val;
+ 	int len;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* FIXME: The algorithm here is pretty horrible: we scan each
+ 	 * property of a node in fdt_getprop(), then if that didn't
+@@ -599,7 +685,7 @@ int fdt_node_offset_by_phandle(const void *fdt, uint32_t phandle)
+ 	if ((phandle == 0) || (phandle == -1))
+ 		return -FDT_ERR_BADPHANDLE;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* FIXME: The algorithm here is pretty horrible: we
+ 	 * potentially scan each property of a node in
+@@ -752,7 +838,7 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
+ {
+ 	int offset, err;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	/* FIXME: The algorithm here is pretty horrible: we scan each
+ 	 * property of a node in fdt_node_check_compatible(), then if
+@@ -771,3 +857,66 @@ int fdt_node_offset_by_compatible(const void *fdt, int startoffset,
+ 
+ 	return offset; /* error from fdt_next_node() */
+ }
++
++int fdt_check_full(const void *fdt, size_t bufsize)
++{
++	int err;
++	int num_memrsv;
++	int offset, nextoffset = 0;
++	uint32_t tag;
++	unsigned depth = 0;
++	const void *prop;
++	const char *propname;
++
++	if (bufsize < FDT_V1_SIZE)
++		return -FDT_ERR_TRUNCATED;
++	err = fdt_check_header(fdt);
++	if (err != 0)
++		return err;
++	if (bufsize < fdt_totalsize(fdt))
++		return -FDT_ERR_TRUNCATED;
++
++	num_memrsv = fdt_num_mem_rsv(fdt);
++	if (num_memrsv < 0)
++		return num_memrsv;
++
++	while (1) {
++		offset = nextoffset;
++		tag = fdt_next_tag(fdt, offset, &nextoffset);
++
++		if (nextoffset < 0)
++			return nextoffset;
++
++		switch (tag) {
++		case FDT_NOP:
++			break;
++
++		case FDT_END:
++			if (depth != 0)
++				return -FDT_ERR_BADSTRUCTURE;
++			return 0;
++
++		case FDT_BEGIN_NODE:
++			depth++;
++			if (depth > INT_MAX)
++				return -FDT_ERR_BADSTRUCTURE;
++			break;
++
++		case FDT_END_NODE:
++			if (depth == 0)
++				return -FDT_ERR_BADSTRUCTURE;
++			depth--;
++			break;
++
++		case FDT_PROP:
++			prop = fdt_getprop_by_offset(fdt, offset, &propname,
++						     &err);
++			if (!prop)
++				return err;
++			break;
++
++		default:
++			return -FDT_ERR_INTERNAL;
++		}
++	}
++}
+diff --git a/scripts/dtc/libfdt/fdt_rw.c b/scripts/dtc/libfdt/fdt_rw.c
+index 9b829051e444..2e49855d7cf8 100644
+--- a/scripts/dtc/libfdt/fdt_rw.c
++++ b/scripts/dtc/libfdt/fdt_rw.c
+@@ -67,9 +67,9 @@ static int fdt_blocks_misordered_(const void *fdt,
+ 		    (fdt_off_dt_strings(fdt) + fdt_size_dt_strings(fdt)));
+ }
+ 
+-static int fdt_rw_check_header_(void *fdt)
++static int fdt_rw_probe_(void *fdt)
+ {
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	if (fdt_version(fdt) < 17)
+ 		return -FDT_ERR_BADVERSION;
+@@ -82,10 +82,10 @@ static int fdt_rw_check_header_(void *fdt)
+ 	return 0;
+ }
+ 
+-#define FDT_RW_CHECK_HEADER(fdt) \
++#define FDT_RW_PROBE(fdt) \
+ 	{ \
+ 		int err_; \
+-		if ((err_ = fdt_rw_check_header_(fdt)) != 0) \
++		if ((err_ = fdt_rw_probe_(fdt)) != 0) \
+ 			return err_; \
+ 	}
+ 
+@@ -176,7 +176,7 @@ int fdt_add_mem_rsv(void *fdt, uint64_t address, uint64_t size)
+ 	struct fdt_reserve_entry *re;
+ 	int err;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	re = fdt_mem_rsv_w_(fdt, fdt_num_mem_rsv(fdt));
+ 	err = fdt_splice_mem_rsv_(fdt, re, 0, 1);
+@@ -192,7 +192,7 @@ int fdt_del_mem_rsv(void *fdt, int n)
+ {
+ 	struct fdt_reserve_entry *re = fdt_mem_rsv_w_(fdt, n);
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	if (n >= fdt_num_mem_rsv(fdt))
+ 		return -FDT_ERR_NOTFOUND;
+@@ -252,7 +252,7 @@ int fdt_set_name(void *fdt, int nodeoffset, const char *name)
+ 	int oldlen, newlen;
+ 	int err;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	namep = (char *)(uintptr_t)fdt_get_name(fdt, nodeoffset, &oldlen);
+ 	if (!namep)
+@@ -275,7 +275,7 @@ int fdt_setprop_placeholder(void *fdt, int nodeoffset, const char *name,
+ 	struct fdt_property *prop;
+ 	int err;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	err = fdt_resize_property_(fdt, nodeoffset, name, len, &prop);
+ 	if (err == -FDT_ERR_NOTFOUND)
+@@ -308,7 +308,7 @@ int fdt_appendprop(void *fdt, int nodeoffset, const char *name,
+ 	struct fdt_property *prop;
+ 	int err, oldlen, newlen;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	prop = fdt_get_property_w(fdt, nodeoffset, name, &oldlen);
+ 	if (prop) {
+@@ -334,7 +334,7 @@ int fdt_delprop(void *fdt, int nodeoffset, const char *name)
+ 	struct fdt_property *prop;
+ 	int len, proplen;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	prop = fdt_get_property_w(fdt, nodeoffset, name, &len);
+ 	if (!prop)
+@@ -354,7 +354,7 @@ int fdt_add_subnode_namelen(void *fdt, int parentoffset,
+ 	uint32_t tag;
+ 	fdt32_t *endtag;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	offset = fdt_subnode_offset_namelen(fdt, parentoffset, name, namelen);
+ 	if (offset >= 0)
+@@ -394,7 +394,7 @@ int fdt_del_node(void *fdt, int nodeoffset)
+ {
+ 	int endoffset;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	endoffset = fdt_node_end_offset_(fdt, nodeoffset);
+ 	if (endoffset < 0)
+@@ -435,7 +435,7 @@ int fdt_open_into(const void *fdt, void *buf, int bufsize)
+ 	const char *fdtend = fdtstart + fdt_totalsize(fdt);
+ 	char *tmp;
+ 
+-	FDT_CHECK_HEADER(fdt);
++	FDT_RO_PROBE(fdt);
+ 
+ 	mem_rsv_size = (fdt_num_mem_rsv(fdt)+1)
+ 		* sizeof(struct fdt_reserve_entry);
+@@ -494,7 +494,7 @@ int fdt_pack(void *fdt)
+ {
+ 	int mem_rsv_size;
+ 
+-	FDT_RW_CHECK_HEADER(fdt);
++	FDT_RW_PROBE(fdt);
+ 
+ 	mem_rsv_size = (fdt_num_mem_rsv(fdt)+1)
+ 		* sizeof(struct fdt_reserve_entry);
+diff --git a/scripts/dtc/libfdt/fdt_sw.c b/scripts/dtc/libfdt/fdt_sw.c
+index 6d33cc29d022..9fa4a94d83c3 100644
+--- a/scripts/dtc/libfdt/fdt_sw.c
++++ b/scripts/dtc/libfdt/fdt_sw.c
+@@ -55,21 +55,77 @@
+ 
+ #include "libfdt_internal.h"
+ 
+-static int fdt_sw_check_header_(void *fdt)
++static int fdt_sw_probe_(void *fdt)
+ {
+-	if (fdt_magic(fdt) != FDT_SW_MAGIC)
++	if (fdt_magic(fdt) == FDT_MAGIC)
++		return -FDT_ERR_BADSTATE;
++	else if (fdt_magic(fdt) != FDT_SW_MAGIC)
+ 		return -FDT_ERR_BADMAGIC;
+-	/* FIXME: should check more details about the header state */
+ 	return 0;
+ }
+ 
+-#define FDT_SW_CHECK_HEADER(fdt) \
++#define FDT_SW_PROBE(fdt) \
++	{ \
++		int err; \
++		if ((err = fdt_sw_probe_(fdt)) != 0) \
++			return err; \
++	}
++
++/* 'memrsv' state:	Initial state after fdt_create()
++ *
++ * Allowed functions:
++ *	fdt_add_reservmap_entry()
++ *	fdt_finish_reservemap()		[moves to 'struct' state]
++ */
++static int fdt_sw_probe_memrsv_(void *fdt)
++{
++	int err = fdt_sw_probe_(fdt);
++	if (err)
++		return err;
++
++	if (fdt_off_dt_strings(fdt) != 0)
++		return -FDT_ERR_BADSTATE;
++	return 0;
++}
++
++#define FDT_SW_PROBE_MEMRSV(fdt) \
++	{ \
++		int err; \
++		if ((err = fdt_sw_probe_memrsv_(fdt)) != 0) \
++			return err; \
++	}
++
++/* 'struct' state:	Enter this state after fdt_finish_reservemap()
++ *
++ * Allowed functions:
++ *	fdt_begin_node()
++ *	fdt_end_node()
++ *	fdt_property*()
++ *	fdt_finish()			[moves to 'complete' state]
++ */
++static int fdt_sw_probe_struct_(void *fdt)
++{
++	int err = fdt_sw_probe_(fdt);
++	if (err)
++		return err;
++
++	if (fdt_off_dt_strings(fdt) != fdt_totalsize(fdt))
++		return -FDT_ERR_BADSTATE;
++	return 0;
++}
++
++#define FDT_SW_PROBE_STRUCT(fdt) \
+ 	{ \
+ 		int err; \
+-		if ((err = fdt_sw_check_header_(fdt)) != 0) \
++		if ((err = fdt_sw_probe_struct_(fdt)) != 0) \
+ 			return err; \
+ 	}
+ 
++/* 'complete' state:	Enter this state after fdt_finish()
++ *
++ * Allowed functions: none
++ */
++
+ static void *fdt_grab_space_(void *fdt, size_t len)
+ {
+ 	int offset = fdt_size_dt_struct(fdt);
+@@ -87,9 +143,11 @@ static void *fdt_grab_space_(void *fdt, size_t len)
+ 
+ int fdt_create(void *buf, int bufsize)
+ {
++	const size_t hdrsize = FDT_ALIGN(sizeof(struct fdt_header),
++					 sizeof(struct fdt_reserve_entry));
+ 	void *fdt = buf;
+ 
+-	if (bufsize < sizeof(struct fdt_header))
++	if (bufsize < hdrsize)
+ 		return -FDT_ERR_NOSPACE;
+ 
+ 	memset(buf, 0, bufsize);
+@@ -99,10 +157,9 @@ int fdt_create(void *buf, int bufsize)
+ 	fdt_set_last_comp_version(fdt, FDT_FIRST_SUPPORTED_VERSION);
+ 	fdt_set_totalsize(fdt,  bufsize);
+ 
+-	fdt_set_off_mem_rsvmap(fdt, FDT_ALIGN(sizeof(struct fdt_header),
+-					      sizeof(struct fdt_reserve_entry)));
++	fdt_set_off_mem_rsvmap(fdt, hdrsize);
+ 	fdt_set_off_dt_struct(fdt, fdt_off_mem_rsvmap(fdt));
+-	fdt_set_off_dt_strings(fdt, bufsize);
++	fdt_set_off_dt_strings(fdt, 0);
+ 
+ 	return 0;
+ }
+@@ -112,11 +169,14 @@ int fdt_resize(void *fdt, void *buf, int bufsize)
+ 	size_t headsize, tailsize;
+ 	char *oldtail, *newtail;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE(fdt);
+ 
+-	headsize = fdt_off_dt_struct(fdt);
++	headsize = fdt_off_dt_struct(fdt) + fdt_size_dt_struct(fdt);
+ 	tailsize = fdt_size_dt_strings(fdt);
+ 
++	if ((headsize + tailsize) > fdt_totalsize(fdt))
++		return -FDT_ERR_INTERNAL;
++
+ 	if ((headsize + tailsize) > bufsize)
+ 		return -FDT_ERR_NOSPACE;
+ 
+@@ -133,8 +193,9 @@ int fdt_resize(void *fdt, void *buf, int bufsize)
+ 		memmove(buf, fdt, headsize);
+ 	}
+ 
+-	fdt_set_off_dt_strings(buf, bufsize);
+ 	fdt_set_totalsize(buf, bufsize);
++	if (fdt_off_dt_strings(buf))
++		fdt_set_off_dt_strings(buf, bufsize);
+ 
+ 	return 0;
+ }
+@@ -144,10 +205,7 @@ int fdt_add_reservemap_entry(void *fdt, uint64_t addr, uint64_t size)
+ 	struct fdt_reserve_entry *re;
+ 	int offset;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
+-
+-	if (fdt_size_dt_struct(fdt))
+-		return -FDT_ERR_BADSTATE;
++	FDT_SW_PROBE_MEMRSV(fdt);
+ 
+ 	offset = fdt_off_dt_struct(fdt);
+ 	if ((offset + sizeof(*re)) > fdt_totalsize(fdt))
+@@ -164,16 +222,23 @@ int fdt_add_reservemap_entry(void *fdt, uint64_t addr, uint64_t size)
+ 
+ int fdt_finish_reservemap(void *fdt)
+ {
+-	return fdt_add_reservemap_entry(fdt, 0, 0);
++	int err = fdt_add_reservemap_entry(fdt, 0, 0);
++
++	if (err)
++		return err;
++
++	fdt_set_off_dt_strings(fdt, fdt_totalsize(fdt));
++	return 0;
+ }
+ 
+ int fdt_begin_node(void *fdt, const char *name)
+ {
+ 	struct fdt_node_header *nh;
+-	int namelen = strlen(name) + 1;
++	int namelen;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE_STRUCT(fdt);
+ 
++	namelen = strlen(name) + 1;
+ 	nh = fdt_grab_space_(fdt, sizeof(*nh) + FDT_TAGALIGN(namelen));
+ 	if (! nh)
+ 		return -FDT_ERR_NOSPACE;
+@@ -187,7 +252,7 @@ int fdt_end_node(void *fdt)
+ {
+ 	fdt32_t *en;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE_STRUCT(fdt);
+ 
+ 	en = fdt_grab_space_(fdt, FDT_TAGSIZE);
+ 	if (! en)
+@@ -225,7 +290,7 @@ int fdt_property_placeholder(void *fdt, const char *name, int len, void **valp)
+ 	struct fdt_property *prop;
+ 	int nameoff;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE_STRUCT(fdt);
+ 
+ 	nameoff = fdt_find_add_string_(fdt, name);
+ 	if (nameoff == 0)
+@@ -262,7 +327,7 @@ int fdt_finish(void *fdt)
+ 	uint32_t tag;
+ 	int offset, nextoffset;
+ 
+-	FDT_SW_CHECK_HEADER(fdt);
++	FDT_SW_PROBE_STRUCT(fdt);
+ 
+ 	/* Add terminator */
+ 	end = fdt_grab_space_(fdt, sizeof(*end));
+diff --git a/scripts/dtc/libfdt/libfdt.h b/scripts/dtc/libfdt/libfdt.h
+index 1e27780e1185..2bd151dd355f 100644
+--- a/scripts/dtc/libfdt/libfdt.h
++++ b/scripts/dtc/libfdt/libfdt.h
+@@ -90,8 +90,9 @@
+ 
+ /* Error codes: codes for bad device tree blobs */
+ #define FDT_ERR_TRUNCATED	8
+-	/* FDT_ERR_TRUNCATED: Structure block of the given device tree
+-	 * ends without an FDT_END tag. */
++	/* FDT_ERR_TRUNCATED: FDT or a sub-block is improperly
++	 * terminated (overflows, goes outside allowed bounds, or
++	 * isn't properly terminated).  */
+ #define FDT_ERR_BADMAGIC	9
+ 	/* FDT_ERR_BADMAGIC: Given "device tree" appears not to be a
+ 	 * device tree at all - it is missing the flattened device
+@@ -153,6 +154,29 @@ static inline void *fdt_offset_ptr_w(void *fdt, int offset, int checklen)
+ 
+ uint32_t fdt_next_tag(const void *fdt, int offset, int *nextoffset);
+ 
++/*
++ * Alignment helpers:
++ *     These helpers access words from a device tree blob.  They're
++ *     built to work even with unaligned pointers on platforms (ike
++ *     ARM) that don't like unaligned loads and stores
++ */
++
++static inline uint32_t fdt32_ld(const fdt32_t *p)
++{
++	fdt32_t v;
++
++	memcpy(&v, p, sizeof(v));
++	return fdt32_to_cpu(v);
++}
++
++static inline uint64_t fdt64_ld(const fdt64_t *p)
++{
++	fdt64_t v;
++
++	memcpy(&v, p, sizeof(v));
++	return fdt64_to_cpu(v);
++}
++
+ /**********************************************************************/
+ /* Traversal functions                                                */
+ /**********************************************************************/
+@@ -213,7 +237,7 @@ int fdt_next_subnode(const void *fdt, int offset);
+ /* General functions                                                  */
+ /**********************************************************************/
+ #define fdt_get_header(fdt, field) \
+-	(fdt32_to_cpu(((const struct fdt_header *)(fdt))->field))
++	(fdt32_ld(&((const struct fdt_header *)(fdt))->field))
+ #define fdt_magic(fdt)			(fdt_get_header(fdt, magic))
+ #define fdt_totalsize(fdt)		(fdt_get_header(fdt, totalsize))
+ #define fdt_off_dt_struct(fdt)		(fdt_get_header(fdt, off_dt_struct))
+@@ -244,18 +268,31 @@ fdt_set_hdr_(size_dt_struct);
+ #undef fdt_set_hdr_
+ 
+ /**
+- * fdt_check_header - sanity check a device tree or possible device tree
++ * fdt_header_size - return the size of the tree's header
++ * @fdt: pointer to a flattened device tree
++ */
++size_t fdt_header_size_(uint32_t version);
++static inline size_t fdt_header_size(const void *fdt)
++{
++	return fdt_header_size_(fdt_version(fdt));
++}
++
++/**
++ * fdt_check_header - sanity check a device tree header
++
+  * @fdt: pointer to data which might be a flattened device tree
+  *
+  * fdt_check_header() checks that the given buffer contains what
+- * appears to be a flattened device tree with sane information in its
+- * header.
++ * appears to be a flattened device tree, and that the header contains
++ * valid information (to the extent that can be determined from the
++ * header alone).
+  *
+  * returns:
+  *     0, if the buffer appears to contain a valid device tree
+  *     -FDT_ERR_BADMAGIC,
+  *     -FDT_ERR_BADVERSION,
+- *     -FDT_ERR_BADSTATE, standard meanings, as above
++ *     -FDT_ERR_BADSTATE,
++ *     -FDT_ERR_TRUNCATED, standard meanings, as above
+  */
+ int fdt_check_header(const void *fdt);
+ 
+@@ -284,6 +321,24 @@ int fdt_move(const void *fdt, void *buf, int bufsize);
+ /* Read-only functions                                                */
+ /**********************************************************************/
+ 
++int fdt_check_full(const void *fdt, size_t bufsize);
++
++/**
++ * fdt_get_string - retrieve a string from the strings block of a device tree
++ * @fdt: pointer to the device tree blob
++ * @stroffset: offset of the string within the strings block (native endian)
++ * @lenp: optional pointer to return the string's length
++ *
++ * fdt_get_string() retrieves a pointer to a single string from the
++ * strings block of the device tree blob at fdt, and optionally also
++ * returns the string's length in *lenp.
++ *
++ * returns:
++ *     a pointer to the string, on success
++ *     NULL, if stroffset is out of bounds, or doesn't point to a valid string
++ */
++const char *fdt_get_string(const void *fdt, int stroffset, int *lenp);
++
+ /**
+  * fdt_string - retrieve a string from the strings block of a device tree
+  * @fdt: pointer to the device tree blob
+@@ -294,7 +349,7 @@ int fdt_move(const void *fdt, void *buf, int bufsize);
+  *
+  * returns:
+  *     a pointer to the string, on success
+- *     NULL, if stroffset is out of bounds
++ *     NULL, if stroffset is out of bounds, or doesn't point to a valid string
+  */
+ const char *fdt_string(const void *fdt, int stroffset);
+ 
+@@ -1090,7 +1145,7 @@ int fdt_address_cells(const void *fdt, int nodeoffset);
+  *
+  * returns:
+  *	0 <= n < FDT_MAX_NCELLS, on success
+- *      2, if the node has no #address-cells property
++ *      2, if the node has no #size-cells property
+  *      -FDT_ERR_BADNCELLS, if the node has a badly formatted or invalid
+  *		#size-cells property
+  *	-FDT_ERR_BADMAGIC,
+@@ -1313,10 +1368,13 @@ static inline int fdt_property_u64(void *fdt, const char *name, uint64_t val)
+ 	fdt64_t tmp = cpu_to_fdt64(val);
+ 	return fdt_property(fdt, name, &tmp, sizeof(tmp));
+ }
++
++#ifndef SWIG /* Not available in Python */
+ static inline int fdt_property_cell(void *fdt, const char *name, uint32_t val)
+ {
+ 	return fdt_property_u32(fdt, name, val);
+ }
++#endif
+ 
+ /**
+  * fdt_property_placeholder - add a new property and return a ptr to its value
+diff --git a/scripts/dtc/libfdt/libfdt_env.h b/scripts/dtc/libfdt/libfdt_env.h
+index bd2474628775..eb2053845c9c 100644
+--- a/scripts/dtc/libfdt/libfdt_env.h
++++ b/scripts/dtc/libfdt/libfdt_env.h
+@@ -56,6 +56,7 @@
+ #include <stdint.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <limits.h>
+ 
+ #ifdef __CHECKER__
+ #define FDT_FORCE __attribute__((force))
+diff --git a/scripts/dtc/libfdt/libfdt_internal.h b/scripts/dtc/libfdt/libfdt_internal.h
+index 7681e192295b..4109f890ae60 100644
+--- a/scripts/dtc/libfdt/libfdt_internal.h
++++ b/scripts/dtc/libfdt/libfdt_internal.h
+@@ -55,10 +55,11 @@
+ #define FDT_ALIGN(x, a)		(((x) + (a) - 1) & ~((a) - 1))
+ #define FDT_TAGALIGN(x)		(FDT_ALIGN((x), FDT_TAGSIZE))
+ 
+-#define FDT_CHECK_HEADER(fdt) \
++int fdt_ro_probe_(const void *fdt);
++#define FDT_RO_PROBE(fdt)			\
+ 	{ \
+ 		int err_; \
+-		if ((err_ = fdt_check_header(fdt)) != 0) \
++		if ((err_ = fdt_ro_probe_(fdt)) != 0)	\
+ 			return err_; \
+ 	}
+ 
+diff --git a/scripts/dtc/livetree.c b/scripts/dtc/livetree.c
+index 6e4c367f54b3..4ff0679e0062 100644
+--- a/scripts/dtc/livetree.c
++++ b/scripts/dtc/livetree.c
+@@ -594,6 +594,7 @@ struct node *get_node_by_ref(struct node *tree, const char *ref)
+ cell_t get_node_phandle(struct node *root, struct node *node)
+ {
+ 	static cell_t phandle = 1; /* FIXME: ick, static local */
++	struct data d = empty_data;
+ 
+ 	if ((node->phandle != 0) && (node->phandle != -1))
+ 		return node->phandle;
+@@ -603,17 +604,16 @@ cell_t get_node_phandle(struct node *root, struct node *node)
+ 
+ 	node->phandle = phandle;
+ 
++	d = data_add_marker(d, TYPE_UINT32, NULL);
++	d = data_append_cell(d, phandle);
++
+ 	if (!get_property(node, "linux,phandle")
+ 	    && (phandle_format & PHANDLE_LEGACY))
+-		add_property(node,
+-			     build_property("linux,phandle",
+-					    data_append_cell(empty_data, phandle)));
++		add_property(node, build_property("linux,phandle", d));
+ 
+ 	if (!get_property(node, "phandle")
+ 	    && (phandle_format & PHANDLE_EPAPR))
+-		add_property(node,
+-			     build_property("phandle",
+-					    data_append_cell(empty_data, phandle)));
++		add_property(node, build_property("phandle", d));
+ 
+ 	/* If the node *does* have a phandle property, we must
+ 	 * be dealing with a self-referencing phandle, which will be
+diff --git a/scripts/dtc/treesource.c b/scripts/dtc/treesource.c
+index 2461a3d068a0..f2874f1d1465 100644
+--- a/scripts/dtc/treesource.c
++++ b/scripts/dtc/treesource.c
+@@ -61,24 +61,14 @@ static bool isstring(char c)
+ 		|| strchr("\a\b\t\n\v\f\r", c));
+ }
+ 
+-static void write_propval_string(FILE *f, struct data val)
++static void write_propval_string(FILE *f, const char *s, size_t len)
+ {
+-	const char *str = val.val;
+-	int i;
+-	struct marker *m = val.markers;
+-
+-	assert(str[val.len-1] == '\0');
++	const char *end = s + len - 1;
++	assert(*end == '\0');
+ 
+-	while (m && (m->offset == 0)) {
+-		if (m->type == LABEL)
+-			fprintf(f, "%s: ", m->ref);
+-		m = m->next;
+-	}
+ 	fprintf(f, "\"");
+-
+-	for (i = 0; i < (val.len-1); i++) {
+-		char c = str[i];
+-
++	while (s < end) {
++		char c = *s++;
+ 		switch (c) {
+ 		case '\a':
+ 			fprintf(f, "\\a");
+@@ -108,91 +98,78 @@ static void write_propval_string(FILE *f, struct data val)
+ 			fprintf(f, "\\\"");
+ 			break;
+ 		case '\0':
+-			fprintf(f, "\", ");
+-			while (m && (m->offset <= (i + 1))) {
+-				if (m->type == LABEL) {
+-					assert(m->offset == (i+1));
+-					fprintf(f, "%s: ", m->ref);
+-				}
+-				m = m->next;
+-			}
+-			fprintf(f, "\"");
++			fprintf(f, "\\0");
+ 			break;
+ 		default:
+ 			if (isprint((unsigned char)c))
+ 				fprintf(f, "%c", c);
+ 			else
+-				fprintf(f, "\\x%02hhx", c);
++				fprintf(f, "\\x%02"PRIx8, c);
+ 		}
+ 	}
+ 	fprintf(f, "\"");
+-
+-	/* Wrap up any labels at the end of the value */
+-	for_each_marker_of_type(m, LABEL) {
+-		assert (m->offset == val.len);
+-		fprintf(f, " %s:", m->ref);
+-	}
+ }
+ 
+-static void write_propval_cells(FILE *f, struct data val)
++static void write_propval_int(FILE *f, const char *p, size_t len, size_t width)
+ {
+-	void *propend = val.val + val.len;
+-	fdt32_t *cp = (fdt32_t *)val.val;
+-	struct marker *m = val.markers;
+-
+-	fprintf(f, "<");
+-	for (;;) {
+-		while (m && (m->offset <= ((char *)cp - val.val))) {
+-			if (m->type == LABEL) {
+-				assert(m->offset == ((char *)cp - val.val));
+-				fprintf(f, "%s: ", m->ref);
+-			}
+-			m = m->next;
+-		}
++	const char *end = p + len;
++	assert(len % width == 0);
+ 
+-		fprintf(f, "0x%x", fdt32_to_cpu(*cp++));
+-		if ((void *)cp >= propend)
++	for (; p < end; p += width) {
++		switch (width) {
++		case 1:
++			fprintf(f, " %02"PRIx8, *(const uint8_t*)p);
++			break;
++		case 2:
++			fprintf(f, " 0x%02"PRIx16, fdt16_to_cpu(*(const fdt16_t*)p));
++			break;
++		case 4:
++			fprintf(f, " 0x%02"PRIx32, fdt32_to_cpu(*(const fdt32_t*)p));
++			break;
++		case 8:
++			fprintf(f, " 0x%02"PRIx64, fdt64_to_cpu(*(const fdt64_t*)p));
+ 			break;
+-		fprintf(f, " ");
++		}
+ 	}
++}
+ 
+-	/* Wrap up any labels at the end of the value */
+-	for_each_marker_of_type(m, LABEL) {
+-		assert (m->offset == val.len);
+-		fprintf(f, " %s:", m->ref);
+-	}
+-	fprintf(f, ">");
++static bool has_data_type_information(struct marker *m)
++{
++	return m->type >= TYPE_UINT8;
+ }
+ 
+-static void write_propval_bytes(FILE *f, struct data val)
++static struct marker *next_type_marker(struct marker *m)
+ {
+-	void *propend = val.val + val.len;
+-	const char *bp = val.val;
+-	struct marker *m = val.markers;
+-
+-	fprintf(f, "[");
+-	for (;;) {
+-		while (m && (m->offset == (bp-val.val))) {
+-			if (m->type == LABEL)
+-				fprintf(f, "%s: ", m->ref);
+-			m = m->next;
+-		}
++	while (m && !has_data_type_information(m))
++		m = m->next;
++	return m;
++}
+ 
+-		fprintf(f, "%02hhx", (unsigned char)(*bp++));
+-		if ((const void *)bp >= propend)
+-			break;
+-		fprintf(f, " ");
+-	}
++size_t type_marker_length(struct marker *m)
++{
++	struct marker *next = next_type_marker(m->next);
+ 
+-	/* Wrap up any labels at the end of the value */
+-	for_each_marker_of_type(m, LABEL) {
+-		assert (m->offset == val.len);
+-		fprintf(f, " %s:", m->ref);
+-	}
+-	fprintf(f, "]");
++	if (next)
++		return next->offset - m->offset;
++	return 0;
+ }
+ 
+-static void write_propval(FILE *f, struct property *prop)
++static const char *delim_start[] = {
++	[TYPE_UINT8] = "[",
++	[TYPE_UINT16] = "/bits/ 16 <",
++	[TYPE_UINT32] = "<",
++	[TYPE_UINT64] = "/bits/ 64 <",
++	[TYPE_STRING] = "",
++};
++static const char *delim_end[] = {
++	[TYPE_UINT8] = " ]",
++	[TYPE_UINT16] = " >",
++	[TYPE_UINT32] = " >",
++	[TYPE_UINT64] = " >",
++	[TYPE_STRING] = "",
++};
++
++static enum markertype guess_value_type(struct property *prop)
+ {
+ 	int len = prop->val.len;
+ 	const char *p = prop->val.val;
+@@ -201,11 +178,6 @@ static void write_propval(FILE *f, struct property *prop)
+ 	int nnotstringlbl = 0, nnotcelllbl = 0;
+ 	int i;
+ 
+-	if (len == 0) {
+-		fprintf(f, ";\n");
+-		return;
+-	}
+-
+ 	for (i = 0; i < len; i++) {
+ 		if (! isstring(p[i]))
+ 			nnotstring++;
+@@ -220,17 +192,91 @@ static void write_propval(FILE *f, struct property *prop)
+ 			nnotcelllbl++;
+ 	}
+ 
+-	fprintf(f, " = ");
+ 	if ((p[len-1] == '\0') && (nnotstring == 0) && (nnul < (len-nnul))
+ 	    && (nnotstringlbl == 0)) {
+-		write_propval_string(f, prop->val);
++		return TYPE_STRING;
+ 	} else if (((len % sizeof(cell_t)) == 0) && (nnotcelllbl == 0)) {
+-		write_propval_cells(f, prop->val);
+-	} else {
+-		write_propval_bytes(f, prop->val);
++		return TYPE_UINT32;
+ 	}
+ 
+-	fprintf(f, ";\n");
++	return TYPE_UINT8;
++}
++
++static void write_propval(FILE *f, struct property *prop)
++{
++	size_t len = prop->val.len;
++	struct marker *m = prop->val.markers;
++	struct marker dummy_marker;
++	enum markertype emit_type = TYPE_NONE;
++
++	if (len == 0) {
++		fprintf(f, ";\n");
++		return;
++	}
++
++	fprintf(f, " = ");
++
++	if (!next_type_marker(m)) {
++		/* data type information missing, need to guess */
++		dummy_marker.type = guess_value_type(prop);
++		dummy_marker.next = prop->val.markers;
++		dummy_marker.offset = 0;
++		dummy_marker.ref = NULL;
++		m = &dummy_marker;
++	}
++
++	struct marker *m_label = prop->val.markers;
++	for_each_marker(m) {
++		size_t chunk_len;
++		const char *p = &prop->val.val[m->offset];
++
++		if (!has_data_type_information(m))
++			continue;
++
++		chunk_len = type_marker_length(m);
++		if (!chunk_len)
++			chunk_len = len - m->offset;
++
++		if (emit_type != TYPE_NONE)
++			fprintf(f, "%s, ", delim_end[emit_type]);
++		emit_type = m->type;
++
++		for_each_marker_of_type(m_label, LABEL) {
++			if (m_label->offset > m->offset)
++				break;
++			fprintf(f, "%s: ", m_label->ref);
++		}
++
++		fprintf(f, "%s", delim_start[emit_type]);
++
++		if (chunk_len <= 0)
++			continue;
++
++		switch(emit_type) {
++		case TYPE_UINT16:
++			write_propval_int(f, p, chunk_len, 2);
++			break;
++		case TYPE_UINT32:
++			write_propval_int(f, p, chunk_len, 4);
++			break;
++		case TYPE_UINT64:
++			write_propval_int(f, p, chunk_len, 8);
++			break;
++		case TYPE_STRING:
++			write_propval_string(f, p, chunk_len);
++			break;
++		default:
++			write_propval_int(f, p, chunk_len, 1);
++		}
++	}
++
++	/* Wrap up any labels at the end of the value */
++	for_each_marker_of_type(m_label, LABEL) {
++		assert (m_label->offset == len);
++		fprintf(f, " %s:", m_label->ref);
++	}
++
++	fprintf(f, "%s;\n", delim_end[emit_type] ? : "");
+ }
+ 
+ static void write_tree_source_node(FILE *f, struct node *tree, int level)
+@@ -281,4 +327,3 @@ void dt_to_source(FILE *f, struct dt_info *dti)
+ 
+ 	write_tree_source_node(f, dti->dt, 0);
+ }
+-
+diff --git a/scripts/dtc/util.c b/scripts/dtc/util.c
+index 9953c32a0244..a69b7a13463d 100644
+--- a/scripts/dtc/util.c
++++ b/scripts/dtc/util.c
+@@ -227,11 +227,11 @@ char get_escape_char(const char *s, int *i)
+ 	return val;
+ }
+ 
+-int utilfdt_read_err_len(const char *filename, char **buffp, off_t *len)
++int utilfdt_read_err(const char *filename, char **buffp, size_t *len)
+ {
+ 	int fd = 0;	/* assume stdin */
+ 	char *buf = NULL;
+-	off_t bufsize = 1024, offset = 0;
++	size_t bufsize = 1024, offset = 0;
+ 	int ret = 0;
+ 
+ 	*buffp = NULL;
+@@ -264,20 +264,15 @@ int utilfdt_read_err_len(const char *filename, char **buffp, off_t *len)
+ 		free(buf);
+ 	else
+ 		*buffp = buf;
+-	*len = bufsize;
++	if (len)
++		*len = bufsize;
+ 	return ret;
+ }
+ 
+-int utilfdt_read_err(const char *filename, char **buffp)
+-{
+-	off_t len;
+-	return utilfdt_read_err_len(filename, buffp, &len);
+-}
+-
+-char *utilfdt_read_len(const char *filename, off_t *len)
++char *utilfdt_read(const char *filename, size_t *len)
+ {
+ 	char *buff;
+-	int ret = utilfdt_read_err_len(filename, &buff, len);
++	int ret = utilfdt_read_err(filename, &buff, len);
+ 
+ 	if (ret) {
+ 		fprintf(stderr, "Couldn't open blob from '%s': %s\n", filename,
+@@ -288,12 +283,6 @@ char *utilfdt_read_len(const char *filename, off_t *len)
+ 	return buff;
+ }
+ 
+-char *utilfdt_read(const char *filename)
+-{
+-	off_t len;
+-	return utilfdt_read_len(filename, &len);
+-}
+-
+ int utilfdt_write_err(const char *filename, const void *blob)
+ {
+ 	int fd = 1;	/* assume stdout */
+diff --git a/scripts/dtc/util.h b/scripts/dtc/util.h
+index 66fba8ea709b..f6cea8274174 100644
+--- a/scripts/dtc/util.h
++++ b/scripts/dtc/util.h
+@@ -98,16 +98,10 @@ char get_escape_char(const char *s, int *i);
+  * stderr.
+  *
+  * @param filename	The filename to read, or - for stdin
+- * @return Pointer to allocated buffer containing fdt, or NULL on error
+- */
+-char *utilfdt_read(const char *filename);
+-
+-/**
+- * Like utilfdt_read(), but also passes back the size of the file read.
+- *
+  * @param len		If non-NULL, the amount of data we managed to read
++ * @return Pointer to allocated buffer containing fdt, or NULL on error
+  */
+-char *utilfdt_read_len(const char *filename, off_t *len);
++char *utilfdt_read(const char *filename, size_t *len);
+ 
+ /**
+  * Read a device tree file into a buffer. Does not report errors, but only
+@@ -116,16 +110,10 @@ char *utilfdt_read_len(const char *filename, off_t *len);
+  *
+  * @param filename	The filename to read, or - for stdin
+  * @param buffp		Returns pointer to buffer containing fdt
+- * @return 0 if ok, else an errno value representing the error
+- */
+-int utilfdt_read_err(const char *filename, char **buffp);
+-
+-/**
+- * Like utilfdt_read_err(), but also passes back the size of the file read.
+- *
+  * @param len		If non-NULL, the amount of data we managed to read
++ * @return 0 if ok, else an errno value representing the error
+  */
+-int utilfdt_read_err_len(const char *filename, char **buffp, off_t *len);
++int utilfdt_read_err(const char *filename, char **buffp, size_t *len);
+ 
+ /**
+  * Write a device tree buffer to a file. This will report any errors on
+diff --git a/scripts/dtc/version_gen.h b/scripts/dtc/version_gen.h
+index b00f14ff7a17..6d23fd095f16 100644
+--- a/scripts/dtc/version_gen.h
++++ b/scripts/dtc/version_gen.h
+@@ -1 +1 @@
+-#define DTC_VERSION "DTC 1.4.6-g84e414b0"
++#define DTC_VERSION "DTC 1.4.7-gc86da84d"
+diff --git a/scripts/dtc/yamltree.c b/scripts/dtc/yamltree.c
+new file mode 100644
+index 000000000000..a00285a5a9ec
+--- /dev/null
++++ b/scripts/dtc/yamltree.c
+@@ -0,0 +1,247 @@
++/*
++ * (C) Copyright Linaro, Ltd. 2018
++ * (C) Copyright Arm Holdings.  2017
++ * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of the
++ * License, or (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
++ *                                                                   USA
++ */
++
++#include <stdlib.h>
++#include <yaml.h>
++#include "dtc.h"
++#include "srcpos.h"
++
++char *yaml_error_name[] = {
++	[YAML_NO_ERROR] = "no error",
++	[YAML_MEMORY_ERROR] = "memory error",
++	[YAML_READER_ERROR] = "reader error",
++	[YAML_SCANNER_ERROR] = "scanner error",
++	[YAML_PARSER_ERROR] = "parser error",
++	[YAML_COMPOSER_ERROR] = "composer error",
++	[YAML_WRITER_ERROR] = "writer error",
++	[YAML_EMITTER_ERROR] = "emitter error",
++};
++
++#define yaml_emitter_emit_or_die(emitter, event) (			\
++{									\
++	if (!yaml_emitter_emit(emitter, event))				\
++		die("yaml '%s': %s in %s, line %i\n",			\
++		    yaml_error_name[(emitter)->error], 			\
++		    (emitter)->problem, __func__, __LINE__);		\
++})
++
++static void yaml_propval_int(yaml_emitter_t *emitter, struct marker *markers, char *data, int len, int width)
++{
++	yaml_event_t event;
++	void *tag;
++	int off, start_offset = markers->offset;
++
++	switch(width) {
++		case 1: tag = "!u8"; break;
++		case 2: tag = "!u16"; break;
++		case 4: tag = "!u32"; break;
++		case 8: tag = "!u64"; break;
++		default:
++			die("Invalid width %i", width);
++	}
++	assert(len % width == 0);
++
++	yaml_sequence_start_event_initialize(&event, NULL,
++		(yaml_char_t *)tag, width == 4, YAML_FLOW_SEQUENCE_STYLE);
++	yaml_emitter_emit_or_die(emitter, &event);
++
++	for (off = 0; off < len; off += width) {
++		char buf[32];
++		struct marker *m;
++		bool is_phandle = false;
++
++		switch(width) {
++		case 1:
++			sprintf(buf, "0x%"PRIx8, *(uint8_t*)(data + off));
++			break;
++		case 2:
++			sprintf(buf, "0x%"PRIx16, fdt16_to_cpu(*(fdt16_t*)(data + off)));
++			break;
++		case 4:
++			sprintf(buf, "0x%"PRIx32, fdt32_to_cpu(*(fdt32_t*)(data + off)));
++			m = markers;
++			is_phandle = false;
++			for_each_marker_of_type(m, REF_PHANDLE) {
++				if (m->offset == (start_offset + off)) {
++					is_phandle = true;
++					break;
++				}
++			}
++			break;
++		case 8:
++			sprintf(buf, "0x%"PRIx64, fdt64_to_cpu(*(fdt64_t*)(data + off)));
++			break;
++		}
++
++		if (is_phandle)
++			yaml_scalar_event_initialize(&event, NULL,
++				(yaml_char_t*)"!phandle", (yaml_char_t *)buf,
++				strlen(buf), 0, 0, YAML_PLAIN_SCALAR_STYLE);
++		else
++			yaml_scalar_event_initialize(&event, NULL,
++				(yaml_char_t*)YAML_INT_TAG, (yaml_char_t *)buf,
++				strlen(buf), 1, 1, YAML_PLAIN_SCALAR_STYLE);
++		yaml_emitter_emit_or_die(emitter, &event);
++	}
++
++	yaml_sequence_end_event_initialize(&event);
++	yaml_emitter_emit_or_die(emitter, &event);
++}
++
++static void yaml_propval_string(yaml_emitter_t *emitter, char *str, int len)
++{
++	yaml_event_t event;
++	int i;
++
++	assert(str[len-1] == '\0');
++
++	/* Make sure the entire string is in the lower 7-bit ascii range */
++	for (i = 0; i < len; i++)
++		assert(isascii(str[i]));
++
++	yaml_scalar_event_initialize(&event, NULL,
++		(yaml_char_t *)YAML_STR_TAG, (yaml_char_t*)str,
++		len-1, 0, 1, YAML_DOUBLE_QUOTED_SCALAR_STYLE);
++	yaml_emitter_emit_or_die(emitter, &event);
++}
++
++static void yaml_propval(yaml_emitter_t *emitter, struct property *prop)
++{
++	yaml_event_t event;
++	int len = prop->val.len;
++	struct marker *m = prop->val.markers;
++
++	/* Emit the property name */
++	yaml_scalar_event_initialize(&event, NULL,
++		(yaml_char_t *)YAML_STR_TAG, (yaml_char_t*)prop->name,
++		strlen(prop->name), 1, 1, YAML_PLAIN_SCALAR_STYLE);
++	yaml_emitter_emit_or_die(emitter, &event);
++
++	/* Boolean properties are easiest to deal with. Length is zero, so just emit 'true' */
++	if (len == 0) {
++		yaml_scalar_event_initialize(&event, NULL,
++			(yaml_char_t *)YAML_BOOL_TAG,
++			(yaml_char_t*)"true",
++			strlen("true"), 1, 0, YAML_PLAIN_SCALAR_STYLE);
++		yaml_emitter_emit_or_die(emitter, &event);
++		return;
++	}
++
++	if (!m)
++		die("No markers present in property '%s' value\n", prop->name);
++
++	yaml_sequence_start_event_initialize(&event, NULL,
++		(yaml_char_t *)YAML_SEQ_TAG, 1, YAML_FLOW_SEQUENCE_STYLE);
++	yaml_emitter_emit_or_die(emitter, &event);
++
++	for_each_marker(m) {
++		int chunk_len;
++		char *data = &prop->val.val[m->offset];
++
++		if (m->type < TYPE_UINT8)
++			continue;
++
++		chunk_len = type_marker_length(m) ? : len;
++		assert(chunk_len > 0);
++		len -= chunk_len;
++
++		switch(m->type) {
++		case TYPE_UINT16:
++			yaml_propval_int(emitter, m, data, chunk_len, 2);
++			break;
++		case TYPE_UINT32:
++			yaml_propval_int(emitter, m, data, chunk_len, 4);
++			break;
++		case TYPE_UINT64:
++			yaml_propval_int(emitter, m, data, chunk_len, 8);
++			break;
++		case TYPE_STRING:
++			yaml_propval_string(emitter, data, chunk_len);
++			break;
++		default:
++			yaml_propval_int(emitter, m, data, chunk_len, 1);
++			break;
++		}
++	}
++
++	yaml_sequence_end_event_initialize(&event);
++	yaml_emitter_emit_or_die(emitter, &event);
++}
++
++
++static void yaml_tree(struct node *tree, yaml_emitter_t *emitter)
++{
++	struct property *prop;
++	struct node *child;
++	yaml_event_t event;
++
++	if (tree->deleted)
++		return;
++
++	yaml_mapping_start_event_initialize(&event, NULL,
++		(yaml_char_t *)YAML_MAP_TAG, 1, YAML_ANY_MAPPING_STYLE);
++	yaml_emitter_emit_or_die(emitter, &event);
++
++	for_each_property(tree, prop)
++		yaml_propval(emitter, prop);
++
++	/* Loop over all the children, emitting them into the map */
++	for_each_child(tree, child) {
++		yaml_scalar_event_initialize(&event, NULL,
++			(yaml_char_t *)YAML_STR_TAG, (yaml_char_t*)child->name,
++			strlen(child->name), 1, 0, YAML_PLAIN_SCALAR_STYLE);
++		yaml_emitter_emit_or_die(emitter, &event);
++		yaml_tree(child, emitter);
++	}
++
++	yaml_mapping_end_event_initialize(&event);
++	yaml_emitter_emit_or_die(emitter, &event);
++}
++
++void dt_to_yaml(FILE *f, struct dt_info *dti)
++{
++	yaml_emitter_t emitter;
++	yaml_event_t event;
++
++	yaml_emitter_initialize(&emitter);
++	yaml_emitter_set_output_file(&emitter, f);
++	yaml_stream_start_event_initialize(&event, YAML_UTF8_ENCODING);
++	yaml_emitter_emit_or_die(&emitter, &event);
++
++	yaml_document_start_event_initialize(&event, NULL, NULL, NULL, 0);
++	yaml_emitter_emit_or_die(&emitter, &event);
++
++	yaml_sequence_start_event_initialize(&event, NULL, (yaml_char_t *)YAML_SEQ_TAG, 1, YAML_ANY_SEQUENCE_STYLE);
++	yaml_emitter_emit_or_die(&emitter, &event);
++
++	yaml_tree(dti->dt, &emitter);
++
++	yaml_sequence_end_event_initialize(&event);
++	yaml_emitter_emit_or_die(&emitter, &event);
++
++	yaml_document_end_event_initialize(&event, 0);
++	yaml_emitter_emit_or_die(&emitter, &event);
++
++	yaml_stream_end_event_initialize(&event);
++	yaml_emitter_emit_or_die(&emitter, &event);
++
++	yaml_emitter_delete(&emitter);
++}
+-- 
+2.39.1
+
