@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Date: Wed, 18 Jan 2023 14:22:12 +0100
+Date: Wed, 8 Feb 2023 10:08:15 +0100
 Subject: [PATCH] drm/rockchip: dw_hdmi: Add support for 4k@30 resolution
 
 This adds the PLL/phy settings to support higher resolutions like 4k@30.
@@ -8,6 +8,9 @@ The values were taken from the Rockchip downstream Kernel.
 
 Tested-by: Michael Riesch <michael.riesch@wolfvision.net>
 Link: https://lore.kernel.org/r/20220926080435.259617-3-s.hauer@pengutronix.de
+Tested-by: Nicolas Frattaroli <frattaroli.nicolas@gmail.com>
+Tested-by: Dan Johansen <strit@manjaro.org>
+Link: https://lore.kernel.org/r/20230118132213.2911418-3-s.hauer@pengutronix.de
 Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 ---
  drivers/gpu/drm/rockchip/dw_hdmi-rockchip.c | 8 ++++++++
