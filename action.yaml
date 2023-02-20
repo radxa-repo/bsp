@@ -33,7 +33,7 @@ runs:
       run: |
         mkdir .output
         pushd .output
-        ../bsp -r ${{ inputs.revision }} ${{ inputs.target }} ${{ inputs.edition }}
+        ../bsp --long-version -r ${{ inputs.revision }} ${{ inputs.target }} ${{ inputs.edition }}
         popd
     - name: Upload artifacts
       if: inputs.artifacts == 'true' && inputs.board != 'rootfs'
