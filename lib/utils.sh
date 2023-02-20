@@ -124,19 +124,25 @@ prepare_source() {
 
     mkdir -p "$TARGET_DIR"
 
-    pushd "$SCRIPT_DIR"
-    BSP_GITREV="$(git rev-parse --short HEAD^{commit})"
-    if ! git diff --quiet
+    if $LONG_VERSION
     then
-        BSP_GITREV="$BSP_GITREV.dirty"
+        pushd "$SCRIPT_DIR"
+        BSP_GITREV="$(git rev-parse --short HEAD^{commit})"
+        if ! git diff --quiet
+        then
+            BSP_GITREV="$BSP_GITREV.dirty"
+        fi
+        popd
     fi
-    popd
 
     pushd "$TARGET_DIR"
 
         if $NO_PREPARE_SOURCE
         then
-            SOURCE_GITREV="$(git rev-parse --short FETCH_HEAD^{commit}).dirty"
+            if $LONG_VERSION
+            then
+                SOURCE_GITREV="$(git rev-parse --short HEAD^{commit}).dirty"
+            fi
             popd
             return
         fi
@@ -172,7 +178,10 @@ prepare_source() {
             git switch --detach $origin/$BSP_BRANCH
         fi
 
-        SOURCE_GITREV="$(git rev-parse --short FETCH_HEAD^{commit})"
+        if $LONG_VERSION
+        then
+            SOURCE_GITREV="$(git rev-parse --short FETCH_HEAD^{commit})"
+        fi
 
         for d in $(find -L $fork_dir -type d | sort -r)
         do

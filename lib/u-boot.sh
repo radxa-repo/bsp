@@ -73,7 +73,7 @@ bsp_prepare() {
 bsp_make() {
     make -C "$TARGET_DIR" -j$(nproc) \
         ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE \
-        UBOOTVERSION=$FORK-$(bsp_version)-$PKG_REVISION-$SOURCE_GITREV \
+        UBOOTVERSION=$FORK-$(bsp_version)-${PKG_REVISION}${SOURCE_GITREV:+-$SOURCE_GITREV} \
         "${BSP_MAKE_EXTRA[@]}" $@
 }
 
@@ -173,7 +173,7 @@ bsp_preparedeb() {
 
 bsp_makedeb() {
     local NAME="u-boot-$FORK"
-    local VERSION="$(bsp_version)-$PKG_REVISION-$SOURCE_GITREV"
+    local VERSION="$(bsp_version)-${PKG_REVISION}${SOURCE_GITREV:+-$SOURCE_GITREV}"
     local URL="https://github.com/radxa-pkg/$NAME"
     local DESCRIPTION="Radxa U-Boot image for $FORK"
     fpm -s dir -t deb -n "$NAME" -v "$VERSION" \
@@ -188,7 +188,7 @@ bsp_makedeb() {
         --force \
         "$SCRIPT_DIR/.root/"=/
 
-    local VERSION="$(bsp_version)-$PKG_REVISION-$BSP_GITREV"
+    local VERSION="$(bsp_version)-${PKG_REVISION}${BSP_GITREV:+-$BSP_GITREV}"
     for BOARD in ${SUPPORTED_BOARDS[@]}
     do
         local NAME="u-boot-$BOARD"

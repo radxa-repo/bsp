@@ -19,6 +19,7 @@ Supported package generation options:
     -l, --local-docker      Using locally built Docker image
     -s, --docker-shell      Start a shell inside the container instead of the build
     -d, --debug             Build debug package as well
+    --long-version          Add Git commit hash to the end of the version number
     --dtb                   Build dtb only <only valid for linux build>
 
 Alternative functionalities
@@ -118,7 +119,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker,docker-shell,debug,dtb" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker,docker-shell,debug,dtb,long-version" -n "$0" -- "$@")"
     then
         usage
         return
@@ -135,6 +136,7 @@ main() {
     local DOCKER_SHELL="false"
     local DEBUG_BUILD="false"
     local DTB_ONLY="false"
+    local LONG_VERSION="false"
 
     while true
     do
@@ -175,6 +177,9 @@ main() {
             --dtb)
                 DTB_ONLY="true"
                 NO_CONFIG="true"
+                ;;
+            --long-version)
+                LONG_VERSION="true"
                 ;;
             --json)
                 json "$@"

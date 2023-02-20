@@ -25,7 +25,7 @@ bsp_make() {
     make -C "$TARGET_DIR" -j$(nproc) \
         ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE HOSTCC=${CROSS_COMPILE}gcc \
         KDEB_COMPRESS="xz" KDEB_CHANGELOG_DIST="unstable" DPKG_FLAGS=$BSP_DPKG_FLAGS \
-        LOCALVERSION=-$FORK KERNELRELEASE=$kernelversion-$PKG_REVISION-$FORK KDEB_PKGVERSION=$kernelversion-$PKG_REVISION-$SOURCE_GITREV \
+        LOCALVERSION=-$FORK KERNELRELEASE=$kernelversion-$PKG_REVISION-$FORK KDEB_PKGVERSION=$kernelversion-${PKG_REVISION}${SOURCE_GITREV:+-$SOURCE_GITREV} \
         $@
 }
 
@@ -42,7 +42,7 @@ bsp_makedeb() {
         for i in {0..2}
         do
             local NAME=${NAMES[$i]}
-            local VERSION="$kernelversion-$PKG_REVISION-$BSP_GITREV"
+            local VERSION="$kernelversion-${PKG_REVISION}${BSP_GITREV:+-$BSP_GITREV}"
             local URL="https://github.com/radxa-pkg/linux-image-$FORK"
             local DESCRIPTION=${DESCRIPTIONS[$i]}
             local DEPEND=${DEPENDS[$i]}
