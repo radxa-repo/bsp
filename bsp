@@ -324,11 +324,17 @@ main() {
                 echo "Start building for $BOARD..."
                 build
                 bsp_preparedeb
-                SOURCE_GITREV_OVERRIDE="${SOURCE_GITREV_OVERRIDE:-$SOURCE_GITREV}"
+                if $LONG_VERSION
+                then
+                    SOURCE_GITREV_OVERRIDE="${SOURCE_GITREV_OVERRIDE:-$SOURCE_GITREV}"
+                fi
             done
 
             SUPPORTED_BOARDS=("${products[@]}")
-            SOURCE_GITREV="$SOURCE_GITREV_OVERRIDE"
+            if $LONG_VERSION
+            then
+                SOURCE_GITREV="$SOURCE_GITREV_OVERRIDE"
+            fi
             bsp_makedeb
             ;;
         *)
