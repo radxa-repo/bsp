@@ -23,11 +23,12 @@ Supported package generation options:
     --dtb                   Build dtb only <only valid for linux build>
 
 Alternative functionalities
-    --json [catagory]   Print supported options in json format
-                        Available catagories: $(get_supported_infos)
-    --export [edition]  Export profile
-    --import [edition]  Import profile
-    -h, --help          Show this help message
+    --json <catagory>       Print supported options in json format
+                            Available catagories: $(get_supported_infos)
+    --export <edition>      Export profile
+    --import <edition>      Import profile
+    --install <deb> <blk>   Install built package to specified block device
+    -h, --help              Show this help message
 
 Supported Linux edition:
 $(printf_array "    %s\n" "$(get_supported_edition linux)")
@@ -119,7 +120,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker,docker-shell,debug,dtb,long-version" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker,docker-shell,debug,dtb,long-version,install:" -n "$0" -- "$@")"
     then
         usage
         return
@@ -205,6 +206,19 @@ main() {
                     echo "You can use 'git switch -d $PROFILE_BSP_COMMIT' to ensure the best compatability."
                 fi
                 popd
+                return
+                ;;
+            --install)
+                local deb="$1" end="$2" blk="$3"
+                if [[ "$end" != "--" ]]
+                then
+                    error $EXIT_UNKNOWN_OPTION "$1 $2 $3"
+                fi
+                sudo umount "$blk" || true
+                sudo mount "$blk" /mnt
+                sudo cp "$deb" /mnt
+                sudo systemd-nspawn -D /mnt dpkg -i "/$deb"
+                sudo umount "$blk"
                 return
                 ;;
             --)
