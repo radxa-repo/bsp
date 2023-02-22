@@ -5,3 +5,4 @@
 **/0500-private/
 *.tar.xz
 /.profile
+/.output
