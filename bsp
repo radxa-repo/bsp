@@ -21,14 +21,14 @@ Supported package generation options:
     -d, --debug             Build debug package as well
     --long-version          Add Git commit hash to the end of the version number
     --dtb                   Build dtb only <only valid for linux build>
-
-Alternative functionalities
-    --json <catagory>       Print supported options in json format
-                            Available catagories: $(get_supported_infos)
-    --export <edition>      Export profile
-    --import <edition>      Import profile
-    --install <deb> <blk>   Install built package to specified block device
     -h, --help              Show this help message
+
+Alternative commands
+    json <catagory>         Print supported options in json format
+                            Available catagories: $(get_supported_infos)
+    export <edition>        Export profile
+    import <edition>        Import profile
+    install <deb> <blk>     Install built package to specified block device
 
 Supported Linux edition:
 $(printf_array "    %s\n" "$(get_supported_edition linux)")
@@ -67,7 +67,7 @@ get_supported_infos() {
     echo "${infos[@]}"
 }
 
-json() {
+_json() {
     local array=( "$(get_supported_infos)" )
     if ! in_array "$@" "${array[@]}"
     then
@@ -113,6 +113,38 @@ build() {
     bsp_make "${BSP_MAKE_DEFINES[@]}" "${BSP_MAKE_TARGETS[@]}" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
 }
 
+_export() {
+    pushd "$SCRIPT_DIR"
+    echo "PROFILE_BSP_COMMIT='$(git rev-parse HEAD)'" > ".profile"
+    find "linux/$1" "u-boot/$1" ".profile" | tar acvf "$OLDPWD/$1.tar.xz" --files-from -
+    popd
+}
+
+_import() {
+    tar axvf "$1" -C "$SCRIPT_DIR"
+    pushd "$SCRIPT_DIR"
+    if source "$SCRIPT_DIR/.profile" && [[ -n "${PROFILE_BSP_COMMIT:-}" ]] && [[ "$(git rev-parse HEAD)" != "$PROFILE_BSP_COMMIT" ]]
+    then
+        echo "Profile was exported when bsp is at commit $PROFILE_BSP_COMMIT."
+        echo "You can use 'git switch -d $PROFILE_BSP_COMMIT' to ensure the best compatability."
+    fi
+    popd
+}
+
+_install() {
+    local deb="$1" blk="$2"
+    if [[ "$end" != "--" ]]
+    then
+        error $EXIT_UNKNOWN_OPTION "$1 $2 $3"
+    fi
+    sudo umount "$blk" || true
+    sudo mount "$blk" /mnt
+    sudo cp "$deb" /mnt
+    sudo systemd-nspawn -D /mnt dpkg -i "/$deb"
+    sudo umount "$blk"
+    sync
+}
+
 main() {
     local SCRIPT_DIR="$(dirname "$(realpath "$0")")"
     source "$SCRIPT_DIR/lib/utils.sh"
@@ -120,7 +152,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,json:,export:,import:,help,native-build,local-docker,docker-shell,debug,dtb,long-version,install:" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-docker,docker-shell,debug,dtb,long-version" -n "$0" -- "$@")"
     then
         usage
         return
@@ -182,44 +214,8 @@ main() {
             --long-version)
                 LONG_VERSION="true"
                 ;;
-            --json)
-                json "$@"
-                return
-                ;;
             -h|--help)
                 usage
-                return
-                ;;
-            --export)
-                pushd "$SCRIPT_DIR"
-                echo "PROFILE_BSP_COMMIT='$(git rev-parse HEAD)'" > ".profile"
-                find "linux/$1" "u-boot/$1" ".profile" | tar acvf "$OLDPWD/$1.tar.xz" --files-from -
-                popd
-                return
-                ;;
-            --import)
-                tar axvf "$1" -C "$SCRIPT_DIR"
-                pushd "$SCRIPT_DIR"
-                if source "$SCRIPT_DIR/.profile" && [[ -n "${PROFILE_BSP_COMMIT:-}" ]] && [[ "$(git rev-parse HEAD)" != "$PROFILE_BSP_COMMIT" ]]
-                then
-                    echo "Profile was exported when bsp is at commit $PROFILE_BSP_COMMIT."
-                    echo "You can use 'git switch -d $PROFILE_BSP_COMMIT' to ensure the best compatability."
-                fi
-                popd
-                return
-                ;;
-            --install)
-                local deb="$1" end="$2" blk="$3"
-                if [[ "$end" != "--" ]]
-                then
-                    error $EXIT_UNKNOWN_OPTION "$1 $2 $3"
-                fi
-                sudo umount "$blk" || true
-                sudo mount "$blk" /mnt
-                sudo cp "$deb" /mnt
-                sudo systemd-nspawn -D /mnt dpkg -i "/$deb"
-                sudo umount "$blk"
-                sync
                 return
                 ;;
             --)
@@ -236,6 +232,15 @@ main() {
         usage
         return
     fi
+
+    TEMP="$1"
+    case "$TEMP" in
+        install|export|import|json)
+            shift
+            "_$TEMP" "$@"
+            return
+            ;;
+    esac
 
     if ! $NATIVE_BUILD
     then
