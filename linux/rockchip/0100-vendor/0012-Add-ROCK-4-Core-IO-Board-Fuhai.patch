@@ -20,9 +20,9 @@ index fb4270f89050..436836c2e76e 100644
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-roc-pc.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-roc-pc-mezzanine.dtb
 +dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-4-core-io.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-4c-plus.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-4se.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4a-plus.dtb
- dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4b-plus.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3399-rock-pi-4a.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-4-core-io.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-4-core-io.dts
 new file mode 100644
 index 000000000000..a2c27b569ec7
