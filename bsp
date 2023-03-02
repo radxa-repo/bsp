@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 usage() {
     cat >&2 << EOF
@@ -278,14 +278,21 @@ main() {
             DOCKER_OPTIONS+=( "--mount" "type=bind,source=$SCRIPT_DIR,destination=$SCRIPT_DIR" )
         fi
         docker container rm bsp &>/dev/null || true
+        if [[ "$(docker --version)" =~ "podman" ]]
+        then
+            DOCKER_OPTIONS+=( "--user" "root" )
+            local DOCKER_SUDO=
+        else
+            local DOCKER_SUDO="sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner"
+        fi
         if $DOCKER_SHELL
         then
-            if ! docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner -i"
+            if ! docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "$DOCKER_SUDO -i"
             then
                 DOCKER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
             fi
         else
-            if ! docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner \"$0\" --native-build ${ARGV[*]}"
+            if ! docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "$DOCKER_SUDO \"$0\" --native-build ${ARGV[*]}"
             then
                 DOCKER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
             fi
