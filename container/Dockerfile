@@ -1,5 +1,7 @@
 FROM debian:bullseye
 
+RUN sed -i 's/deb.debian.org/apt.vamrs.com/g' /etc/apt/sources.list
+
 RUN dpkg --add-architecture arm64 && \
     apt-get update && \
     apt-get full-upgrade --no-install-recommends -y \

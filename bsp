@@ -15,9 +15,9 @@ Supported package generation options:
     --no-prepare-source     Allow building against locally modified repos
     --no-config             Do not load defconfig or apply kconfig
     -p                      Pause after applying patches from each folder
-    -n, --native-build      Build without using Docker
-    -l, --local-docker      Using locally built Docker image
-    -s, --docker-shell      Start a shell inside the container instead of the build
+    -n, --native-build      Build without using container
+    -l, --local-container   Using locally built container image
+    -s, --container-shell   Start a shell inside the container instead of the build
     -d, --debug             Build debug package as well
     --long-version          Add Git commit hash to the end of the version number
     --dtb                   Build dtb only <only valid for linux build>
@@ -152,7 +152,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-docker,docker-shell,debug,dtb,long-version" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-container,container-shell,debug,dtb,long-version" -n "$0" -- "$@")"
     then
         usage
         return
@@ -165,8 +165,8 @@ main() {
     local CLEAN_LEVEL=
     local PATCH_PAUSE="false"
     local NATIVE_BUILD="false"
-    local DOCKER_REGISTRY="ghcr.io/radxa-repo/"
-    local DOCKER_SHELL="false"
+    local CONTAINER_REGISTRY="ghcr.io/radxa-repo/"
+    local CONTAINER_SHELL="false"
     local DEBUG_BUILD="false"
     local DTB_ONLY="false"
     local LONG_VERSION="false"
@@ -198,11 +198,11 @@ main() {
             -n|--native-build)
                 NATIVE_BUILD="true"
                 ;;
-            -l|--local-docker)
-                DOCKER_REGISTRY=
+            -l|--local-container)
+                CONTAINER_REGISTRY=
                 ;;
-            -s|--docker-shell)
-                DOCKER_SHELL="true"
+            -s|--container-shell)
+                CONTAINER_SHELL="true"
                 ;;
             -d|--debug)
                 DEBUG_BUILD="true"
@@ -244,61 +244,61 @@ main() {
 
     if ! $NATIVE_BUILD
     then
-        local DOCKER_IMAGE="$(docker image ls "-qf=reference=${DOCKER_REGISTRY}bsp:main")"
-        local DOCKER_EXIT_CODE=0
+        local CONTAINER_IMAGE="$(docker image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:main")"
+        local CONTAINER_EXIT_CODE=0
 
-        if [[ -z $DOCKER_REGISTRY ]]
+        if [[ -z $CONTAINER_REGISTRY ]]
         then
-            docker build --force-rm -t "${DOCKER_REGISTRY}bsp:main" "$SCRIPT_DIR/docker"
+            docker build --force-rm -t "${CONTAINER_REGISTRY}bsp:main" "$SCRIPT_DIR/container"
         else
-            docker pull "${DOCKER_REGISTRY}bsp:main"
+            docker pull "${CONTAINER_REGISTRY}bsp:main"
         fi
 
-        if [[ $DOCKER_IMAGE != "$(docker image ls "-qf=reference=${DOCKER_REGISTRY}bsp:main")" ]]
+        if [[ $CONTAINER_IMAGE != "$(docker image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:main")" ]]
         then
             docker container rm bsp &>/dev/null || true
-            docker image rm "${DOCKER_REGISTRY}bsp:builder" &>/dev/null || true
+            docker image rm "${CONTAINER_REGISTRY}bsp:builder" &>/dev/null || true
         fi
 
-        DOCKER_BUILDER="$(docker image ls "-qf=reference=${DOCKER_REGISTRY}bsp:builder")"
-        if [[ -z $DOCKER_BUILDER ]]
+        CONTAINER_BUILDER="$(docker image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:builder")"
+        if [[ -z $CONTAINER_BUILDER ]]
         then
-            docker tag "${DOCKER_REGISTRY}bsp:main" "${DOCKER_REGISTRY}bsp:builder"
+            docker tag "${CONTAINER_REGISTRY}bsp:main" "${CONTAINER_REGISTRY}bsp:builder"
         fi
 
-        DOCKER_OPTIONS=( "--name" "bsp" )
-        DOCKER_OPTIONS+=( "--workdir" "$PWD" )
-        DOCKER_OPTIONS+=( "--mount" "type=bind,source=$PWD,destination=$PWD" )
+        CONTAINER_OPTIONS=( "--name" "bsp" )
+        CONTAINER_OPTIONS+=( "--workdir" "$PWD" )
+        CONTAINER_OPTIONS+=( "--mount" "type=bind,source=$PWD,destination=$PWD" )
         if [[ -t 0 ]]
         then
-            DOCKER_OPTIONS+=( "-it" )
+            CONTAINER_OPTIONS+=( "-it" )
         fi
         if [[ "$PWD" != "$SCRIPT_DIR" ]]
         then
-            DOCKER_OPTIONS+=( "--mount" "type=bind,source=$SCRIPT_DIR,destination=$SCRIPT_DIR" )
+            CONTAINER_OPTIONS+=( "--mount" "type=bind,source=$SCRIPT_DIR,destination=$SCRIPT_DIR" )
         fi
         docker container rm bsp &>/dev/null || true
         if [[ "$(docker --version)" =~ "podman" ]]
         then
-            DOCKER_OPTIONS+=( "--user" "root" )
-            local DOCKER_SUDO=
+            CONTAINER_OPTIONS+=( "--user" "root" )
+            local CONTAINER_SUDO=
         else
-            local DOCKER_SUDO="sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner"
+            local CONTAINER_SUDO="sed -i -E \"s/^(runner):(x?):([0-9]+):([0-9]+):(.*):(.*):(.*)$/\1:\2:$(id -u):$(id -g):\5:\6:\7/\" /etc/passwd && sudo -u runner"
         fi
-        if $DOCKER_SHELL
+        if $CONTAINER_SHELL
         then
-            if ! docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "$DOCKER_SUDO -i"
+            if ! docker run "${CONTAINER_OPTIONS[@]}" "${CONTAINER_REGISTRY}bsp:builder" bash -c "$CONTAINER_SUDO -i"
             then
-                DOCKER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
+                CONTAINER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
             fi
         else
-            if ! docker run "${DOCKER_OPTIONS[@]}" "${DOCKER_REGISTRY}bsp:builder" bash -c "$DOCKER_SUDO \"$0\" --native-build ${ARGV[*]}"
+            if ! docker run "${CONTAINER_OPTIONS[@]}" "${CONTAINER_REGISTRY}bsp:builder" bash -c "$CONTAINER_SUDO \"$0\" --native-build ${ARGV[*]}"
             then
-                DOCKER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
+                CONTAINER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
             fi
             docker container rm bsp
         fi
-        return $DOCKER_EXIT_CODE
+        return $CONTAINER_EXIT_CODE
     fi
 
     TEMP="$1"
