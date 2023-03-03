@@ -21,6 +21,8 @@ Supported package generation options:
     -d, --debug             Build debug package as well
     --long-version          Add Git commit hash to the end of the version number
     --dtb                   Build dtb only <only valid for linux build>
+    -b, --backend [backend] Manually specify container backend. supported values are:
+                            docker, podman
     -h, --help              Show this help message
 
 Alternative commands
@@ -152,7 +154,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnlsd" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-container,container-shell,debug,dtb,long-version" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnlsdb:" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-container,container-shell,debug,dtb,long-version,backend:" -n "$0" -- "$@")"
     then
         usage
         return
@@ -170,6 +172,7 @@ main() {
     local DEBUG_BUILD="false"
     local DTB_ONLY="false"
     local LONG_VERSION="false"
+    local CONTAINER_BACKEND="docker"
 
     while true
     do
@@ -211,6 +214,10 @@ main() {
                 DTB_ONLY="true"
                 NO_CONFIG="true"
                 ;;
+            -b|--backend)
+                CONTAINER_BACKEND="$1"
+                shift
+                ;;
             --long-version)
                 LONG_VERSION="true"
                 ;;
@@ -244,26 +251,32 @@ main() {
 
     if ! $NATIVE_BUILD
     then
-        local CONTAINER_IMAGE="$(docker image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:main")"
+        if [[ "$(basename "$CONTAINER_BACKEND")" == "docker" ]] && "$CONTAINER_BACKEND" -v | grep -q podman
+        then
+            echo "'$CONTAINER_BACKEND' backend is selected, but the functionality is actually provided by 'podman' backend. Updating accordingly..."
+            CONTAINER_BACKEND="$(command -v podman)"
+        fi
+
+        local CONTAINER_IMAGE="$($CONTAINER_BACKEND image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:main")"
         local CONTAINER_EXIT_CODE=0
 
         if [[ -z $CONTAINER_REGISTRY ]]
         then
-            docker build --force-rm -t "${CONTAINER_REGISTRY}bsp:main" "$SCRIPT_DIR/container"
+            $CONTAINER_BACKEND build --force-rm -t "${CONTAINER_REGISTRY}bsp:main" "$SCRIPT_DIR/container"
         else
-            docker pull "${CONTAINER_REGISTRY}bsp:main"
+            $CONTAINER_BACKEND pull "${CONTAINER_REGISTRY}bsp:main"
         fi
 
-        if [[ $CONTAINER_IMAGE != "$(docker image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:main")" ]]
+        if [[ $CONTAINER_IMAGE != "$($CONTAINER_BACKEND image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:main")" ]]
         then
-            docker container rm bsp &>/dev/null || true
-            docker image rm "${CONTAINER_REGISTRY}bsp:builder" &>/dev/null || true
+            $CONTAINER_BACKEND container rm bsp &>/dev/null || true
+            $CONTAINER_BACKEND image rm "${CONTAINER_REGISTRY}bsp:builder" &>/dev/null || true
         fi
 
-        CONTAINER_BUILDER="$(docker image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:builder")"
+        CONTAINER_BUILDER="$($CONTAINER_BACKEND image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:builder")"
         if [[ -z $CONTAINER_BUILDER ]]
         then
-            docker tag "${CONTAINER_REGISTRY}bsp:main" "${CONTAINER_REGISTRY}bsp:builder"
+            $CONTAINER_BACKEND tag "${CONTAINER_REGISTRY}bsp:main" "${CONTAINER_REGISTRY}bsp:builder"
         fi
 
         CONTAINER_OPTIONS=( "--name" "bsp" )
@@ -277,8 +290,8 @@ main() {
         then
             CONTAINER_OPTIONS+=( "--mount" "type=bind,source=$SCRIPT_DIR,destination=$SCRIPT_DIR" )
         fi
-        docker container rm bsp &>/dev/null || true
-        if [[ "$(docker --version)" =~ "podman" ]]
+        $CONTAINER_BACKEND container rm bsp &>/dev/null || true
+        if [[ "$(basename "$CONTAINER_BACKEND")" == "podman" ]]
         then
             CONTAINER_OPTIONS+=( "--user" "root" )
             local CONTAINER_SUDO=
@@ -287,16 +300,16 @@ main() {
         fi
         if $CONTAINER_SHELL
         then
-            if ! docker run "${CONTAINER_OPTIONS[@]}" "${CONTAINER_REGISTRY}bsp:builder" bash -c "$CONTAINER_SUDO -i"
+            if ! $CONTAINER_BACKEND run "${CONTAINER_OPTIONS[@]}" "${CONTAINER_REGISTRY}bsp:builder" bash -c "$CONTAINER_SUDO -i"
             then
-                CONTAINER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
+                CONTAINER_EXIT_CODE="$($CONTAINER_BACKEND inspect bsp --format='{{.State.ExitCode}}')"
             fi
         else
-            if ! docker run "${CONTAINER_OPTIONS[@]}" "${CONTAINER_REGISTRY}bsp:builder" bash -c "$CONTAINER_SUDO \"$0\" --native-build ${ARGV[*]}"
+            if ! $CONTAINER_BACKEND run "${CONTAINER_OPTIONS[@]}" "${CONTAINER_REGISTRY}bsp:builder" bash -c "$CONTAINER_SUDO \"$0\" --native-build ${ARGV[*]}"
             then
-                CONTAINER_EXIT_CODE="$(docker inspect bsp --format='{{.State.ExitCode}}')"
+                CONTAINER_EXIT_CODE="$($CONTAINER_BACKEND inspect bsp --format='{{.State.ExitCode}}')"
             fi
-            docker container rm bsp
+            $CONTAINER_BACKEND container rm bsp
         fi
         return $CONTAINER_EXIT_CODE
     fi
