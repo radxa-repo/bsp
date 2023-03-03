@@ -4,24 +4,10 @@ Date: Mon, 10 Oct 2022 10:57:00 +0800
 Subject: [PATCH] Disable tristate for modules that uses unexported symbols
 
 ---
- drivers/media/platform/rockchip/hdmirx/Kconfig | 2 +-
  drivers/soc/rockchip/Kconfig                   | 2 +-
  drivers/staging/android/fiq_debugger/Kconfig   | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/media/platform/rockchip/hdmirx/Kconfig b/drivers/media/platform/rockchip/hdmirx/Kconfig
-index 4074cfe15ada..84bfa8afbdab 100644
---- a/drivers/media/platform/rockchip/hdmirx/Kconfig
-+++ b/drivers/media/platform/rockchip/hdmirx/Kconfig
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0
- 
- config VIDEO_ROCKCHIP_HDMIRX
--	tristate "Rockchip HDMI Receiver driver"
-+	bool "Rockchip HDMI Receiver driver"
- 	depends on VIDEO_V4L2
- 	select MEDIA_CONTROLLER
- 	select VIDEO_V4L2_SUBDEV_API
 diff --git a/drivers/soc/rockchip/Kconfig b/drivers/soc/rockchip/Kconfig
 index 24c5010726e6..9fd1eebbf12d 100644
 --- a/drivers/soc/rockchip/Kconfig
