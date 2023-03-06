@@ -11,6 +11,10 @@
 Please run the following command to check all available options:
 
 ```
+# Require binfmt_misc support, as by default the generated Linux header
+# is broken on target architecture, so they have to be cross-compiled
+# in ARM64 code as well.
+sudo apt update && sudo apt install qemu-user-static binfmt-support
 git clone --depth 1 https://github.com/radxa-repo/bsp.git
 cd ./bsp
 ./bsp
