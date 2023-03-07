@@ -15,7 +15,8 @@ Please run the following command to check all available options:
 # is broken on target architecture, so they have to be cross-compiled
 # in ARM64 code as well.
 sudo apt update && sudo apt install qemu-user-static binfmt-support
-git clone --depth 1 https://github.com/radxa-repo/bsp.git
+# This repo uses git submodules.
+git clone --recurse-submodules https://github.com/radxa-repo/bsp.git
 cd ./bsp
 ./bsp
 ```
