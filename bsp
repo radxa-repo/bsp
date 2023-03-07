@@ -23,6 +23,7 @@ Supported package generation options:
     --dtb                   Build dtb only <only valid for linux build>
     -b, --backend [backend] Manually specify container backend. supported values are:
                             docker, podman
+    --no-submodule-check    Do not check for submodules
     -h, --help              Show this help message
 
 Alternative commands
@@ -154,7 +155,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnlsdb:" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-container,container-shell,debug,dtb,long-version,backend:" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnlsdb:" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-container,container-shell,debug,dtb,long-version,backend:,no-submodule-check" -n "$0" -- "$@")"
     then
         usage
         return
@@ -173,6 +174,7 @@ main() {
     local DTB_ONLY="false"
     local LONG_VERSION="false"
     local CONTAINER_BACKEND="docker"
+    local NO_SUBMODULE_CHECK="false"
 
     if [[ -f "$SCRIPT_DIR/.bsp-config" ]]
     then
@@ -226,6 +228,9 @@ main() {
             --long-version)
                 LONG_VERSION="true"
                 ;;
+            --no-submodule-check)
+                NO_SUBMODULE_CHECK="true"
+                ;;
             -h|--help)
                 usage
                 return
@@ -253,6 +258,11 @@ main() {
             return
             ;;
     esac
+
+    if ! $NO_SUBMODULE_CHECK && [[ -z "$(git submodule status)" ]]
+    then
+        error $EXIT_NO_SUBMODULE
+    fi
 
     if ! $NATIVE_BUILD
     then

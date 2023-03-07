@@ -11,6 +11,7 @@ EXIT_SUCCESS=0
 EXIT_UNKNOWN_OPTION=1
 EXIT_TOO_FEW_ARGUMENTS=2
 EXIT_UNSUPPORTED_OPTION=3
+EXIT_NO_SUBMODULE=4
 
 error() {
     case "$1" in
@@ -24,6 +25,13 @@ error() {
             ;;
         $EXIT_UNSUPPORTED_OPTION)
             echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Option '$2' is not supported." >&2
+            ;;
+        $EXIT_NO_SUBMODULE)
+            cat >&2 << EOF
+Part of the code in this script are stored in git submodules.
+However, it appears that submodules were not initialized in this repo.
+Please run "git submodule init && git submodule update" to fix this issue.
+EOF
             ;;
         *)
             echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Unknown exit code." >&2
