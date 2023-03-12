@@ -4,14 +4,29 @@ Date: Thu, 3 Nov 2022 10:46:07 +0800
 Subject: [PATCH] Update existing ROCK 4 OPP settings
 
 ---
- arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi   | 1 -
- arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a.dts   | 1 +
- arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b.dts   | 1 +
- arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4c.dts   | 1 +
- 4 files changed, 3 insertions(+), 1 deletions(-)
+ arch/arm64/boot/dts/rockchip/rk3399-rock-4se.dts        | 1 +
+ arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi      | 1 -
+ arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts | 1 +
+ arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a.dts      | 1 +
+ arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts | 1 +
+ arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b.dts      | 1 +
+ arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4c.dts      | 1 +
+ 7 files changed, 6 insertions(+), 1 deletion(-)
 
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-4se.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-4se.dts
+index 0416b29b10a1f..962ca9139db2f 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-rock-4se.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-4se.dts
+@@ -6,6 +6,7 @@
+ 
+ /dts-v1/;
+ #include "rk3399-rock-pi-4.dtsi"
++#include "rk3399-t-opp.dtsi"
+ 
+ / {
+ 	model = "Radxa ROCK 4SE";
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi
-index d62219f7d3e0..179eb3f94a96 100644
+index 3bae829fd1a1f..f5d46f1ed3412 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4.dtsi
 @@ -9,7 +9,6 @@
@@ -22,8 +37,20 @@ index d62219f7d3e0..179eb3f94a96 100644
  
  / {
  	aliases {
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts
+index 851f506ef62c1..7bb6f6b6d1405 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts
+@@ -6,6 +6,7 @@
+ 
+ /dts-v1/;
+ #include "rk3399-rock-pi-4.dtsi"
++#include "rk3399-op1-opp.dtsi"
+ 
+ / {
+ 	model = "Radxa ROCK Pi 4A+";
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a.dts
-index 32f869c2e66b..790fe973f169 100644
+index 32f869c2e66b2..790fe973f1691 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a.dts
 @@ -6,6 +6,7 @@
@@ -34,8 +61,20 @@ index 32f869c2e66b..790fe973f169 100644
  
  / {
  	model = "Radxa ROCK Pi 4A";
+diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts
+index b952e08fb1c27..75015791957c4 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b-plus.dts
+@@ -6,6 +6,7 @@
+ 
+ /dts-v1/;
+ #include "rk3399-rock-pi-4.dtsi"
++#include "rk3399-op1-opp.dtsi"
+ 
+ / {
+ 	model = "Radxa ROCK Pi 4B+";
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b.dts
-index 4f16d11eb22a..55a0a919e0fc 100644
+index 4f16d11eb22a6..55a0a919e0fc5 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4b.dts
 @@ -6,6 +6,7 @@
@@ -47,7 +86,7 @@ index 4f16d11eb22a..55a0a919e0fc 100644
  / {
  	model = "Radxa ROCK Pi 4B";
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4c.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4c.dts
-index 5df898013916..d120c07a0db1 100644
+index 5df8980139165..d120c07a0db1e 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4c.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4c.dts
 @@ -7,6 +7,7 @@
@@ -59,5 +98,5 @@ index 5df898013916..d120c07a0db1 100644
  / {
  	model = "Radxa ROCK Pi 4C";
 -- 
-2.38.1
+2.30.2
 
