@@ -1,0 +1,150 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Tue, 14 Mar 2023 15:39:45 +0800
+Subject: [PATCH] Reload FDT if fdt_overlay_apply failed
+
+fdt_overlay_apply will clear FDT's magic if it failed to apply
+overlays, making it unbootable.
+
+Instead of failing right away, let's reload FDT and skip overlays.
+
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
+---
+ boot/pxe_utils.c | 59 ++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 39 insertions(+), 20 deletions(-)
+
+diff --git a/boot/pxe_utils.c b/boot/pxe_utils.c
+index a364fa8b..02194303 100644
+--- a/boot/pxe_utils.c
++++ b/boot/pxe_utils.c
+@@ -383,9 +383,10 @@ err:
+  *
+  * @ctx: PXE context
+  * @label: Label to process
++ * Returns 1 on success or < 0 on error
+  */
+ #ifdef CONFIG_OF_LIBFDT_OVERLAY
+-static void label_boot_fdtoverlay(struct pxe_context *ctx,
++static int label_boot_fdtoverlay(struct pxe_context *ctx,
+ 				  struct pxe_label *label)
+ {
+ 	char *fdtoverlay = label->fdtoverlays;
+@@ -400,13 +401,13 @@ static void label_boot_fdtoverlay(struct pxe_context *ctx,
+ 	working_fdt = map_sysmem(fdt_addr, 0);
+ 	err = fdt_check_header(working_fdt);
+ 	if (err)
+-		return;
++		return err;
+ 
+ 	/* Get the specific overlay loading address */
+ 	fdtoverlay_addr_env = env_get("fdtoverlay_addr_r");
+ 	if (!fdtoverlay_addr_env) {
+ 		printf("Invalid fdtoverlay_addr_r for loading overlays\n");
+-		return;
++		return -FDT_ERR_NOSPACE;
+ 	}
+ 
+ 	fdtoverlay_addr = hextoul(fdtoverlay_addr_env, NULL);
+@@ -418,6 +419,9 @@ static void label_boot_fdtoverlay(struct pxe_context *ctx,
+ 		char *end;
+ 		int len;
+ 
++		/* Clear error code */
++		err = 0;
++
+ 		/* Drop leading spaces */
+ 		while (*fdtoverlay == ' ')
+ 			++fdtoverlay;
+@@ -464,7 +468,10 @@ static void label_boot_fdtoverlay(struct pxe_context *ctx,
+ skip_overlay:
+ 		if (end)
+ 			free(overlayfile);
++		if (err)
++			return err;
+ 	} while ((fdtoverlay = strstr(fdtoverlay, " ")));
++	return 1;
+ }
+ #endif
+ 
+@@ -499,6 +506,7 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
+ 	char mac_str[29] = "";
+ 	char ip_str[68] = "";
+ 	char *fit_addr = NULL;
++	char *fdtfilefree = NULL;
+ 	int bootm_argc = 2;
+ 	int zboot_argc = 3;
+ 	int len = 0;
+@@ -626,7 +634,6 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
+ 	/* if fdt label is defined then get fdt from server */
+ 	if (bootm_argv[3]) {
+ 		char *fdtfile = NULL;
+-		char *fdtfilefree = NULL;
+ 
+ 		if (label->fdt) {
+ 			fdtfile = label->fdt;
+@@ -683,27 +690,37 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
+ 		}
+ 
+ 		if (fdtfile) {
+-			int err = get_relfile_envaddr(ctx, fdtfile,
+-						      "fdt_addr_r", NULL);
+-
+-			free(fdtfilefree);
+-			if (err < 0) {
+-				bootm_argv[3] = NULL;
+-
+-				if (label->fdt) {
+-					printf("Skipping %s for failure retrieving FDT\n",
+-					       label->name);
+-					goto cleanup;
++#ifdef CONFIG_OF_LIBFDT_OVERLAY
++			bool apply_fdtoverlays = true;
++#endif
++			do {
++				int err = get_relfile_envaddr(ctx, fdtfile,
++								"fdt_addr_r", NULL);
++
++				if (err < 0) {
++					bootm_argv[3] = NULL;
++
++					if (label->fdt) {
++						printf("Skipping %s for failure retrieving FDT\n",
++							label->name);
++						goto cleanup;
++					}
+ 				}
+-			}
+ 
+-		if (label->kaslrseed)
+-			label_boot_kaslrseed();
++				if (label->kaslrseed)
++					label_boot_kaslrseed();
+ 
+ #ifdef CONFIG_OF_LIBFDT_OVERLAY
+-			if (label->fdtoverlays)
+-				label_boot_fdtoverlay(ctx, label);
++				if (apply_fdtoverlays &&
++					label->fdtoverlays &&
++					label_boot_fdtoverlay(ctx, label) != 1) {
++					printf("Failed to loads fdt overlays. Reload fdt without overlays.\n");
++					apply_fdtoverlays = false;
++					continue;
++				}
+ #endif
++				break;
++			} while (true);
+ 		} else {
+ 			bootm_argv[3] = NULL;
+ 		}
+@@ -752,6 +769,8 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
+ 	unmap_sysmem(buf);
+ 
+ cleanup:
++	if (fdtfilefree)
++		free(fdtfilefree);
+ 	free(fit_addr);
+ 
+ 	return 1;
+-- 
+2.39.2
+
