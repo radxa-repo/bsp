@@ -126,7 +126,7 @@ index a364fa8b..02194303 100644
 +				if (apply_fdtoverlays &&
 +					label->fdtoverlays &&
 +					label_boot_fdtoverlay(ctx, label) != 1) {
-+					printf("Failed to loads fdt overlays. Reload fdt without overlays.\n");
++					printf("Failed to load fdt overlays. Reload fdt without overlays.\n");
 +					apply_fdtoverlays = false;
 +					continue;
 +				}
