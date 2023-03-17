@@ -36,7 +36,7 @@ bsp_makedeb() {
     for BOARD in ${SUPPORTED_BOARDS[@]}
     do
         local NAMES=("linux-image-$BOARD" "linux-headers-$BOARD" "linux-libc-dev-$BOARD")
-        local DESCRIPTIONS=("Radxa virtual Linux package for $BOARD" "Radxa virtual Linux header package for $BOARD" "Radxa virtual userspace header package for $BOARD")
+        local DESCRIPTIONS=("Radxa Linux meta-package for $BOARD" "Radxa Linux header meta-package for $BOARD" "Radxa userspace header meta-package for $BOARD")
         local DEPENDS=("linux-image-$kernelversion-$PKG_REVISION-$FORK" "linux-headers-$kernelversion-$PKG_REVISION-$FORK" "linux-libc-dev-$kernelversion-$PKG_REVISION-$FORK")
         local PROVIDES=("" "" "linux-libc-dev")
         for i in {0..2}

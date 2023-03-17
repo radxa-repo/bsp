@@ -192,7 +192,7 @@ bsp_makedeb() {
     for BOARD in ${SUPPORTED_BOARDS[@]}
     do
         local NAME="u-boot-$BOARD"
-        local DESCRIPTION="Radxa virtual U-Boot package for $BOARD"
+        local DESCRIPTION="Radxa U-Boot meta-package for $BOARD"
         local DEPEND=u-boot-$FORK
         local CONFLICT=
         if [[ $BOARD != $BSP_BOARD_OVERRIDE ]]
