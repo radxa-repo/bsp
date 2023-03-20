@@ -81,8 +81,8 @@ git_repo_config() {
 }
 
 git_source() {
-    local git_url="$1"
-    __CUSTOM_SOURCE_FOLDER="$(basename $git_url)"
+    local git_url="$1" git_rev="$2"
+    __CUSTOM_SOURCE_FOLDER="${3:-$(basename $git_url)}"
     __CUSTOM_SOURCE_FOLDER="${__CUSTOM_SOURCE_FOLDER%.*}"
 
     mkdir -p "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
@@ -94,21 +94,21 @@ git_source() {
         local origin=$(sha1sum <(echo "$git_url") | cut -d' ' -f1)
         git remote add $origin $git_url 2>/dev/null && true
 
-        if (( ${#2} == 40))
+        if (( ${#git_rev} == 40))
         then
-            if [[ "$(git rev-parse FETCH_HEAD)" != "$2" ]]
+            if [[ "$(git rev-parse FETCH_HEAD)" != "$git_rev" ]]
             then
-                git fetch --depth 1 $origin $2
+                git fetch --depth 1 $origin $git_rev
             fi
             git reset --hard FETCH_HEAD
             git clean -ffd
-            git switch --detach $2
-            git tag -f tag_$2
+            git switch --detach $git_rev
+            git tag -f tag_$git_rev
         else
-            git fetch --depth 1 $origin tag $2
+            git fetch --depth 1 $origin tag $git_rev
             git reset --hard FETCH_HEAD
             git clean -ffd
-            git switch --detach tags/$2
+            git switch --detach tags/$git_rev
         fi
     popd
 }
