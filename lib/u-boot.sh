@@ -14,6 +14,7 @@ bsp_reset() {
     BSP_BL31_OVERRIDE=
     BSP_TRUST_OVERRIDE=
     BSP_BOARD_OVERRIDE=
+    BSP_ROCKCHIP_TPL=
 
     RKBIN_DDR=
     RKMINILOADER=
@@ -57,13 +58,29 @@ bsp_prepare() {
                 make -C "$SCRIPT_DIR/.src/arm-trusted-firmware" -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE PLAT=$BSP_BL31_OVERRIDE
                 BSP_MAKE_EXTRA+=("BL31=$SCRIPT_DIR/.src/arm-trusted-firmware/build/$BSP_BL31_OVERRIDE/release/bl31/bl31.elf")
             else
-                local rkbin_bl31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e "${BSP_BL31_OVERRIDE}_bl31_v" | sort | tail -n 1)
-                if [[ -z $rkbin_bl31 ]]
+                local rkbin_bl31
+                if [[ -n $BSP_BL31_OVERRIDE ]]
                 then
-                    echo "Unable to find prebuilt bl31. The resulting bootloader may not work!" >&2
-                else
-                    echo "Using bl31 $(basename $rkbin_bl31)"
-                    BSP_MAKE_EXTRA+=("BL31=$rkbin_bl31")
+                    rkbin_bl31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e "${BSP_BL31_OVERRIDE}_bl31_v" | sort | tail -n 1)
+                    if [[ -z $rkbin_bl31 ]]
+                    then
+                        echo "Unable to find prebuilt bl31. The resulting bootloader may not work!" >&2
+                    else
+                        echo "Using bl31 $(basename $rkbin_bl31)"
+                        BSP_MAKE_EXTRA+=("BL31=$rkbin_bl31")
+                    fi
+                fi
+
+                if [[ -n $RKBIN_DDR ]]
+                then
+                    BSP_ROCKCHIP_TPL="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN_DDR} | sort | tail -n 1)"
+                    if [[ -z $BSP_ROCKCHIP_TPL ]]
+                    then
+                        echo "Unable to find prebuilt Rockchip TPL. The resulting bootloader may not work!" >&2
+                    else
+                        echo "Using Rockchip TPL $(basename $BSP_ROCKCHIP_TPL)"
+                        BSP_MAKE_EXTRA+=("ROCKCHIP_TPL=$BSP_ROCKCHIP_TPL")
+                    fi
                 fi
             fi
             ;;
@@ -79,15 +96,12 @@ bsp_make() {
 
 rkpack_idbloader() {
     local flash_data=
-    if [[ -n $RKBIN_DDR ]]
+    if [[ -n $RKBIN_DDR ]] && [[ -n $BSP_ROCKCHIP_TPL ]]
     then
-        
-        if ! flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN_DDR} | sort | tail -n 1)" || [[ -z $flash_data ]]
-        then
-            error $EXIT_UNKNOWN_OPTION "$RKBIN_DDR"
-        else
-            echo "Using rkbin $(basename $flash_data)"
-        fi
+        flash_data="$BSP_ROCKCHIP_TPL"
+        echo "Using rkbin $(basename $flash_data)"
+    else
+        error $EXIT_UNKNOWN_OPTION "$RKBIN_DDR"
     fi
 
     if [[ -e "${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin" ]] && [[ "$1" == "spl" ]]
