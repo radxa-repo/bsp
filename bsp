@@ -3,7 +3,7 @@
 usage() {
     cat >&2 << EOF
 Radxa BSP Build Tool
-usage: $(basename "$0") [options] <linux|u-boot> <edition> [product]
+usage: $(basename "$0") [options] <linux|u-boot> <profile> [product]
 
 When building u-boot, you can also provide 'product' argument,
 which will only build for that specific image.
@@ -29,14 +29,14 @@ Supported package generation options:
 Alternative commands
     json <catagory>         Print supported options in json format
                             Available catagories: $(get_supported_infos)
-    export <edition>        Export profile
-    import <edition>        Import profile
+    export <profile>        Export profile
+    import <profile>        Import profile
     install <deb> <blk>     Install built package to specified block device
 
-Supported Linux edition:
+Supported Linux profile:
 $(printf_array "    %s\n" "$(get_supported_edition linux)")
 
-Supported U-Boot edition:
+Supported U-Boot profile:
 $(printf_array "    %s\n" "$(get_supported_edition u-boot)")
 EOF
 }
