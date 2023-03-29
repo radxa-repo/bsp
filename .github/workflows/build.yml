@@ -9,12 +9,20 @@ on:
     paths-ignore:
       - '**.md'
       - .gitignore
-      - docker/Dockerfile
+      - 'docs/**'
+      - book.toml
+      - .github/workflows/docs.yaml
+      - container/Dockerfile
+      - .github/workflows/deploy-image.yaml
   pull_request:
     paths-ignore:
       - '**.md'
       - .gitignore
-      - docker/Dockerfile
+      - 'docs/**'
+      - book.toml
+      - .github/workflows/docs.yaml
+      - container/Dockerfile
+      - .github/workflows/deploy-image.yaml
 
 jobs:
   query:

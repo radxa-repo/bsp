@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - container/Dockerfile
+      - .github/workflows/deploy-image.yaml
 
 env:
   REGISTRY: ghcr.io
