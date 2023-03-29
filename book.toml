@@ -1,0 +1,10 @@
+[book]
+authors = ["Radxa Limited"]
+language = "en"
+multilingual = true
+src = "docs"
+title = "bsp"
+
+[output.html]
+git-repository-url = "https://github.com/radxa-repo/bsp/tree/main"
+edit-url-template = "https://github.com/radxa-repo/bsp/edit/main/{path}"

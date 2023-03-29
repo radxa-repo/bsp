@@ -1,0 +1,43 @@
+name: Deploy
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - book.toml
+      - .github/workflows/docs.yaml
+  pull_request:
+    paths:
+      - 'docs/**'
+      - book.toml
+      - .github/workflows/docs.yaml
+
+permissions:
+  pages: write
+  id-token: write
+
+jobs:
+  build-doc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v1
+        with:
+          mdbook-version: 'latest'
+      - name: Build
+        run: mdbook build
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          # Upload entire repository
+          path: "./book"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
+        if: github.event_name != 'pull_request'

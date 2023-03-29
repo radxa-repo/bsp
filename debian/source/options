@@ -8,3 +8,4 @@ tar-ignore = *.tar.xz
 tar-ignore = .profile
 tar-ignore = .bsp-config
 tar-ignore = SOURCE
+tar-ignore = book
