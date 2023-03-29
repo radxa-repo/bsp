@@ -1,0 +1,5 @@
+bsp (0.1.0) UNRELEASED; urgency=medium
+
+  * Switching to Debian release format. Closes: #8
+
+ -- "Radxa Computer Co., Ltd" <dev@radxa.com>  Wed, 14 Sep 2022 14:31:36 +0800

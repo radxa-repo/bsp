@@ -1,0 +1,20 @@
+Source: bsp
+Maintainer: "Radxa Computer Co., Ltd" <dev@radxa.com>
+Section: admin
+Priority: standard
+Standards-Version: 4.6.0
+Build-Depends: debhelper (>=12~),
+               devscripts,
+               lintian,
+               pandoc,
+               shellcheck,
+
+Package: bsp
+Architecture: all
+Section: admin
+Priority: standard
+Depends: ${misc:Depends},
+Description:  Radxa BSP Build Tool 
+ Radxa BSP Build Tool (bsp) aims to provide a standardized way
+ to build Linux kernel and U-Boot for Radxa boards, so the build
+ output can be easliy included in our image generation pipeline.
