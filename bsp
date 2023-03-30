@@ -136,10 +136,6 @@ _import() {
 
 _install() {
     local deb="$1" blk="$2"
-    if [[ "$end" != "--" ]]
-    then
-        error $EXIT_UNKNOWN_OPTION "$1 $2 $3"
-    fi
     sudo umount "$blk" || true
     sudo mount "$blk" /mnt
     sudo cp "$deb" /mnt
