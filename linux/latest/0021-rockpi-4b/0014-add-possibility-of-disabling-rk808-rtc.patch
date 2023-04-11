@@ -39,14 +39,14 @@ diff --git a/drivers/mfd/rk808.c b/drivers/mfd/rk808.c
 index 4142b638e5..3358cf3695 100644
 --- a/drivers/mfd/rk808.c
 +++ b/drivers/mfd/rk808.c
-@@ -147,6 +147,7 @@ static const struct mfd_cell rk808s[] = {
- 	{ .name = "rk808-regulator", },
+@@ -147,6 +147,7 @@ 	{ .name = "rk808-clkout", .id = PLATFORM_DEVID_NONE, },
+ 	{ .name = "rk808-regulator", .id = PLATFORM_DEVID_NONE, },
  	{
  		.name = "rk808-rtc",
 +		.of_compatible = "rk808-rtc",
  		.num_resources = ARRAY_SIZE(rtc_resources),
  		.resources = rtc_resources,
- 	},
+ 		.id = PLATFORM_DEVID_NONE,
 -- 
 2.36.1
 

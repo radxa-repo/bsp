@@ -54,7 +54,7 @@ index 190d781e8..8744bb077 100644
 --- a/scripts/Makefile.dtbinst
 +++ b/scripts/Makefile.dtbinst
 @@ -18,9 +18,11 @@ include $(srctree)/scripts/Kbuild.include
- include $(src)/Makefile
+ include $(kbuild-file)
  
  dtbs    := $(addprefix $(dst)/, $(dtb-y) $(if $(CONFIG_OF_ALL_DTBS),$(dtb-)))
 +scrs    := $(addprefix $(dst)/, $(scr-y))

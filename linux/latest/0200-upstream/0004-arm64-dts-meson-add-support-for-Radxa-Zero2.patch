@@ -29,8 +29,8 @@ diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/
 index 5148cd9e5..c65266d26 100644
 --- a/arch/arm64/boot/dts/amlogic/Makefile
 +++ b/arch/arm64/boot/dts/amlogic/Makefile
-@@ -12,6 +12,7 @@ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-gtking-pro.dtb
- dtb-$(CONFIG_ARCH_MESON) += meson-g12b-gtking.dtb
+@@ -12,6 +12,7 @@ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-gtking.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-odroid-go-ultra.dtb
  dtb-$(CONFIG_ARCH_MESON) += meson-g12b-odroid-n2-plus.dtb
  dtb-$(CONFIG_ARCH_MESON) += meson-g12b-odroid-n2.dtb
 +dtb-$(CONFIG_ARCH_MESON) += meson-g12b-radxa-zero2.dtb

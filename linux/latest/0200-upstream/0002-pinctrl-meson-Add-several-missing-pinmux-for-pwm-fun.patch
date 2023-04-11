@@ -19,7 +19,7 @@ diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b.dtsi b/arch/arm64/boot/dts/a
 index ee8fcae9f..d938f883c 100644
 --- a/arch/arm64/boot/dts/amlogic/meson-g12b.dtsi
 +++ b/arch/arm64/boot/dts/amlogic/meson-g12b.dtsi
-@@ -139,3 +139,37 @@ map1 {
+@@ -139,6 +139,40 @@ map1 {
  &mali {
  	dma-coherent;
  };
@@ -57,6 +57,9 @@ index ee8fcae9f..d938f883c 100644
 +		};
 +	};
 +};
+ 
+ &pmu {
+ 	compatible = "amlogic,g12b-ddr-pmu";
 diff --git a/drivers/pinctrl/meson/pinctrl-meson-g12a.c b/drivers/pinctrl/meson/pinctrl-meson-g12a.c
 index d182a5759..5f2a6f9c9 100644
 --- a/drivers/pinctrl/meson/pinctrl-meson-g12a.c
