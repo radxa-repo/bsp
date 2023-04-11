@@ -1,0 +1,164 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Stephen <stephen@vamrs.com>
+Date: Thu, 3 Mar 2022 08:54:18 +0000
+Subject: [PATCH] add dwc3 xhci usb trb quirk
+
+Signed-off-by: Stephen <stephen@vamrs.com>
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ drivers/usb/dwc3/core.c      |  2 ++
+ drivers/usb/dwc3/core.h      |  4 ++++
+ drivers/usb/dwc3/host.c      |  5 ++++-
+ drivers/usb/host/xhci-plat.c |  3 +++
+ drivers/usb/host/xhci-ring.c | 17 +++++++++++++++++
+ drivers/usb/host/xhci.h      |  5 +++++
+ 6 files changed, 35 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/usb/dwc3/core.c b/drivers/usb/dwc3/core.c
+index e027c0420d..74212fc100 100644
+--- a/drivers/usb/dwc3/core.c
++++ b/drivers/usb/dwc3/core.c
+@@ -1483,6 +1483,8 @@ static void dwc3_get_properties(struct dwc3 *dwc)
+ 				"snps,dis-del-phy-power-chg-quirk");
+ 	dwc->dis_tx_ipgap_linecheck_quirk = device_property_read_bool(dev,
+ 				"snps,dis-tx-ipgap-linecheck-quirk");
++	dwc->xhci_trb_ent_quirk = device_property_read_bool(dev,
++				"snps,xhci-trb-ent-quirk");
+ 	dwc->resume_hs_terminations = device_property_read_bool(dev,
+ 				"snps,resume-hs-terminations");
+ 	dwc->parkmode_disable_ss_quirk = device_property_read_bool(dev,
+diff --git a/drivers/usb/dwc3/core.h b/drivers/usb/dwc3/core.h
+index 81c486b394..741d80e19d 100644
+--- a/drivers/usb/dwc3/core.h
++++ b/drivers/usb/dwc3/core.h
+@@ -1093,6 +1093,9 @@ struct dwc3_scratchpad_array {
+  *			change quirk.
+  * @dis_tx_ipgap_linecheck_quirk: set if we disable u2mac linestate
+  *			check during HS transmit.
++ * @xhci_trb_ent_quirk: set if need to enable the Evaluate Next TRB(ENT)
++			flag in the TRB data structure to force xHC to
++			pre-fetch the next TRB of a TD.
+  * @resume-hs-terminations: Set if we enable quirk for fixing improper crc
+  *			generation after resume from suspend.
+  * @parkmode_disable_ss_quirk: set if we need to disable all SuperSpeed
+@@ -1308,6 +1311,7 @@ struct dwc3 {
+ 	unsigned		dis_u2_freeclk_exists_quirk:1;
+ 	unsigned		dis_del_phy_power_chg_quirk:1;
+ 	unsigned		dis_tx_ipgap_linecheck_quirk:1;
++	unsigned		xhci_trb_ent_quirk:1;
+ 	unsigned		resume_hs_terminations:1;
+ 	unsigned		parkmode_disable_ss_quirk:1;
+ 	unsigned		gfladj_refclk_lpm_sel:1;
+diff --git a/drivers/usb/dwc3/host.c b/drivers/usb/dwc3/host.c
+index f56c30cf15..4d0e35ab77 100644
+--- a/drivers/usb/dwc3/host.c
++++ b/drivers/usb/dwc3/host.c
+@@ -66,7 +66,7 @@ static int dwc3_host_get_irq(struct dwc3 *dwc)
+ 
+ int dwc3_host_init(struct dwc3 *dwc)
+ {
+-	struct property_entry	props[4];
++	struct property_entry	props[5];
+ 	struct platform_device	*xhci;
+ 	int			ret, irq;
+ 	int			prop_idx = 0;
+@@ -97,6 +97,9 @@ int dwc3_host_init(struct dwc3 *dwc)
+ 	if (dwc->usb3_lpm_capable)
+ 		props[prop_idx++] = PROPERTY_ENTRY_BOOL("usb3-lpm-capable");
+ 
++	if (dwc->xhci_trb_ent_quirk)
++		props[prop_idx++] = PROPERTY_ENTRY_BOOL("xhci-trb-ent-quirk");
++
+ 	if (dwc->usb2_lpm_disable)
+ 		props[prop_idx++] = PROPERTY_ENTRY_BOOL("usb2-lpm-disable");
+ 
+diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
+index 044855818c..2b39af5d6f 100644
+--- a/drivers/usb/host/xhci-plat.c
++++ b/drivers/usb/host/xhci-plat.c
+@@ -301,6 +301,9 @@ static int xhci_plat_probe(struct platform_device *pdev)
+ 		if (device_property_read_bool(tmpdev, "quirk-broken-port-ped"))
+ 			xhci->quirks |= XHCI_BROKEN_PORT_PED;
+ 
++		if (device_property_read_bool(tmpdev, "xhci-trb-ent-quirk"))
++			xhci->quirks |= XHCI_TRB_ENT_QUIRK;
++
+ 		device_property_read_u32(tmpdev, "imod-interval-ns",
+ 					 &xhci->imod_interval);
+ 	}
+diff --git a/drivers/usb/host/xhci-ring.c b/drivers/usb/host/xhci-ring.c
+index 46d0b9ad6f..2960d3a848 100644
+--- a/drivers/usb/host/xhci-ring.c
++++ b/drivers/usb/host/xhci-ring.c
+@@ -3520,6 +3520,7 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
+ 	bool more_trbs_coming = true;
+ 	bool need_zero_pkt = false;
+ 	bool first_trb = true;
++	bool en_trb_ent = true;
+ 	unsigned int num_trbs;
+ 	unsigned int start_cycle, num_sgs = 0;
+ 	unsigned int enqd_len, block_len, trb_buff_len, full_len;
+@@ -3556,6 +3557,13 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
+ 	if (urb->transfer_flags & URB_ZERO_PACKET && urb_priv->num_tds > 1)
+ 		need_zero_pkt = true;
+ 
++	/*
++	 * Don't enable the ENT flag in the TRB if
++	 * the EP support bulk streaming protocol.
++	 */
++	if (urb->stream_id)
++		en_trb_ent = false;
++
+ 	td = &urb_priv->td[0];
+ 
+ 	/*
+@@ -3584,6 +3592,13 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
+ 			first_trb = false;
+ 			if (start_cycle == 0)
+ 				field |= TRB_CYCLE;
++			/*
++			 * Don't enable the ENT flag in the TRB if the
++			 * transfer length of the first TRB isn't an
++			 * integer multiple of the EP maxpacket.
++			 */
++			if (trb_buff_len % usb_endpoint_maxp(&urb->ep->desc))
++				en_trb_ent = false;
+ 		} else
+ 			field |= ring->cycle_state;
+ 
+@@ -3592,6 +3607,8 @@ int xhci_queue_bulk_tx(struct xhci_hcd *xhci, gfp_t mem_flags,
+ 		 */
+ 		if (enqd_len + trb_buff_len < full_len) {
+ 			field |= TRB_CHAIN;
++			if (xhci->quirks & XHCI_TRB_ENT_QUIRK && en_trb_ent)
++				field |= TRB_ENT;
+ 			if (trb_is_link(ring->enqueue + 1)) {
+ 				if (xhci_align_td(xhci, urb, enqd_len,
+ 						  &trb_buff_len,
+diff --git a/drivers/usb/host/xhci.h b/drivers/usb/host/xhci.h
+index 0bd76c94a4..f66e877b95 100644
+--- a/drivers/usb/host/xhci.h
++++ b/drivers/usb/host/xhci.h
+@@ -1524,7 +1524,11 @@ static inline const char *xhci_trb_type_string(u8 type)
+ #define TRB_SEGMENT_SIZE	(TRBS_PER_SEGMENT*16)
+ #define TRB_SEGMENT_SHIFT	(ilog2(TRB_SEGMENT_SIZE))
+ /* TRB buffer pointers can't cross 64KB boundaries */
++#ifdef CONFIG_ARCH_ROCKCHIP
++#define TRB_MAX_BUFF_SHIFT		12
++#else
+ #define TRB_MAX_BUFF_SHIFT		16
++#endif
+ #define TRB_MAX_BUFF_SIZE	(1 << TRB_MAX_BUFF_SHIFT)
+ /* How much data is left before the 64KB boundary? */
+ #define TRB_BUFF_LEN_UP_TO_BOUNDARY(addr)	(TRB_MAX_BUFF_SIZE - \
+@@ -1845,6 +1849,7 @@ struct xhci_hcd {
+ #define XHCI_STATE_HALTED	(1 << 1)
+ #define XHCI_STATE_REMOVING	(1 << 2)
+ 	unsigned long long	quirks;
++#define XHCI_TRB_ENT_QUIRK	BIT_ULL(63)
+ #define	XHCI_LINK_TRB_QUIRK	BIT_ULL(0)
+ #define XHCI_RESET_EP_QUIRK	BIT_ULL(1) /* Deprecated */
+ #define XHCI_NEC_HOST		BIT_ULL(2)
+-- 
+2.36.1
+
