@@ -8,7 +8,7 @@ custom_source_action() {
             source_cp "./boot_merger" "tools/"
             ;;
         *)
-            git_source "https://github.com/JeffyCN/rockchip_mirrors.git" ac64b3e9e57a7712187dc1bb6e83841232214ac8 rkbin
+            git_source "https://gitlab.com/rk3588_linux/rk/rkbin.git" ed22a72181acedc4b725c836119ae5a04b65818f rkbin
             ;;
     esac
 }
