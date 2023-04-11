@@ -36,7 +36,7 @@ index 3bae829fd1a1f..f5d46f1ed3412 100644
 -#include "rk3399-opp.dtsi"
  
  / {
- 	aliases {
+ 	clkin_gmac: external-gmac-clock {
 diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts
 index 851f506ef62c1..7bb6f6b6d1405 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a-plus.dts
