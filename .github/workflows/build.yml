@@ -10,6 +10,7 @@ on:
       - '**.md'
       - .gitignore
       - 'docs/**'
+      - 'theme/**'
       - book.toml
       - .github/workflows/docs.yaml
       - container/Dockerfile
@@ -19,6 +20,7 @@ on:
       - '**.md'
       - .gitignore
       - 'docs/**'
+      - 'theme/**'
       - book.toml
       - .github/workflows/docs.yaml
       - container/Dockerfile

@@ -6,11 +6,13 @@ on:
       - main
     paths:
       - 'docs/**'
+      - 'theme/**'
       - book.toml
       - .github/workflows/docs.yaml
   pull_request:
     paths:
       - 'docs/**'
+      - 'theme/**'
       - book.toml
       - .github/workflows/docs.yaml
 
