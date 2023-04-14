@@ -76,7 +76,7 @@ index a364fa8b..02194303 100644
  	int len = 0;
 @@ -626,7 +634,6 @@ static int label_boot(struct pxe_context *ctx, struct pxe_label *label)
  	/* if fdt label is defined then get fdt from server */
- 	if (bootm_argv[3]) {
+ 	} else if (bootm_argv[3]) {
  		char *fdtfile = NULL;
 -		char *fdtfilefree = NULL;
  

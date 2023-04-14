@@ -19,9 +19,9 @@ diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
 index c752d2bd18..44241fafee 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -194,6 +194,7 @@ dtb-$(CONFIG_ARCH_MESON) += \
- 	meson-g12b-gsking-x.dtb \
+@@ -194,6 +194,7 @@ meson-g12b-odroid-go-ultra.dtb \
  	meson-g12b-odroid-n2.dtb \
+ 	meson-g12b-odroid-n2l.dtb \
  	meson-g12b-odroid-n2-plus.dtb \
 +	meson-g12b-radxa-zero2.dtb \
  	meson-sm1-bananapi-m5.dtb \
