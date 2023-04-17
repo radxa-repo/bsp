@@ -1,0 +1,182 @@
+From patchwork Tue Feb 28 21:38:25 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Jonas Karlman <jonas@kwiboo.se>
+X-Patchwork-Id: 1749687
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.a=rsa-sha256
+ header.s=s1 header.b=CfjovJeZ;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4PR9kK1fj0z245t
+	for <incoming@patchwork.ozlabs.org>; Wed,  1 Mar 2023 08:39:37 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id C40BF85C64;
+	Tue, 28 Feb 2023 22:38:34 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.b="CfjovJeZ";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id C3E4685C7A; Tue, 28 Feb 2023 22:38:29 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.8 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,RCVD_IN_BL_SPAMCOP_NET,
+ RCVD_IN_MSPIKE_H2,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY
+ autolearn=no autolearn_force=no version=3.4.2
+Received: from cskrhhvt.outbound-mail.sendgrid.net
+ (cskrhhvt.outbound-mail.sendgrid.net [198.21.0.135])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 24D2A85C47
+ for <u-boot@lists.denx.de>; Tue, 28 Feb 2023 22:38:27 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de; spf=pass
+ smtp.mailfrom=bounces+31435339-7456-u-boot=lists.denx.de@em2124.kwiboo.se
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
+ h=from:subject:mime-version:to:cc:content-transfer-encoding:
+ content-type:cc:content-type:from:subject:to;
+ s=s1; bh=rhHTd7j3X0+7xOXaj52jUs6g8ZsoRM7L1IB/NEPK3p8=;
+ b=CfjovJeZRLZh5zUd85l33H7Lk3aGn+s5bk8aMg5dROOd5vhpiQq/8niKsO3UG+BchV4k
+ UY0Hj53LiVFllOJI6RvEVuXEPozGxBZwRzCP3dfqwfCwvqGArXTYonLzXkERCVqSET/6gT
+ nIdJM3I/t4m7HiMgKVPkmb6usx/0So6VWZHqJnQ+2FsFNKxX8XFOMGxrBdDU5ezvuBBuHc
+ ZMeMC877tpVKjC9hjeLvJuTswGUX8Iy03tUNKRG2UAj6eegbVmn0P99Bj45PnCcG4ZO+79
+ 6p5nu6GuqvofsHDou5o7kj2JjDxpEgXgBabirPGtq24oGELTGuyGXuEeZmjlORZQ==
+Received: by filterdrecv-5848969764-q8gbw with SMTP id
+ filterdrecv-5848969764-q8gbw-1-63FE7451-1F
+ 2023-02-28 21:38:25.541373366 +0000 UTC m=+598017.149208583
+Received: from bionic.localdomain (unknown) by geopod-ismtpd-10 (SG) with
+ ESMTP
+ id 6qBNxW82Rvio9bQj7sgkBw Tue, 28 Feb 2023 21:38:25.232 +0000 (UTC)
+From: Jonas Karlman <jonas@kwiboo.se>
+Subject: [PATCH] rockchip: Use an external TPL binary on RK3588
+Date: Tue, 28 Feb 2023 21:38:25 +0000 (UTC)
+Message-Id: <20230228213822.3583989-1-jonas@kwiboo.se>
+X-Mailer: git-send-email 2.39.2
+MIME-Version: 1.0
+X-SG-EID: 
+ TdbjyGynYnRZWhH+7lKUQJL+ZxmxpowvO2O9SQF5CwCVrYgcwUXgU5DKUU3QxAfZekEeQsTe+RrMu3cja6a0h1kc8SGUSV8XE25A9KdpP1BrjEQhlv0cVGLW7f2xepyfNop4rLee2HlqnoazbnAW7g2rf5pNMKIHWEENoKkYzht0pmPMh9vO22Qxn37cGr31x6sQ5XdA0+k902PzKW8je3AorPHNFEn3PoOc/OukMkf2WSzLRQiT8PXq2bcL8avR
+To: Kever Yang <kever.yang@rock-chips.com>, Simon Glass <sjg@chromium.org>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Jagan Teki <jagan@edgeble.ai>,
+ Akash Gajjar <gajjar04akash@gmail.com>, Eugen Hristev
+ <eugen.hristev@collabora.com>
+Cc: Johan Jonker <jbx6244@gmail.com>, "Marty E . Plummer"
+ <hanetzer@startmail.com>, Quentin Schulz
+ <quentin.schulz@theobroma-systems.com>, u-boot@lists.denx.de, Jonas Karlman
+ <jonas@kwiboo.se>
+X-Entity-ID: P7KYpSJvGCELWjBME/J5tg==
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.6 at phobos.denx.de
+X-Virus-Status: Clean
+
+There is no support to initialize DRAM on RK3588 SoCs using U-Boot TPL
+and instead an external TPL binary must be used to generate a bootable
+u-boot-rockchip.bin image.
+
+Enable ROCKCHIP_EXTERNAL_TPL by default for RK3588, add build steps for
+RK3588 to documentation and clean up CONFIG_BINMAN_FDT options.
+
+Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+Reviewed-by: Jagan Teki <jagan@edgeble.ai>
+---
+ arch/arm/mach-rockchip/Kconfig    | 2 +-
+ configs/neu6a-io-rk3588_defconfig | 1 -
+ configs/rock-3a-rk3568_defconfig  | 1 -
+ configs/rock5b-rk3588_defconfig   | 1 -
+ doc/board/rockchip/rockchip.rst   | 9 +++++++++
+ 5 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/mach-rockchip/Kconfig b/arch/arm/mach-rockchip/Kconfig
+index 0390431601f9..e5ac58ae60b5 100644
+--- a/arch/arm/mach-rockchip/Kconfig
++++ b/arch/arm/mach-rockchip/Kconfig
+@@ -428,7 +428,7 @@ config TPL_ROCKCHIP_COMMON_BOARD
+ 
+ config ROCKCHIP_EXTERNAL_TPL
+ 	bool "Use external TPL binary"
+-	default y if ROCKCHIP_RK3568
++	default y if ROCKCHIP_RK3568 || ROCKCHIP_RK3588
+ 	help
+ 	  Some Rockchip SoCs require an external TPL to initialize DRAM.
+ 	  Enable this option and build with ROCKCHIP_TPL=/path/to/ddr.bin to
+diff --git a/configs/neu6a-io-rk3588_defconfig b/configs/neu6a-io-rk3588_defconfig
+index fb5a2b7dbceb..33c03b58a16c 100644
+--- a/configs/neu6a-io-rk3588_defconfig
++++ b/configs/neu6a-io-rk3588_defconfig
+@@ -63,5 +63,4 @@ CONFIG_DM_RESET=y
+ CONFIG_BAUDRATE=1500000
+ CONFIG_DEBUG_UART_SHIFT=2
+ CONFIG_SYSRESET=y
+-# CONFIG_BINMAN_FDT is not set
+ CONFIG_ERRNO_STR=y
+diff --git a/configs/rock-3a-rk3568_defconfig b/configs/rock-3a-rk3568_defconfig
+index 1686c8c1aa5a..e16d98b07af9 100644
+--- a/configs/rock-3a-rk3568_defconfig
++++ b/configs/rock-3a-rk3568_defconfig
+@@ -70,5 +70,4 @@ CONFIG_BAUDRATE=1500000
+ CONFIG_DEBUG_UART_SHIFT=2
+ CONFIG_SYS_NS16550_MEM32=y
+ CONFIG_SYSRESET=y
+-# CONFIG_BINMAN_FDT is not set
+ CONFIG_ERRNO_STR=y
+diff --git a/configs/rock5b-rk3588_defconfig b/configs/rock5b-rk3588_defconfig
+index f3026c7ea166..66199387195a 100644
+--- a/configs/rock5b-rk3588_defconfig
++++ b/configs/rock5b-rk3588_defconfig
+@@ -68,5 +68,4 @@ CONFIG_BAUDRATE=1500000
+ CONFIG_DEBUG_UART_SHIFT=2
+ CONFIG_DEBUG_UART_ANNOUNCE=y
+ CONFIG_SYSRESET=y
+-# CONFIG_BINMAN_FDT is not set
+ CONFIG_ERRNO_STR=y
+diff --git a/doc/board/rockchip/rockchip.rst b/doc/board/rockchip/rockchip.rst
+index b5563b8f7f9e..1f88d15aad2a 100644
+--- a/doc/board/rockchip/rockchip.rst
++++ b/doc/board/rockchip/rockchip.rst
+@@ -185,6 +185,15 @@ To build rk3568 boards:
+         make evb-rk3568_defconfig
+         make CROSS_COMPILE=aarch64-linux-gnu-
+ 
++To build rk3588 boards:
++
++.. code-block:: bash
++
++        export BL31=../rkbin/bin/rk35/rk3588_bl31_v1.27.elf
++        export ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2736MHz_v1.08.bin
++        make rock5b-rk3588_defconfig
++        make CROSS_COMPILE=aarch64-linux-gnu-
++
+ Flashing
+ --------
+ 
