@@ -64,6 +64,7 @@ update_bootloader() {
         echo "Missing U-Boot binary!" >&2
         return 2
     fi
+    sync
 }
 
 update_spinor() {
@@ -88,6 +89,7 @@ update_spinor() {
     flash_eraseall /dev/mtdblock0
     dd conv=notrunc,fsync if=/tmp/spi.img of=/dev/mtdblock0 bs=4096
     rm /tmp/spi.img
+    sync
 }
 
 set -euo pipefail
