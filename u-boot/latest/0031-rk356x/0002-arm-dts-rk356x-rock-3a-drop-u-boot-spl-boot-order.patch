@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: FUKAUMI Naoki <naoki@radxa.com>
+Date: Fri, 7 Apr 2023 10:06:46 +0000
+Subject: [PATCH] arm: dts: rk356x: rock-3a: drop u-boot,spl-boot-order
+
+use common one defined in rk356x-u-boot.dtsi.
+
+Signed-off-by: FUKAUMI Naoki <naoki@radxa.com>
+---
+ arch/arm/dts/rk3568-rock-3a-u-boot.dtsi | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/arch/arm/dts/rk3568-rock-3a-u-boot.dtsi b/arch/arm/dts/rk3568-rock-3a-u-boot.dtsi
+index 04bbb01b5d..e4fc298f30 100644
+--- a/arch/arm/dts/rk3568-rock-3a-u-boot.dtsi
++++ b/arch/arm/dts/rk3568-rock-3a-u-boot.dtsi
+@@ -9,7 +9,6 @@
+ / {
+ 	chosen {
+ 		stdout-path = &uart2;
+-		u-boot,spl-boot-order = "same-as-spl", &sdmmc0, &sdhci;
+ 	};
+ };
+ 
+-- 
+2.40.0
+

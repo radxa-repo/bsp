@@ -23,9 +23,9 @@ index ff9357c6a6..7dd08f9278 100644
  dtb-$(CONFIG_ROCKCHIP_RK3568) += \
  	rk3566-radxa-cm3-io.dtb \
 +	rk3566-radxa-cm3-rpi-cm4-io.dtb \
+ 	rk3566-radxa-cm3-sodimm-io.dtb \
  	rk3568-evb.dtb \
- 	rk3568-rock-3a.dtb \
- 	rk3568-rock-3b.dtb
+ 	rk3568-radxa-e25.dtb \
 diff --git a/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
 new file mode 100644
 index 0000000000..589332503e
@@ -330,7 +330,7 @@ index 0000000000..68ebc3aaa1
 +};
 diff --git a/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig b/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
 new file mode 100644
-index 0000000000..24292d80d8
+index 0000000000..2930649e30
 --- /dev/null
 +++ b/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
 @@ -0,0 +1,77 @@
@@ -359,6 +359,7 @@ index 0000000000..24292d80d8
 +CONFIG_DEBUG_UART=y
 +CONFIG_FIT=y
 +CONFIG_FIT_VERBOSE=y
++CONFIG_SPL_FIT_SIGNATURE=y
 +CONFIG_SPL_LOAD_FIT=y
 +CONFIG_DEFAULT_FDT_FILE="rockchip/rk3566-radxa-cm3-rpi-cm4-io.dtb"
 +# CONFIG_DISPLAY_CPUINFO is not set
@@ -372,6 +373,7 @@ index 0000000000..24292d80d8
 +# CONFIG_SPL_SHARES_INIT_SP_ADDR is not set
 +CONFIG_SPL_STACK_R=y
 +CONFIG_SPL_ATF=y
++CONFIG_SPL_ATF_NO_PLATFORM_PARAM=y
 +CONFIG_CMD_GPT=y
 +CONFIG_CMD_MMC=y
 +CONFIG_CMD_USB=y
@@ -406,8 +408,6 @@ index 0000000000..24292d80d8
 +CONFIG_USB=y
 +CONFIG_USB_XHCI_HCD=y
 +CONFIG_USB_XHCI_DWC3=y
-+CONFIG_USB_EHCI_HCD=y
-+CONFIG_USB_EHCI_GENERIC=y
 +CONFIG_USB_DWC3=y
 +CONFIG_USB_DWC3_GENERIC=y
 +CONFIG_ERRNO_STR=y

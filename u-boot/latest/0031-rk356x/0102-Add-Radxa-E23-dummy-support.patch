@@ -1,36 +1,36 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: ZHANG Yuntian <95260730+RadxaYuntian@users.noreply.github.com>
-Date: Mon, 17 Apr 2023 10:52:00 +0800
-Subject: [PATCH] Add Radxa CM3 SODIMM IO dummy support
+Date: Mon, 17 Apr 2023 10:52:14 +0800
+Subject: [PATCH] Add Radxa E23 dummy support
 
 DTS does not match the hardware.
 ---
- arch/arm/dts/Makefile                         |   1 +
- .../rk3566-radxa-cm3-sodimm-io-u-boot.dtsi    |  18 ++
- arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts   | 272 ++++++++++++++++++
- configs/radxa-cm3-sodimm-io-rk3566_defconfig  |  77 +++++
+ arch/arm/dts/Makefile                     |   1 +
+ arch/arm/dts/rk3566-radxa-e23-u-boot.dtsi |  18 ++
+ arch/arm/dts/rk3566-radxa-e23.dts         | 272 ++++++++++++++++++++++
+ configs/radxa-e23-rk3566_defconfig        |  77 ++++++
  4 files changed, 368 insertions(+)
- create mode 100644 arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi
- create mode 100644 arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts
- create mode 100644 configs/radxa-cm3-sodimm-io-rk3566_defconfig
+ create mode 100644 arch/arm/dts/rk3566-radxa-e23-u-boot.dtsi
+ create mode 100644 arch/arm/dts/rk3566-radxa-e23.dts
+ create mode 100644 configs/radxa-e23-rk3566_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 7dd08f9278..8866f102da 100644
+index 8866f102da..2f0e036bef 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -172,6 +172,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
- dtb-$(CONFIG_ROCKCHIP_RK3568) += \
+@@ -173,6 +173,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3568) += \
  	rk3566-radxa-cm3-io.dtb \
  	rk3566-radxa-cm3-rpi-cm4-io.dtb \
-+	rk3566-radxa-cm3-sodimm-io.dtb \
+ 	rk3566-radxa-cm3-sodimm-io.dtb \
++	rk3566-radxa-e23.dtb \
  	rk3568-evb.dtb \
+ 	rk3568-radxa-e25.dtb \
  	rk3568-rock-3a.dtb \
- 	rk3568-rock-3b.dtb
-diff --git a/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi
+diff --git a/arch/arm/dts/rk3566-radxa-e23-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-e23-u-boot.dtsi
 new file mode 100644
 index 0000000000..589332503e
 --- /dev/null
-+++ b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi
++++ b/arch/arm/dts/rk3566-radxa-e23-u-boot.dtsi
 @@ -0,0 +1,18 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
@@ -50,11 +50,11 @@ index 0000000000..589332503e
 +	u-boot,dm-pre-reloc;
 +	status = "okay";
 +};
-diff --git a/arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts
+diff --git a/arch/arm/dts/rk3566-radxa-e23.dts b/arch/arm/dts/rk3566-radxa-e23.dts
 new file mode 100644
-index 0000000000..682c708157
+index 0000000000..431362943c
 --- /dev/null
-+++ b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts
++++ b/arch/arm/dts/rk3566-radxa-e23.dts
 @@ -0,0 +1,272 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -68,8 +68,8 @@ index 0000000000..682c708157
 +#include "rk3566-radxa-cm3.dtsi"
 +
 +/ {
-+	model = "Radxa Compute Module 3 SODIMM (CM3S) IO Board";
-+	compatible = "radxa,cm3-sodimm-io", "radxa,cm3-sodimm", "rockchip,rk3566";
++	model = "Radxa E23";
++	compatible = "radxa,e23", "radxa,cm3", "rockchip,rk3566";
 +
 +	aliases {
 +		mmc1 = &sdmmc0;
@@ -328,11 +328,11 @@ index 0000000000..682c708157
 +		remote-endpoint = <&hdmi_in_vp0>;
 +	};
 +};
-diff --git a/configs/radxa-cm3-sodimm-io-rk3566_defconfig b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+diff --git a/configs/radxa-e23-rk3566_defconfig b/configs/radxa-e23-rk3566_defconfig
 new file mode 100644
-index 0000000000..8529cf486e
+index 0000000000..2930649e30
 --- /dev/null
-+++ b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
++++ b/configs/radxa-e23-rk3566_defconfig
 @@ -0,0 +1,77 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
@@ -344,7 +344,7 @@ index 0000000000..8529cf486e
 +CONFIG_NR_DRAM_BANKS=2
 +CONFIG_HAS_CUSTOM_SYS_INIT_SP_ADDR=y
 +CONFIG_CUSTOM_SYS_INIT_SP_ADDR=0xc00000
-+CONFIG_DEFAULT_DEVICE_TREE="rk3566-radxa-cm3-sodimm-io"
++CONFIG_DEFAULT_DEVICE_TREE="rk3566-radxa-e23"
 +CONFIG_ROCKCHIP_RK3568=y
 +CONFIG_SPL_ROCKCHIP_BACK_TO_BROM=y
 +CONFIG_SPL_ROCKCHIP_COMMON_BOARD=y
@@ -359,8 +359,9 @@ index 0000000000..8529cf486e
 +CONFIG_DEBUG_UART=y
 +CONFIG_FIT=y
 +CONFIG_FIT_VERBOSE=y
++CONFIG_SPL_FIT_SIGNATURE=y
 +CONFIG_SPL_LOAD_FIT=y
-+CONFIG_DEFAULT_FDT_FILE="rockchip/rk3566-radxa-cm3-sodimm-io.dtb"
++CONFIG_DEFAULT_FDT_FILE="rockchip/rk3566-radxa-e23.dtb"
 +# CONFIG_DISPLAY_CPUINFO is not set
 +CONFIG_DISPLAY_BOARDINFO_LATE=y
 +CONFIG_SPL_MAX_SIZE=0x20000
@@ -372,6 +373,7 @@ index 0000000000..8529cf486e
 +# CONFIG_SPL_SHARES_INIT_SP_ADDR is not set
 +CONFIG_SPL_STACK_R=y
 +CONFIG_SPL_ATF=y
++CONFIG_SPL_ATF_NO_PLATFORM_PARAM=y
 +CONFIG_CMD_GPT=y
 +CONFIG_CMD_MMC=y
 +CONFIG_CMD_USB=y
@@ -406,8 +408,6 @@ index 0000000000..8529cf486e
 +CONFIG_USB=y
 +CONFIG_USB_XHCI_HCD=y
 +CONFIG_USB_XHCI_DWC3=y
-+CONFIG_USB_EHCI_HCD=y
-+CONFIG_USB_EHCI_GENERIC=y
 +CONFIG_USB_DWC3=y
 +CONFIG_USB_DWC3_GENERIC=y
 +CONFIG_ERRNO_STR=y
