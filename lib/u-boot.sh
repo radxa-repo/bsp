@@ -156,7 +156,7 @@ bsp_preparedeb() {
     local soc_family=$(get_soc_family $BSP_SOC)
     
     mkdir -p "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE"
-    cp "$SCRIPT_DIR/common/u-boot_setup.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/setup.sh"
+    cp "$SCRIPT_DIR/common/u-boot_setup-$soc_family.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/setup.sh"
 
     case "$soc_family" in
         amlogic)
@@ -193,7 +193,6 @@ bsp_makedeb() {
     fpm -s dir -t deb -n "$NAME" -v "$VERSION" \
         --deb-compression xz \
         -a arm64 \
-        --depends dthelper \
         --url "$URL" \
         --description "$DESCRIPTION" \
         --license "GPL-2+" \
