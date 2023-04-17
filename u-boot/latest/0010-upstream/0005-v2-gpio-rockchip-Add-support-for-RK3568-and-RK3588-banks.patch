@@ -1,0 +1,297 @@
+From patchwork Sun Mar 19 18:39:51 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Jonas Karlman <jonas@kwiboo.se>
+X-Patchwork-Id: 1758756
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=fail reason="key not found in DNS" header.d=kwiboo.se
+ header.i=@kwiboo.se header.a=rsa-sha256 header.s=s1 header.b=pZ10C3Dd;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384) server-digest SHA384)
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4PfmrN5MLJz1yWs
+	for <incoming@patchwork.ozlabs.org>; Mon, 20 Mar 2023 05:40:04 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 7586785548;
+	Sun, 19 Mar 2023 19:39:57 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.b="pZ10C3Dd";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id A21D980AE6; Sun, 19 Mar 2023 19:39:55 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.8 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,RCVD_IN_BL_SPAMCOP_NET,
+ RCVD_IN_MSPIKE_H2,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY
+ autolearn=no autolearn_force=no version=3.4.2
+Received: from s.wrqvtzvf.outbound-mail.sendgrid.net
+ (s.wrqvtzvf.outbound-mail.sendgrid.net [149.72.126.143])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 93106855BA
+ for <u-boot@lists.denx.de>; Sun, 19 Mar 2023 19:39:52 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de; spf=pass
+ smtp.mailfrom=bounces+31435339-7456-u-boot=lists.denx.de@em2124.kwiboo.se
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
+ h=from:subject:mime-version:to:cc:content-transfer-encoding:
+ content-type:cc:content-type:from:subject:to;
+ s=s1; bh=g98G1vpy6POvbKYVQSZZyZRRWSPgWqQuhAibwYZfswc=;
+ b=pZ10C3DdTYDTnn7UobCkJpJk847xgg4fgwdtBrwsgx1FhsRHSjBJ0YppHhjEqNvxP/f2
+ YGyzkfE7YPqPhDu+wd86dPmPpYMW+i5ITE4W/9Y3qGvq/bUWCNhGMdkfSWJ9Pxz4POhYG4
+ gSr425AyX5H67Lca1CSyivo7O3k42wttpLcLZc+UTom3fCv1ryoaXA8Z9QggbCKgt2fbiD
+ bJQBq/wrb+xMi3lwTlQlkchJbgn/1HLVTXjAXQ6/iH85tvqDrmsVoCAWUr9Oiu6Kkp57ZY
+ 87Nvv4hncHzxdIZPW/TnYO2bqAjBpLL5rHWR2iwF7DI+in11vG0j86kzLSbNZiZw==
+Received: by filterdrecv-68f8d557c9-2lkhp with SMTP id
+ filterdrecv-68f8d557c9-2lkhp-1-641756F7-4
+ 2023-03-19 18:39:51.157050727 +0000 UTC m=+2228760.105476270
+Received: from bionic.localdomain (unknown) by geopod-ismtpd-10 (SG) with
+ ESMTP
+ id -qQIPIFrSzeUTzXeAQ-9XQ Sun, 19 Mar 2023 18:39:50.804 +0000 (UTC)
+From: Jonas Karlman <jonas@kwiboo.se>
+Subject: [PATCH v2] gpio: rockchip: Add support for RK3568 and RK3588 banks
+Date: Sun, 19 Mar 2023 18:39:51 +0000 (UTC)
+Message-Id: <20230319183949.1375997-1-jonas@kwiboo.se>
+X-Mailer: git-send-email 2.40.0
+MIME-Version: 1.0
+X-SG-EID: 
+ TdbjyGynYnRZWhH+7lKUQJL+ZxmxpowvO2O9SQF5CwCVrYgcwUXgU5DKUU3QxAfZekEeQsTe+RrMu3cja6a0h1lY0vj6dtYQrfHhxaCvWWXbUSufVDYz06RXVeSSvB9VzyYFema8C2kN75eBVMDIkv12XDp9UUq3jq6+zHP83pqqih3p2XsHxSh00Vwt6r0dyCYyVMVXoWs6ps4Wf54Ei91QbA6HFDeJOAqH4ZhcVoSh56JzujQc0XVe0Yx/+uEB
+To: Simon Glass <sjg@chromium.org>, Philipp Tomsich
+ <philipp.tomsich@vrull.eu>, Kever Yang <kever.yang@rock-chips.com>
+Cc: Jonas Karlman <jonas@kwiboo.se>, u-boot@lists.denx.de
+X-Entity-ID: P7KYpSJvGCELWjBME/J5tg==
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+The GPIO V2 controller on RK3568 and RK3588 works very similar to
+prior generation, main difference is the use of a write mask in the
+upper 16 bits and register address offset have changed.
+
+GPIO_VER_ID is a new register at 0x0078 that is used to determine when
+the driver should use new or old register offsets and values. Earlier
+generation return 0x0 from this offset.
+
+Refactor code and add support for the GPIO V2 controller used in RK3568
+and RK3588.
+
+Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+Reviewed-by: Kever Yang <kever.yang@rock-chips.com>
+---
+Changes in v2:
+- Drop two patches related to gpio alias id
+
+ drivers/gpio/rk_gpio.c | 112 ++++++++++++++++++++++++++++-------------
+ 1 file changed, 76 insertions(+), 36 deletions(-)
+
+diff --git a/drivers/gpio/rk_gpio.c b/drivers/gpio/rk_gpio.c
+index f7ad4d68b452..d9bde8f4f034 100644
+--- a/drivers/gpio/rk_gpio.c
++++ b/drivers/gpio/rk_gpio.c
+@@ -13,83 +13,118 @@
+ #include <asm/gpio.h>
+ #include <asm/io.h>
+ #include <asm/arch-rockchip/clock.h>
++#include <asm/arch-rockchip/hardware.h>
+ #include <asm/arch-rockchip/gpio.h>
+ #include <dm/pinctrl.h>
+-#include <dt-bindings/clock/rk3288-cru.h>
++#include <dm/read.h>
++#include <dt-bindings/pinctrl/rockchip.h>
++
++#define SWPORT_DR		0x0000
++#define SWPORT_DDR		0x0004
++#define EXT_PORT		0x0050
++#define SWPORT_DR_L		0x0000
++#define SWPORT_DR_H		0x0004
++#define SWPORT_DDR_L		0x0008
++#define SWPORT_DDR_H		0x000C
++#define EXT_PORT_V2		0x0070
++#define VER_ID_V2		0x0078
+ 
+ enum {
+ 	ROCKCHIP_GPIOS_PER_BANK		= 32,
+ };
+ 
+-#define OFFSET_TO_BIT(bit)	(1UL << (bit))
+-
+ struct rockchip_gpio_priv {
+-	struct rockchip_gpio_regs *regs;
++	void __iomem *regs;
+ 	struct udevice *pinctrl;
+ 	int bank;
+ 	char name[2];
++	u32 version;
+ };
+ 
+-static int rockchip_gpio_direction_input(struct udevice *dev, unsigned offset)
++static int rockchip_gpio_get_value(struct udevice *dev, unsigned offset)
+ {
+ 	struct rockchip_gpio_priv *priv = dev_get_priv(dev);
+-	struct rockchip_gpio_regs *regs = priv->regs;
++	u32 mask = BIT(offset), data;
+ 
+-	clrbits_le32(&regs->swport_ddr, OFFSET_TO_BIT(offset));
++	if (priv->version)
++		data = readl(priv->regs + EXT_PORT_V2);
++	else
++		data = readl(priv->regs + EXT_PORT);
+ 
+-	return 0;
++	return (data & mask) ? 1 : 0;
+ }
+ 
+-static int rockchip_gpio_direction_output(struct udevice *dev, unsigned offset,
+-					  int value)
++static int rockchip_gpio_set_value(struct udevice *dev, unsigned offset,
++				   int value)
+ {
+ 	struct rockchip_gpio_priv *priv = dev_get_priv(dev);
+-	struct rockchip_gpio_regs *regs = priv->regs;
+-	int mask = OFFSET_TO_BIT(offset);
++	u32 mask = BIT(offset), data = value ? mask : 0;
+ 
+-	clrsetbits_le32(&regs->swport_dr, mask, value ? mask : 0);
+-	setbits_le32(&regs->swport_ddr, mask);
++	if (priv->version && offset >= 16)
++		rk_clrsetreg(priv->regs + SWPORT_DR_H, mask >> 16, data >> 16);
++	else if (priv->version)
++		rk_clrsetreg(priv->regs + SWPORT_DR_L, mask, data);
++	else
++		clrsetbits_le32(priv->regs + SWPORT_DR, mask, data);
+ 
+ 	return 0;
+ }
+ 
+-static int rockchip_gpio_get_value(struct udevice *dev, unsigned offset)
++static int rockchip_gpio_direction_input(struct udevice *dev, unsigned offset)
+ {
+ 	struct rockchip_gpio_priv *priv = dev_get_priv(dev);
+-	struct rockchip_gpio_regs *regs = priv->regs;
++	u32 mask = BIT(offset);
++
++	if (priv->version && offset >= 16)
++		rk_clrreg(priv->regs + SWPORT_DDR_H, mask >> 16);
++	else if (priv->version)
++		rk_clrreg(priv->regs + SWPORT_DDR_L, mask);
++	else
++		clrbits_le32(priv->regs + SWPORT_DDR, mask);
+ 
+-	return readl(&regs->ext_port) & OFFSET_TO_BIT(offset) ? 1 : 0;
++	return 0;
+ }
+ 
+-static int rockchip_gpio_set_value(struct udevice *dev, unsigned offset,
+-				   int value)
++static int rockchip_gpio_direction_output(struct udevice *dev, unsigned offset,
++					  int value)
+ {
+ 	struct rockchip_gpio_priv *priv = dev_get_priv(dev);
+-	struct rockchip_gpio_regs *regs = priv->regs;
+-	int mask = OFFSET_TO_BIT(offset);
++	u32 mask = BIT(offset);
++
++	rockchip_gpio_set_value(dev, offset, value);
+ 
+-	clrsetbits_le32(&regs->swport_dr, mask, value ? mask : 0);
++	if (priv->version && offset >= 16)
++		rk_setreg(priv->regs + SWPORT_DDR_H, mask >> 16);
++	else if (priv->version)
++		rk_setreg(priv->regs + SWPORT_DDR_L, mask);
++	else
++		setbits_le32(priv->regs + SWPORT_DDR, mask);
+ 
+ 	return 0;
+ }
+ 
+ static int rockchip_gpio_get_function(struct udevice *dev, unsigned offset)
+ {
+-#ifdef CONFIG_SPL_BUILD
+-	return -ENODATA;
+-#else
+ 	struct rockchip_gpio_priv *priv = dev_get_priv(dev);
+-	struct rockchip_gpio_regs *regs = priv->regs;
+-	bool is_output;
++	u32 mask = BIT(offset), data;
+ 	int ret;
+ 
+-	ret = pinctrl_get_gpio_mux(priv->pinctrl, priv->bank, offset);
+-	if (ret)
+-		return ret;
+-	is_output = readl(&regs->swport_ddr) & OFFSET_TO_BIT(offset);
++	if (CONFIG_IS_ENABLED(PINCTRL)) {
++		ret = pinctrl_get_gpio_mux(priv->pinctrl, priv->bank, offset);
++		if (ret < 0)
++			return ret;
++		else if (ret != RK_FUNC_GPIO)
++			return GPIOF_FUNC;
++	}
++
++	if (priv->version && offset >= 16)
++		data = readl(priv->regs + SWPORT_DDR_H) << 16;
++	else if (priv->version)
++		data = readl(priv->regs + SWPORT_DDR_L);
++	else
++		data = readl(priv->regs + SWPORT_DDR);
+ 
+-	return is_output ? GPIOF_OUTPUT : GPIOF_INPUT;
+-#endif
++	return (data & mask) ? GPIOF_OUTPUT : GPIOF_INPUT;
+ }
+ 
+ /* Simple SPL interface to GPIOs */
+@@ -147,9 +182,12 @@ static int rockchip_gpio_probe(struct udevice *dev)
+ 	int ret;
+ 
+ 	priv->regs = dev_read_addr_ptr(dev);
+-	ret = uclass_first_device_err(UCLASS_PINCTRL, &priv->pinctrl);
+-	if (ret)
+-		return ret;
++
++	if (CONFIG_IS_ENABLED(PINCTRL)) {
++		ret = uclass_first_device_err(UCLASS_PINCTRL, &priv->pinctrl);
++		if (ret)
++			return ret;
++	}
+ 
+ 	/*
+ 	 * If "gpio-ranges" is present in the devicetree use it to parse
+@@ -170,6 +208,8 @@ static int rockchip_gpio_probe(struct udevice *dev)
+ 	priv->name[0] = 'A' + priv->bank;
+ 	uc_priv->bank_name = priv->name;
+ 
++	priv->version = readl(priv->regs + VER_ID_V2);
++
+ 	return 0;
+ }
+ 

@@ -1,0 +1,124 @@
+From patchwork Sun Apr  2 15:58:18 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Jonas Karlman <jonas@kwiboo.se>
+X-Patchwork-Id: 1764224
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=fail reason="key not found in DNS" header.d=kwiboo.se
+ header.i=@kwiboo.se header.a=rsa-sha256 header.s=s1 header.b=TGtSl7Ax;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384) server-digest SHA384)
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4PqJbj2Z4Xz1yYb
+	for <incoming@patchwork.ozlabs.org>; Mon,  3 Apr 2023 01:58:39 +1000 (AEST)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 8A12F858FA;
+	Sun,  2 Apr 2023 17:58:25 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.b="TGtSl7Ax";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id E782285A1D; Sun,  2 Apr 2023 17:58:22 +0200 (CEST)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.8 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,RCVD_IN_BL_SPAMCOP_NET,
+ RCVD_IN_MSPIKE_H2,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY
+ autolearn=no autolearn_force=no version=3.4.2
+Received: from s.wrqvtbkv.outbound-mail.sendgrid.net
+ (s.wrqvtbkv.outbound-mail.sendgrid.net [149.72.123.24])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id DAA87858FA
+ for <u-boot@lists.denx.de>; Sun,  2 Apr 2023 17:58:19 +0200 (CEST)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de; spf=pass
+ smtp.mailfrom=bounces+31435339-7456-u-boot=lists.denx.de@em2124.kwiboo.se
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
+ h=from:subject:mime-version:to:cc:content-transfer-encoding:
+ content-type:cc:content-type:from:subject:to;
+ s=s1; bh=+uwwP9EPhB9VSFjTYfV0XwC9YVhSvyAs5wNzBTwyim8=;
+ b=TGtSl7Axo/SJyY2SZbiSxeGIcZfp3XVCXuTmCPU/yEJWAaNdjZE+wjm4vm5wmk+Ro9hL
+ 0geupqYun2NouLmZQYGtnW6wjkTg2+uTfRNaHAk9Fe8jRpDs+n92ENj1KR08BYtMA90q6G
+ nlQLvWhA22cZcyIYNM5USmqjnLLu1+3n0GJOD+i0CulzesZ9nnEI1MWhES/eS9kOFtoaor
+ F5AtH911JGpS+lLQdBPxIUr7/AeCjdlq6pDa0ag1bMkPXsDVpVzvE+l9JwPTIAK7cHmPin
+ Tp/B0UqYRr0whoGDgTRM62KxNsxIfZiiL/buRfQU3PZW7J949pSnAkpmWmBgDaug==
+Received: by filterdrecv-5848969764-dnwmc with SMTP id
+ filterdrecv-5848969764-dnwmc-1-6429A61A-7
+ 2023-04-02 15:58:18.434811 +0000 UTC m=+3428794.568912214
+Received: from bionic.localdomain (unknown) by geopod-ismtpd-9 (SG) with ESMTP
+ id aZC6iI11SsGluw1_BEqhQw Sun, 02 Apr 2023 15:58:18.075 +0000 (UTC)
+From: Jonas Karlman <jonas@kwiboo.se>
+Subject: [PATCH] clk: rockchip: rk3568: Add dummy I2S1_MCLKOUT_TX clock
+ support
+Date: Sun, 02 Apr 2023 15:58:18 +0000 (UTC)
+Message-Id: <20230402155816.1312383-1-jonas@kwiboo.se>
+X-Mailer: git-send-email 2.40.0
+MIME-Version: 1.0
+X-SG-EID: 
+ TdbjyGynYnRZWhH+7lKUQJL+ZxmxpowvO2O9SQF5CwCVrYgcwUXgU5DKUU3QxAfZekEeQsTe+RrMu3cja6a0h/Sd5GjSSPCiCPiRkRnjNJ3MM6e69fPwLTqCHRv/+QvyOGs8U9Z99DMqLqQLZrg6BlKCxIbEUuZBM+3siFR8rngw2+PRIMUF2UXzORTFsYDzBTRLQnJcW0SeVUdkjel0hjrAwBmPrSmt8rDR67hAsdCUR2Q91dmFXQiyOUjOugr+
+To: Lukasz Majewski <lukma@denx.de>, Sean Anderson <seanga2@gmail.com>,
+ Simon Glass <sjg@chromium.org>, Philipp Tomsich <philipp.tomsich@vrull.eu>,
+ Kever Yang <kever.yang@rock-chips.com>
+Cc: Jonas Karlman <jonas@kwiboo.se>, u-boot@lists.denx.de
+X-Entity-ID: P7KYpSJvGCELWjBME/J5tg==
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+A RK3568 device tree pmic node can reference the I2S1_MCLKOUT_TX clock
+in assigned-clocks, add dummy support to set parent of this clock to the
+rk3568 cru driver.
+
+Fixes probe of pmic driver and missing regulators on affected boards,
+rk3568-evb and rk3568-rock-3a.
+
+Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+Reviewed-by: Kever Yang <kever.yang@rock-chips.com>
+---
+ drivers/clk/rockchip/clk_rk3568.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/clk/rockchip/clk_rk3568.c b/drivers/clk/rockchip/clk_rk3568.c
+index 1c6adc56f913..cefc263971a6 100644
+--- a/drivers/clk/rockchip/clk_rk3568.c
++++ b/drivers/clk/rockchip/clk_rk3568.c
+@@ -2838,6 +2838,8 @@ static int rk3568_clk_set_parent(struct clk *clk, struct clk *parent)
+ 	case ACLK_RKVDEC_PRE:
+ 	case CLK_RKVDEC_CORE:
+ 		return rk3568_rkvdec_set_parent(clk, parent);
++	case I2S1_MCLKOUT_TX:
++		break;
+ 	default:
+ 		return -ENOENT;
+ 	}

@@ -1,0 +1,666 @@
+From patchwork Tue Mar 21 21:43:05 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Jonas Karlman <jonas@kwiboo.se>
+X-Patchwork-Id: 1759639
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.a=rsa-sha256
+ header.s=s1 header.b=NZBxSOjG;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4Ph4q60qsjz247J
+	for <incoming@patchwork.ozlabs.org>; Wed, 22 Mar 2023 08:43:30 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id F2124859BF;
+	Tue, 21 Mar 2023 22:43:16 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.b="NZBxSOjG";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 38DFB85C95; Tue, 21 Mar 2023 22:43:10 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,RCVD_IN_MSPIKE_H2,SPF_HELO_NONE,
+ SPF_PASS,UNPARSEABLE_RELAY autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from s.wrqvtzvf.outbound-mail.sendgrid.net
+ (s.wrqvtzvf.outbound-mail.sendgrid.net [149.72.126.143])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id D0E2485AA2
+ for <u-boot@lists.denx.de>; Tue, 21 Mar 2023 22:43:06 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de; spf=pass
+ smtp.mailfrom=bounces+31435339-7456-u-boot=lists.denx.de@em2124.kwiboo.se
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
+ h=from:subject:in-reply-to:references:mime-version:to:cc:
+ content-transfer-encoding:content-type:cc:content-type:from:subject:to;
+ s=s1; bh=h7LTuoOXJMIRdMwik//BQdd5Exj7JQJg6ywhaRCUFUY=;
+ b=NZBxSOjG7o819tRCAlKW2B9chx57EQbQ1UWE/ucr6Bs/c/xSDx492UquP2L5Xub0rbGl
+ /qYa1mnhbXYRZQcQaohWjyMAyh8IPuNwHOpo9jWFVJ8ccIYx/phBG9h3wxlpL4ko/DcEpX
+ A8SI5rtbwqEjC1c9s/cGzzBHzgaO/3P10oQnj1xbMluX6h9MsV+FkBlttch7cW/mgHqbWa
+ LM0rFyzXXL3ctTJBUpqLFIz3fWRx4uISwtDyHejXaWwTQfwmLicgfBSavdaeMmy4/CyCGg
+ fu+N9nsbMrP9PywVtqdQd/91ggzQ2kcRk8uzYV0/MtMYHlcQ1IoL6qNxErMnhTgw==
+Received: by filterdrecv-68f8d557c9-2lkhp with SMTP id
+ filterdrecv-68f8d557c9-2lkhp-1-641A24E9-13
+ 2023-03-21 21:43:05.255085067 +0000 UTC m=+2412554.203510640
+Received: from bionic.localdomain (unknown) by geopod-ismtpd-0 (SG) with ESMTP
+ id pkS1sFKeSvO2apZFKRrBFA Tue, 21 Mar 2023 21:43:05.067 +0000 (UTC)
+From: Jonas Karlman <jonas@kwiboo.se>
+Subject: [PATCH v2 1/4] rockchip: Use an external TPL binary on RK3588
+Date: Tue, 21 Mar 2023 21:43:05 +0000 (UTC)
+Message-Id: <20230321214301.2590326-2-jonas@kwiboo.se>
+X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20230321214301.2590326-1-jonas@kwiboo.se>
+References: <20230321214301.2590326-1-jonas@kwiboo.se>
+MIME-Version: 1.0
+X-SG-EID: 
+ TdbjyGynYnRZWhH+7lKUQJL+ZxmxpowvO2O9SQF5CwCVrYgcwUXgU5DKUU3QxAfZekEeQsTe+RrMu3cja6a0h7LmRpinmPoF6V4pbQtneIC5bymj7X6b09LVupUXPKyuXhNXNjfG1cK+vUqST2RaiPZ+R7x3FGxcxQU5N5GdQfe0mG4M9mJgf6sxZRHsIG/RJwoMpz4kiqeyzY5uYW3kR6OKHUYtamxj48jGnEm2vz79Firr7YmvCCblDCLTTIAW
+To: Kever Yang <kever.yang@rock-chips.com>, Simon Glass <sjg@chromium.org>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Jagan Teki <jagan@edgeble.ai>,
+ Akash Gajjar <gajjar04akash@gmail.com>, Eugen Hristev
+ <eugen.hristev@collabora.com>
+Cc: u-boot@lists.denx.de, Jonas Karlman <jonas@kwiboo.se>
+X-Entity-ID: P7KYpSJvGCELWjBME/J5tg==
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+There is no support to initialize DRAM on RK3588 SoCs using U-Boot TPL
+and instead an external TPL binary must be used to generate a bootable
+u-boot-rockchip.bin image.
+
+Enable ROCKCHIP_EXTERNAL_TPL by default for RK3588, add build steps for
+RK3588 to documentation and clean up CONFIG_BINMAN_FDT options.
+
+Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+Reviewed-by: Jagan Teki <jagan@edgeble.ai>
+---
+v2:
+- Pre-req patch picked from [1]
+- Collect r-b tag
+
+[1] https://patchwork.ozlabs.org/project/uboot/patch/20230228213822.3583989-1-jonas@kwiboo.se/
+
+ arch/arm/mach-rockchip/Kconfig    | 2 +-
+ configs/neu6a-io-rk3588_defconfig | 1 -
+ configs/rock-3a-rk3568_defconfig  | 1 -
+ configs/rock5b-rk3588_defconfig   | 1 -
+ doc/board/rockchip/rockchip.rst   | 9 +++++++++
+ 5 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/mach-rockchip/Kconfig b/arch/arm/mach-rockchip/Kconfig
+index 0390431601f9..e5ac58ae60b5 100644
+--- a/arch/arm/mach-rockchip/Kconfig
++++ b/arch/arm/mach-rockchip/Kconfig
+@@ -428,7 +428,7 @@ config TPL_ROCKCHIP_COMMON_BOARD
+ 
+ config ROCKCHIP_EXTERNAL_TPL
+ 	bool "Use external TPL binary"
+-	default y if ROCKCHIP_RK3568
++	default y if ROCKCHIP_RK3568 || ROCKCHIP_RK3588
+ 	help
+ 	  Some Rockchip SoCs require an external TPL to initialize DRAM.
+ 	  Enable this option and build with ROCKCHIP_TPL=/path/to/ddr.bin to
+diff --git a/configs/neu6a-io-rk3588_defconfig b/configs/neu6a-io-rk3588_defconfig
+index fb5a2b7dbceb..33c03b58a16c 100644
+--- a/configs/neu6a-io-rk3588_defconfig
++++ b/configs/neu6a-io-rk3588_defconfig
+@@ -63,5 +63,4 @@ CONFIG_DM_RESET=y
+ CONFIG_BAUDRATE=1500000
+ CONFIG_DEBUG_UART_SHIFT=2
+ CONFIG_SYSRESET=y
+-# CONFIG_BINMAN_FDT is not set
+ CONFIG_ERRNO_STR=y
+diff --git a/configs/rock-3a-rk3568_defconfig b/configs/rock-3a-rk3568_defconfig
+index 1686c8c1aa5a..e16d98b07af9 100644
+--- a/configs/rock-3a-rk3568_defconfig
++++ b/configs/rock-3a-rk3568_defconfig
+@@ -70,5 +70,4 @@ CONFIG_BAUDRATE=1500000
+ CONFIG_DEBUG_UART_SHIFT=2
+ CONFIG_SYS_NS16550_MEM32=y
+ CONFIG_SYSRESET=y
+-# CONFIG_BINMAN_FDT is not set
+ CONFIG_ERRNO_STR=y
+diff --git a/configs/rock5b-rk3588_defconfig b/configs/rock5b-rk3588_defconfig
+index f3026c7ea166..66199387195a 100644
+--- a/configs/rock5b-rk3588_defconfig
++++ b/configs/rock5b-rk3588_defconfig
+@@ -68,5 +68,4 @@ CONFIG_BAUDRATE=1500000
+ CONFIG_DEBUG_UART_SHIFT=2
+ CONFIG_DEBUG_UART_ANNOUNCE=y
+ CONFIG_SYSRESET=y
+-# CONFIG_BINMAN_FDT is not set
+ CONFIG_ERRNO_STR=y
+diff --git a/doc/board/rockchip/rockchip.rst b/doc/board/rockchip/rockchip.rst
+index b5563b8f7f9e..1f88d15aad2a 100644
+--- a/doc/board/rockchip/rockchip.rst
++++ b/doc/board/rockchip/rockchip.rst
+@@ -185,6 +185,15 @@ To build rk3568 boards:
+         make evb-rk3568_defconfig
+         make CROSS_COMPILE=aarch64-linux-gnu-
+ 
++To build rk3588 boards:
++
++.. code-block:: bash
++
++        export BL31=../rkbin/bin/rk35/rk3588_bl31_v1.27.elf
++        export ROCKCHIP_TPL=../rkbin/bin/rk35/rk3588_ddr_lp4_2112MHz_lp5_2736MHz_v1.08.bin
++        make rock5b-rk3588_defconfig
++        make CROSS_COMPILE=aarch64-linux-gnu-
++
+ Flashing
+ --------
+ 
+
+From patchwork Tue Mar 21 21:43:06 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Jonas Karlman <jonas@kwiboo.se>
+X-Patchwork-Id: 1759640
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=85.214.62.61; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.a=rsa-sha256
+ header.s=s1 header.b=YVeWix6q;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de [85.214.62.61])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4Ph4qK4RWzz247J
+	for <incoming@patchwork.ozlabs.org>; Wed, 22 Mar 2023 08:43:41 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 96D9A85CBD;
+	Tue, 21 Mar 2023 22:43:21 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.b="YVeWix6q";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 1678185CAD; Tue, 21 Mar 2023 22:43:12 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,RCVD_IN_MSPIKE_H2,SPF_HELO_NONE,
+ SPF_PASS,UNPARSEABLE_RELAY autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from s.wrqvtbkv.outbound-mail.sendgrid.net
+ (s.wrqvtbkv.outbound-mail.sendgrid.net [149.72.123.24])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id 3E62885C27
+ for <u-boot@lists.denx.de>; Tue, 21 Mar 2023 22:43:08 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de; spf=pass
+ smtp.mailfrom=bounces+31435339-7456-u-boot=lists.denx.de@em2124.kwiboo.se
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
+ h=from:subject:in-reply-to:references:mime-version:to:cc:
+ content-transfer-encoding:content-type:cc:content-type:from:subject:to;
+ s=s1; bh=ZD1tjWmZbr833ljOzXuELsd6/ski2dx91URcAhVc6WE=;
+ b=YVeWix6qnUCFzuALfWXLwd3IHbbBiArpTr5n5KF9SUirlfM27Zav4jSPr9v3B373vWdo
+ H6waqRzJGoQsGWTGr8fbEMRIQ83EhH5fnP7w0zd0MNi0BFLMd8i0G02evKIgmEIPpeb0m1
+ y+wEw6qT9dLko8CQiXUbw8jhHrIoTopLZIsF9N0GW0Vtg1fQvz/e9+jHyMsadj4IDRjeSw
+ 8jeRgL/aUWGnNCKKw9D5VaJGKvmXkavO19HXBguzN1h4/ixi0vMg+IqVYydPu0dLiO1f4W
+ /cJFXuS7z9I5ogaNVc1kVvB0010EoOt8mVfOz7RvHE6+a7o0XVO4hiux8ilrxLHw==
+Received: by filterdrecv-59cb65cf6d-qj8b6 with SMTP id
+ filterdrecv-59cb65cf6d-qj8b6-1-641A24EA-19
+ 2023-03-21 21:43:06.491027529 +0000 UTC m=+1139524.536302004
+Received: from bionic.localdomain (unknown) by geopod-ismtpd-0 (SG) with ESMTP
+ id TICo7Cr8R4G-MvLKoYgftA Tue, 21 Mar 2023 21:43:06.289 +0000 (UTC)
+From: Jonas Karlman <jonas@kwiboo.se>
+Subject: [PATCH v2 2/4] rockchip: rk3588-rock-5b: Fix sdmmc boot
+Date: Tue, 21 Mar 2023 21:43:06 +0000 (UTC)
+Message-Id: <20230321214301.2590326-3-jonas@kwiboo.se>
+X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20230321214301.2590326-1-jonas@kwiboo.se>
+References: <20230321214301.2590326-1-jonas@kwiboo.se>
+MIME-Version: 1.0
+X-SG-EID: 
+ TdbjyGynYnRZWhH+7lKUQJL+ZxmxpowvO2O9SQF5CwCVrYgcwUXgU5DKUU3QxAfZekEeQsTe+RrMu3cja6a0hy9BzHjP1dvgTZmatbNzfR5eW5PtjdbeRdo3JNBQpHA/NGCcmjuCSHjI0hx7g1fxCGZHCYme92A8HcKVQQ/3DZnUPE/eUEkNYOdyhIrK8wCia52Dw0XLnFPxrKBmPKC0U7m7EeXK8POcOhjhEhV1SjQOAeeU8aT1U2uW+KDkxqcO
+To: Kever Yang <kever.yang@rock-chips.com>, Simon Glass <sjg@chromium.org>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Eugen Hristev
+ <eugen.hristev@collabora.com>
+Cc: u-boot@lists.denx.de, Jonas Karlman <jonas@kwiboo.se>
+X-Entity-ID: P7KYpSJvGCELWjBME/J5tg==
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+Running U-Boot from a SD-card on ROCK 5 Model B fails to load atf using
+DMA and prints debug_uart messages.
+
+  <debug_uart>
+
+  <debug_uart>
+
+  U-Boot SPL 2023.04-rc3 (Mar 12 2023 - 00:30:16 +0000)
+  Trying to boot from MMC1
+  ## Checking hash(es) for config config-1 ... OK
+  ## Checking hash(es) for Image atf-1 ... sha256 error!
+  Bad hash value for 'hash' hash node in 'atf-1' image node
+  mmc_load_image_raw_sector: mmc block read error
+  SPL: failed to boot from all boot devices
+  ### ERROR ### Please RESET the board ###
+
+Use fifo-mode to disable DMA in SPL, add same-as-spl to boot-order and
+remove DEBUG_UART_ANNOUNCE option to fix this.
+
+Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+Reviewed-by: Kever Yang <kever.yang@rock-chips.com>
+---
+v2:
+- Collect r-b tag
+
+ arch/arm/dts/rk3588-rock-5b-u-boot.dtsi | 3 ++-
+ configs/rock5b-rk3588_defconfig         | 1 -
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/dts/rk3588-rock-5b-u-boot.dtsi b/arch/arm/dts/rk3588-rock-5b-u-boot.dtsi
+index 2386edf90deb..36d557b4934d 100644
+--- a/arch/arm/dts/rk3588-rock-5b-u-boot.dtsi
++++ b/arch/arm/dts/rk3588-rock-5b-u-boot.dtsi
+@@ -11,12 +11,13 @@
+ 	};
+ 
+ 	chosen {
+-		u-boot,spl-boot-order = &sdmmc;
++		u-boot,spl-boot-order = "same-as-spl", &sdmmc;
+ 	};
+ };
+ 
+ &sdmmc {
+ 	bus-width = <4>;
+ 	u-boot,dm-spl;
++	u-boot,spl-fifo-mode;
+ 	status = "okay";
+ };
+diff --git a/configs/rock5b-rk3588_defconfig b/configs/rock5b-rk3588_defconfig
+index 66199387195a..3fcc6a26bb51 100644
+--- a/configs/rock5b-rk3588_defconfig
++++ b/configs/rock5b-rk3588_defconfig
+@@ -66,6 +66,5 @@ CONFIG_PWM_ROCKCHIP=y
+ CONFIG_SPL_RAM=y
+ CONFIG_BAUDRATE=1500000
+ CONFIG_DEBUG_UART_SHIFT=2
+-CONFIG_DEBUG_UART_ANNOUNCE=y
+ CONFIG_SYSRESET=y
+ CONFIG_ERRNO_STR=y
+
+From patchwork Tue Mar 21 21:43:07 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Jonas Karlman <jonas@kwiboo.se>
+X-Patchwork-Id: 1759642
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.a=rsa-sha256
+ header.s=s1 header.b=IXQJuU7Q;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4Ph4qm4wzXz247J
+	for <incoming@patchwork.ozlabs.org>; Wed, 22 Mar 2023 08:44:04 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id F24F185CB5;
+	Tue, 21 Mar 2023 22:43:35 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.b="IXQJuU7Q";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 8CD8585BD1; Tue, 21 Mar 2023 22:43:13 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.1 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,RCVD_IN_MSPIKE_H2,SPF_HELO_NONE,
+ SPF_PASS,UNPARSEABLE_RELAY autolearn=ham autolearn_force=no
+ version=3.4.2
+Received: from s.wrqvtzvf.outbound-mail.sendgrid.net
+ (s.wrqvtzvf.outbound-mail.sendgrid.net [149.72.126.143])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id DDE2D859BF
+ for <u-boot@lists.denx.de>; Tue, 21 Mar 2023 22:43:08 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de; spf=pass
+ smtp.mailfrom=bounces+31435339-7456-u-boot=lists.denx.de@em2124.kwiboo.se
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
+ h=from:subject:in-reply-to:references:mime-version:to:cc:
+ content-transfer-encoding:content-type:cc:content-type:from:subject:to;
+ s=s1; bh=lLQ+P+mTuf2bxXXEZ6xDz6fu0F38F5S8W3B48GNlOeM=;
+ b=IXQJuU7Q5mq2sOfaGNpwg7QZEtdtvVnnu81S3GJjZyC12dALqJFYgrME5NaSUBSQk3VN
+ 6/SeSHSPpPjXTpEfJAbhI+QSjD907v6CVYFw/0be0erv5w/gtTeH/2HMOfVGD5jcHDQvML
+ zFuJ4cYiTHHbAxtmcCGe5g/mATPfsyhU8xNDPppfazjl3eVTySpLq20QgsDu1VQ1dEOi24
+ Gzv+jgaTcuwjj6vCJ8e6aqca3LzdPtf7AKTcx9yh/r6AvTcKFIIsFD9RFQY2KMxU8SLGvx
+ k2MFyLaCagzbpDZAdDGCvPH7n3I0oPlf+HR+/fRG/cXakPQntd64XctdAc7WrLtg==
+Received: by filterdrecv-68f8d557c9-2lkhp with SMTP id
+ filterdrecv-68f8d557c9-2lkhp-1-641A24EB-1E
+ 2023-03-21 21:43:07.587982614 +0000 UTC m=+2412556.536408162
+Received: from bionic.localdomain (unknown) by geopod-ismtpd-0 (SG) with ESMTP
+ id B78RHzViRn-TB9NkOOf8QA Tue, 21 Mar 2023 21:43:07.389 +0000 (UTC)
+From: Jonas Karlman <jonas@kwiboo.se>
+Subject: [PATCH v2 3/4] rockchip: rk35xx: Fix boot with a large fdt blob
+Date: Tue, 21 Mar 2023 21:43:07 +0000 (UTC)
+Message-Id: <20230321214301.2590326-4-jonas@kwiboo.se>
+X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20230321214301.2590326-1-jonas@kwiboo.se>
+References: <20230321214301.2590326-1-jonas@kwiboo.se>
+MIME-Version: 1.0
+X-SG-EID: 
+ TdbjyGynYnRZWhH+7lKUQJL+ZxmxpowvO2O9SQF5CwCVrYgcwUXgU5DKUU3QxAfZekEeQsTe+RrMu3cja6a0h9L1lSaV021RD69K8pf75xsyPxVxUnwI+LXNWUSCTHmA3BzTeSSkhclTPkuX+nOs6MIJIa9zChQ7ZvwpOB/fJ7Y0HDvq/oFHmpmShaZrMfNJhVXGmAJAgqTjZaELdTEdWHwvTEGo1nu8lcySdnak7srIVWqlI90IVCt54y2R85Wq
+To: Kever Yang <kever.yang@rock-chips.com>, Simon Glass <sjg@chromium.org>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>, Jonas Karlman <jonas@kwiboo.se>
+Cc: u-boot@lists.denx.de
+X-Entity-ID: P7KYpSJvGCELWjBME/J5tg==
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+The TF-A blobs used to boot RK3568 and RK3588 boards is based on atf
+v2.3. Mainline atf v2.3 contains an issue that could lead to a crash
+when it fails to parse the fdt blob being passed as the platform param.
+An issue that was fixed in atf v2.4.
+
+The vendor TF-A seem to suffer from a similar issue, and this prevents
+booting when fdt blob is large enough to trigger this condition.
+
+Fix this by implying SPL_ATF_NO_PLATFORM_PARAM to let u-boot pass a
+NULL pointer instead of the fdt blob as the platform param.
+
+This fixes booting Radxa ROCK 3A after recent sync of device tree.
+
+Fixes: 073d911ae64a ("rockchip: rk3568-rock-3a: Sync device tree from linux")
+Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+---
+v2:
+- New patch
+
+ arch/arm/mach-rockchip/Kconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/mach-rockchip/Kconfig b/arch/arm/mach-rockchip/Kconfig
+index e5ac58ae60b5..d7e3784ba113 100644
+--- a/arch/arm/mach-rockchip/Kconfig
++++ b/arch/arm/mach-rockchip/Kconfig
+@@ -288,6 +288,7 @@ config ROCKCHIP_RK3568
+ 	select BOARD_LATE_INIT
+ 	select DM_REGULATOR_FIXED
+ 	select DM_RESET
++	imply SPL_ATF_NO_PLATFORM_PARAM if SPL_ATF
+ 	imply ROCKCHIP_COMMON_BOARD
+ 	imply ROCKCHIP_OTP
+ 	imply MISC_INIT_R
+@@ -309,6 +310,7 @@ config ROCKCHIP_RK3588
+ 	select REGMAP
+ 	select SYSCON
+ 	select BOARD_LATE_INIT
++	imply SPL_ATF_NO_PLATFORM_PARAM if SPL_ATF
+ 	imply ROCKCHIP_COMMON_BOARD
+ 	imply ROCKCHIP_OTP
+ 	imply MISC_INIT_R
+
+From patchwork Tue Mar 21 21:43:08 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Jonas Karlman <jonas@kwiboo.se>
+X-Patchwork-Id: 1759641
+X-Patchwork-Delegate: ykai007@gmail.com
+Return-Path: <u-boot-bounces@lists.denx.de>
+X-Original-To: incoming@patchwork.ozlabs.org
+Delivered-To: patchwork-incoming@legolas.ozlabs.org
+Authentication-Results: legolas.ozlabs.org;
+ spf=pass (sender SPF authorized) smtp.mailfrom=lists.denx.de
+ (client-ip=2a01:238:438b:c500:173d:9f52:ddab:ee01; helo=phobos.denx.de;
+ envelope-from=u-boot-bounces@lists.denx.de; receiver=<UNKNOWN>)
+Authentication-Results: legolas.ozlabs.org;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.a=rsa-sha256
+ header.s=s1 header.b=aE13UjTz;
+	dkim-atps=neutral
+Received: from phobos.denx.de (phobos.denx.de
+ [IPv6:2a01:238:438b:c500:173d:9f52:ddab:ee01])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (P-384))
+	(No client certificate requested)
+	by legolas.ozlabs.org (Postfix) with ESMTPS id 4Ph4qb2S1Jz247J
+	for <incoming@patchwork.ozlabs.org>; Wed, 22 Mar 2023 08:43:55 +1100 (AEDT)
+Received: from h2850616.stratoserver.net (localhost [IPv6:::1])
+	by phobos.denx.de (Postfix) with ESMTP id 2547D85CAD;
+	Tue, 21 Mar 2023 22:43:32 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de;
+ spf=pass smtp.mailfrom=u-boot-bounces@lists.denx.de
+Authentication-Results: phobos.denx.de;
+	dkim=pass (2048-bit key;
+ unprotected) header.d=kwiboo.se header.i=@kwiboo.se header.b="aE13UjTz";
+	dkim-atps=neutral
+Received: by phobos.denx.de (Postfix, from userid 109)
+ id 84BF985C27; Tue, 21 Mar 2023 22:43:13 +0100 (CET)
+X-Spam-Checker-Version: SpamAssassin 3.4.2 (2018-09-13) on phobos.denx.de
+X-Spam-Level: 
+X-Spam-Status: No, score=-0.8 required=5.0 tests=BAYES_00,DKIM_SIGNED,
+ DKIM_VALID,DKIM_VALID_AU,DKIM_VALID_EF,RCVD_IN_BL_SPAMCOP_NET,
+ RCVD_IN_MSPIKE_H2,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY
+ autolearn=no autolearn_force=no version=3.4.2
+Received: from s.wrqvwxzv.outbound-mail.sendgrid.net
+ (s.wrqvwxzv.outbound-mail.sendgrid.net [149.72.154.232])
+ (using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits))
+ (No client certificate requested)
+ by phobos.denx.de (Postfix) with ESMTPS id CCB4C85BD1
+ for <u-boot@lists.denx.de>; Tue, 21 Mar 2023 22:43:10 +0100 (CET)
+Authentication-Results: phobos.denx.de;
+ dmarc=pass (p=reject dis=none) header.from=kwiboo.se
+Authentication-Results: phobos.denx.de; spf=pass
+ smtp.mailfrom=bounces+31435339-7456-u-boot=lists.denx.de@em2124.kwiboo.se
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kwiboo.se;
+ h=from:subject:in-reply-to:references:mime-version:to:cc:
+ content-transfer-encoding:content-type:cc:content-type:from:subject:to;
+ s=s1; bh=eaMybYJTC3QKf51xbMHZ+r19xd1EJ7ZrxBynQUmKiYc=;
+ b=aE13UjTzOq6AyBjHR48uL8sG/2ocqfIvG1gnfSyN+9/owSRou6bKYF9ITBVardabhcHV
+ qpkdHy/gSVAjssFDxNXqMiK5dh4OvROAniWPTs3RqRS8VQek1EWKN5ZZ/OEokOKOyZ1WBy
+ b4V9aor2QtIQ27GMfpKlvzKUDNSt7ev83m0DmmskSDwSi80JLHPlxSp7HQnCXQNwQeiHOf
+ RHwUk0D9xsWrW1nLK2O/smEAXSuuDsWYdXvHhCQRj9D3LIoud0COcLjumMcQdBId/cP7Wl
+ OnE/I1LTt9hpzefhN64qhDqiNLnwpBhd/c2GnN1Bmjh547r3w43xitKFjE+b5Umg==
+Received: by filterdrecv-6c845fd887-s69gx with SMTP id
+ filterdrecv-6c845fd887-s69gx-1-641A24EC-3C
+ 2023-03-21 21:43:08.831830347 +0000 UTC m=+2412700.593203249
+Received: from bionic.localdomain (unknown) by geopod-ismtpd-0 (SG) with ESMTP
+ id ZJh1-mPmT6mrE_ahBG7j8g Tue, 21 Mar 2023 21:43:08.627 +0000 (UTC)
+From: Jonas Karlman <jonas@kwiboo.se>
+Subject: [PATCH v2 4/4] rockchip: rk35xx: Enable fdtoverlay and kernel
+ compression
+Date: Tue, 21 Mar 2023 21:43:08 +0000 (UTC)
+Message-Id: <20230321214301.2590326-5-jonas@kwiboo.se>
+X-Mailer: git-send-email 2.40.0
+In-Reply-To: <20230321214301.2590326-1-jonas@kwiboo.se>
+References: <20230321214301.2590326-1-jonas@kwiboo.se>
+MIME-Version: 1.0
+X-SG-EID: 
+ TdbjyGynYnRZWhH+7lKUQJL+ZxmxpowvO2O9SQF5CwCVrYgcwUXgU5DKUU3QxAfZekEeQsTe+RrMu3cja6a0h3mLCqeydvRwWPrJVZjMA9s+KgoEtil1V1ORINZA8Jlg6YNOvNJ6PKzQGrAKbLUF3+jCJSHcCWO15g3mMDQcacVDToB5tq+cXjTMxveCtNSKHt5fnKKAZtVndii5x+EjQjE4vS1/om5XgIGyl3jkT8vXcdi1FvxpdLVFGYI8Xojw
+To: Kever Yang <kever.yang@rock-chips.com>, Simon Glass <sjg@chromium.org>,
+ Philipp Tomsich <philipp.tomsich@vrull.eu>
+Cc: u-boot@lists.denx.de, Jonas Karlman <jonas@kwiboo.se>
+X-Entity-ID: P7KYpSJvGCELWjBME/J5tg==
+X-BeenThere: u-boot@lists.denx.de
+X-Mailman-Version: 2.1.39
+Precedence: list
+List-Id: U-Boot discussion <u-boot.lists.denx.de>
+List-Unsubscribe: <https://lists.denx.de/options/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=unsubscribe>
+List-Archive: <https://lists.denx.de/pipermail/u-boot/>
+List-Post: <mailto:u-boot@lists.denx.de>
+List-Help: <mailto:u-boot-request@lists.denx.de?subject=help>
+List-Subscribe: <https://lists.denx.de/listinfo/u-boot>,
+ <mailto:u-boot-request@lists.denx.de?subject=subscribe>
+Errors-To: u-boot-bounces@lists.denx.de
+Sender: "U-Boot" <u-boot-bounces@lists.denx.de>
+X-Virus-Scanned: clamav-milter 0.103.8 at phobos.denx.de
+X-Virus-Status: Clean
+
+Add fdtoverlay_addr_r, kernel_comp_addr_r and imply use of
+OF_LIBFDT_OVERLAY on RK3568 and RK3588 to support fdtoverlay
+and kernel compression.
+
+Signed-off-by: Jonas Karlman <jonas@kwiboo.se>
+Reviewed-by: Simon Glass <sjg@chromium.org>
+---
+v2:
+- Drop parts that convert to use bootstd
+- Collect r-b tag
+
+ arch/arm/mach-rockchip/Kconfig  | 2 ++
+ include/configs/rk3568_common.h | 7 ++++++-
+ include/configs/rk3588_common.h | 7 ++++++-
+ 3 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-rockchip/Kconfig b/arch/arm/mach-rockchip/Kconfig
+index d7e3784ba113..517326c8c5be 100644
+--- a/arch/arm/mach-rockchip/Kconfig
++++ b/arch/arm/mach-rockchip/Kconfig
+@@ -290,6 +290,7 @@ config ROCKCHIP_RK3568
+ 	select DM_RESET
+ 	imply SPL_ATF_NO_PLATFORM_PARAM if SPL_ATF
+ 	imply ROCKCHIP_COMMON_BOARD
++	imply OF_LIBFDT_OVERLAY
+ 	imply ROCKCHIP_OTP
+ 	imply MISC_INIT_R
+ 	help
+@@ -312,6 +313,7 @@ config ROCKCHIP_RK3588
+ 	select BOARD_LATE_INIT
+ 	imply SPL_ATF_NO_PLATFORM_PARAM if SPL_ATF
+ 	imply ROCKCHIP_COMMON_BOARD
++	imply OF_LIBFDT_OVERLAY
+ 	imply ROCKCHIP_OTP
+ 	imply MISC_INIT_R
+ 	help
+diff --git a/include/configs/rk3568_common.h b/include/configs/rk3568_common.h
+index a5e1dde50888..d6b5e7d89022 100644
+--- a/include/configs/rk3568_common.h
++++ b/include/configs/rk3568_common.h
+@@ -17,10 +17,15 @@
+ 
+ #define ENV_MEM_LAYOUT_SETTINGS		\
+ 	"scriptaddr=0x00c00000\0"	\
++	"script_offset_f=0xffe000\0"	\
++	"script_size_f=0x2000\0"	\
+ 	"pxefile_addr_r=0x00e00000\0"	\
+ 	"fdt_addr_r=0x0a100000\0"	\
++	"fdtoverlay_addr_r=0x02000000\0"	\
+ 	"kernel_addr_r=0x02080000\0"	\
+-	"ramdisk_addr_r=0x0a200000\0"
++	"ramdisk_addr_r=0x0a200000\0"	\
++	"kernel_comp_addr_r=0x08000000\0"	\
++	"kernel_comp_size=0x2000000\0"
+ 
+ #include <config_distro_bootcmd.h>
+ #define CFG_EXTRA_ENV_SETTINGS		\
+diff --git a/include/configs/rk3588_common.h b/include/configs/rk3588_common.h
+index abd20139aaf3..b9f42717b751 100644
+--- a/include/configs/rk3588_common.h
++++ b/include/configs/rk3588_common.h
+@@ -16,10 +16,15 @@
+ 
+ #define ENV_MEM_LAYOUT_SETTINGS		\
+ 	"scriptaddr=0x00c00000\0"	\
++	"script_offset_f=0xffe000\0"	\
++	"script_size_f=0x2000\0"	\
+ 	"pxefile_addr_r=0x00e00000\0"	\
+ 	"fdt_addr_r=0x0a100000\0"	\
++	"fdtoverlay_addr_r=0x02000000\0"	\
+ 	"kernel_addr_r=0x02080000\0"	\
+-	"ramdisk_addr_r=0x0a200000\0"
++	"ramdisk_addr_r=0x0a200000\0"	\
++	"kernel_comp_addr_r=0x08000000\0"	\
++	"kernel_comp_size=0x2000000\0"
+ 
+ #include <config_distro_bootcmd.h>
+ #define CFG_EXTRA_ENV_SETTINGS \
