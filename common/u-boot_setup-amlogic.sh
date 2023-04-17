@@ -5,6 +5,8 @@ maskrom() {
 }
 
 update_bootloader() {
+    local DEVICE=$1
+
     dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.bin.sd.bin" of=$DEVICE bs=1 count=444
     dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.bin.sd.bin" of=$DEVICE bs=512 skip=1 seek=1
     sync

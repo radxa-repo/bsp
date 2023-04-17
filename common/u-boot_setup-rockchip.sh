@@ -40,6 +40,8 @@ maskrom_update_spinor() {
 }
 
 maskrom_dump() {
+    local OUTPUT=${1:-dump.img}
+
     echo "eMMC dump will continue indefinitely."
     echo "Please manually interrupt the process (Ctrl+C)"
     echo "  once the image size is larger than your eMMC size."
@@ -48,6 +50,8 @@ maskrom_dump() {
 }
 
 update_bootloader() {
+    local DEVICE=$1
+
     dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader.img" of=$DEVICE bs=512 seek=64
     if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
     then
