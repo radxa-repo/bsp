@@ -3,6 +3,7 @@ From: ZHANG Yuntian <yt@radxa.com>
 Date: Thu, 3 Nov 2022 11:24:45 +0800
 Subject: [PATCH] Add additional ROCK 4 products
 
+DTS does not match the hardware.
 ---
  arch/arm/dts/Makefile                         |  3 +
  arch/arm/dts/rk3399-rock-pi-4a-plus-u-boot.dtsi  |  6 ++

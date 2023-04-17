@@ -3,6 +3,7 @@ From: ZHANG Yuntian <yt@radxa.com>
 Date: Wed, 14 Dec 2022 16:48:01 +0800
 Subject: [PATCH] Add ROCK 4 Core IO Board (Fuhai)
 
+DTS does not match the hardware.
 ---
  arch/arm/dts/Makefile                         |   1 +
  .../arm/dts/rk3399-rock-4-core-io-u-boot.dtsi |   6 +
