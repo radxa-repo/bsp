@@ -301,6 +301,7 @@ main() {
         then
             CONTAINER_OPTIONS+=( "--mount" "type=bind,source=$SCRIPT_DIR,destination=$SCRIPT_DIR" )
         fi
+        $CONTAINER_BACKEND container kill bsp &>/dev/null || true
         $CONTAINER_BACKEND container rm bsp &>/dev/null || true
         if [[ "$(basename "$CONTAINER_BACKEND")" == "podman" ]]
         then
