@@ -164,7 +164,7 @@ prepare_source() {
 
         if [[ -n $BSP_COMMIT ]]
         then
-            if [[ "$(git rev-parse FETCH_HEAD)" != "$BSP_COMMIT" ]]
+            if [[ "$(git rev-parse HEAD)" != "$BSP_COMMIT" ]]
             then
                 git fetch --depth 1 $origin $BSP_COMMIT
                 git reset --hard FETCH_HEAD
