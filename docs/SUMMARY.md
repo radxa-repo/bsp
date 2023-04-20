@@ -5,3 +5,4 @@
 - [Understand profile](profile/index.md)
   - [fork.conf](profile/fork.conf.md)
   - [kconfig.conf](profile/kconfig.conf.md)
+- [Local development workflow](dev_flow.md)
