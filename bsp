@@ -14,6 +14,11 @@ Supported package generation options:
     -C, --distclean         Run 'make distclean' before building
     --no-prepare-source     Allow building against locally modified repos
     --no-config             Do not load defconfig or apply kconfig
+    --no-container-update   Do not update the container image
+    --dirty                 Build without modifying the source tree.
+                            Equals --no-prepare-source --no-config --no-container-update
+    --no-build              Prepare the source tree but do not build.
+                            Inverse of --dirty
     -p                      Pause after applying patches from each folder
     -n, --native-build      Build without using container
     -l, --local-container   Using locally built container image
@@ -113,7 +118,14 @@ build() {
         BSP_MAKE_TARGETS=("olddefconfig" "${BSP_MAKE_TARGETS[@]}")
     fi
 
-    bsp_make "${BSP_MAKE_DEFINES[@]}" "${BSP_MAKE_TARGETS[@]}" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    if $NO_BUILD
+    then
+        bsp_make "${BSP_MAKE_DEFINES[@]}" ""olddefconfig"" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        echo "--no-build option was given. Exiting..."
+        exit
+    else
+        bsp_make "${BSP_MAKE_DEFINES[@]}" "${BSP_MAKE_TARGETS[@]}" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    fi
 }
 
 _export() {
@@ -151,7 +163,7 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnlsdb:" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-container,container-shell,debug,dtb,long-version,backend:,no-submodule-check" -n "$0" -- "$@")"
+    if ! local TEMP="$(getopt -o "r:cCphnlsdb:" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-container,container-shell,debug,dtb,long-version,backend:,no-submodule-check,dirty,no-build,no-container-update" -n "$0" -- "$@")"
     then
         usage
         return
@@ -161,6 +173,8 @@ main() {
     local PKG_REVISION="1"
     local NO_PREPARE_SOURCE="false"
     local NO_CONFIG="false"
+    local NO_BUILD="false"
+    local NO_CONTAINER_UPDATE="false"
     local CLEAN_LEVEL=
     local PATCH_PAUSE="false"
     local NATIVE_BUILD="false"
@@ -191,6 +205,17 @@ main() {
                 ;;
             --no-config)
                 NO_CONFIG="true"
+                ;;
+            --no-container-update)
+                NO_CONTAINER_UPDATE="true"
+                ;;
+            --dirty)
+                NO_PREPARE_SOURCE="true"
+                NO_CONFIG="true"
+                NO_CONTAINER_UPDATE="true"
+                ;;
+            --no-build)
+                NO_BUILD="true"
                 ;;
             -p)
                 PATCH_PAUSE="true"
@@ -271,11 +296,14 @@ main() {
         local CONTAINER_IMAGE="$($CONTAINER_BACKEND image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:main")"
         local CONTAINER_EXIT_CODE=0
 
-        if [[ -z $CONTAINER_REGISTRY ]]
+        if ! $NO_CONTAINER_UPDATE
         then
-            $CONTAINER_BACKEND build --force-rm -t "${CONTAINER_REGISTRY}bsp:main" "$SCRIPT_DIR/container"
-        else
-            $CONTAINER_BACKEND pull "${CONTAINER_REGISTRY}bsp:main"
+            if [[ -z $CONTAINER_REGISTRY ]]
+            then
+                $CONTAINER_BACKEND build --force-rm -t "${CONTAINER_REGISTRY}bsp:main" "$SCRIPT_DIR/container"
+            else
+                $CONTAINER_BACKEND pull "${CONTAINER_REGISTRY}bsp:main"
+            fi
         fi
 
         if [[ $CONTAINER_IMAGE != "$($CONTAINER_BACKEND image ls "-qf=reference=${CONTAINER_REGISTRY}bsp:main")" ]]
