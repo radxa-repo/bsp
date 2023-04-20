@@ -139,7 +139,7 @@ _install() {
     sudo umount "$blk" || true
     sudo mount "$blk" /mnt
     sudo cp "$deb" /mnt
-    sudo systemd-nspawn -D /mnt dpkg -i "/$deb"
+    sudo systemd-nspawn -D /mnt dpkg -i "/$(basename "$deb")"
     sudo umount "$blk"
     sync
 }
