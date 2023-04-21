@@ -9,3 +9,4 @@
 /.bsp-config
 /SOURCE
 /book
+*.bin
