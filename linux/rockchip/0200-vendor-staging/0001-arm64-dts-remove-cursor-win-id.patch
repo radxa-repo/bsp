@@ -1,0 +1,128 @@
+From 38bb1f3502ae1ffbf0bcffc887468c6e8b50dbad Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <95260730+RadxaYuntian@users.noreply.github.com>
+Date: Fri, 21 Apr 2023 11:34:27 +0800
+Subject: [PATCH] arm64: dts: remove cursor-win-id
+
+This property is causing mouse cursor becoming hidden on ROCK 5A & 5B.
+
+Disable it for CM3 just in case.
+
+Fixes Redmine 3021, Rockchip 408946.
+
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
+---
+ arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3-io.dts  | 8 --------
+ arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts       | 4 ----
+ arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5-io.dts | 4 ----
+ arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts      | 4 ----
+ 4 files changed, 20 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3-io.dts b/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3-io.dts
+index 318ae93408ba1..00a1a88b58553 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3-io.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3566-radxa-cm3-io.dts
+@@ -108,14 +108,6 @@
+ 	connect = <&vp0_out_hdmi>;
+ };
+ 
+-&vp0 {
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER0>;
+-};
+-
+-&vp1 {
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER1>;
+-};
+-
+ &sdmmc0 {
+ 	max-frequency = <150000000>;
+ 	supports-sd;
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
+index 65c55082c74b6..e373cc28d664b 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3588-rock-5b.dts
+@@ -678,25 +678,21 @@
+ &vp0 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER0 | 1 << ROCKCHIP_VOP2_ESMART0)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART0>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER0>;
+ };
+ 
+ &vp1 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER1 | 1 << ROCKCHIP_VOP2_ESMART1)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART1>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER1>;
+ };
+ 
+ &vp2 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER2 | 1 << ROCKCHIP_VOP2_ESMART2)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART2>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER2>;
+ };
+ 
+ &vp3 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER3 | 1 << ROCKCHIP_VOP2_ESMART3)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART3>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER3>;
+ };
+ 
+ &u2phy2 {
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5-io.dts b/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5-io.dts
+index 69031fd19f0f3..b0417861b0df4 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5-io.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3588s-radxa-nx5-io.dts
+@@ -191,25 +191,21 @@
+ &vp0 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER0 | 1 << ROCKCHIP_VOP2_ESMART0)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART0>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER0>;
+ };
+ 
+ &vp1 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER1 | 1 << ROCKCHIP_VOP2_ESMART1)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART1>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER1>;
+ };
+ 
+ &vp2 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER2 | 1 << ROCKCHIP_VOP2_ESMART2)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART2>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER2>;
+ };
+ 
+ &vp3 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER3 | 1 << ROCKCHIP_VOP2_ESMART3)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART3>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER3>;
+ };
+ 
+ &display_subsystem {
+diff --git a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
+index 9f28849cc31db..0d0d0fbf52256 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3588s-rock-5a.dts
+@@ -513,25 +513,21 @@
+ &vp0 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER0 | 1 << ROCKCHIP_VOP2_ESMART0)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART0>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER0>;
+ };
+ 
+ &vp1 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER1 | 1 << ROCKCHIP_VOP2_ESMART1)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART1>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER1>;
+ };
+ 
+ &vp2 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER2 | 1 << ROCKCHIP_VOP2_ESMART2)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART2>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER2>;
+ };
+ 
+ &vp3 {
+ 	rockchip,plane-mask = <(1 << ROCKCHIP_VOP2_CLUSTER3 | 1 << ROCKCHIP_VOP2_ESMART3)>;
+ 	rockchip,primary-plane = <ROCKCHIP_VOP2_ESMART3>;
+-	cursor-win-id = <ROCKCHIP_VOP2_CLUSTER3>;
+ };
+ 
+ &display_subsystem {
