@@ -133,7 +133,7 @@ rkpack_rkminiloader() {
     mv ./trust.img "$TARGET_DIR/trust.img"
     popd
 
-    cp "$TARGET_DIR/uboot.img" "$TARGET_DIR/trust.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
+    cp "$TARGET_DIR/uboot.img" "$TARGET_DIR/trust.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
 }
 
 rkpack_rkboot() {
@@ -142,12 +142,12 @@ rkpack_rkboot() {
     if [[ -f "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL.ini" ]]
     then
         $SCRIPT_DIR/.src/rkbin/tools/boot_merger "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL.ini"
-        mv ./*_loader_v*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/rkboot.bin"
+        mv ./*_loader_v*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/rkboot.bin"
     fi
     if [[ -f "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL_SPINOR.ini" ]]
     then
         $SCRIPT_DIR/.src/rkbin/tools/boot_merger "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL_SPINOR.ini"
-        mv ./*_loader_spinor_v*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/rkboot_spinor.bin"
+        mv ./*_loader_spinor_v*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/rkboot_spinor.bin"
     fi
     popd
 }
@@ -155,29 +155,29 @@ rkpack_rkboot() {
 bsp_preparedeb() {
     local soc_family=$(get_soc_family $BSP_SOC)
     
-    mkdir -p "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE"
-    cp "$SCRIPT_DIR/common/u-boot_setup-$soc_family.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/setup.sh"
+    mkdir -p "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE"
+    cp "$SCRIPT_DIR/common/u-boot_setup-$soc_family.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/setup.sh"
 
     case "$soc_family" in
         amlogic)
             make -C "$SCRIPT_DIR/.src/fip" -j$(nproc) distclean
             make -C "$SCRIPT_DIR/.src/fip" -j$(nproc) fip BOARD=$BSP_BOARD_OVERRIDE UBOOT_BIN="$TARGET_DIR/u-boot.bin"
 
-            cp "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin" "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin.sd.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
+            cp "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin" "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin.sd.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
             ;;
         rockchip)
             if [[ -z "$RKMINILOADER" ]]
             then
                 echo "No RKMINILOADER specified. Require prepacked u-boot.itb."
                 rkpack_idbloader "spl"
-                cp "$TARGET_DIR/u-boot.itb" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
+                cp "$TARGET_DIR/u-boot.itb" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
             else
                 echo "Packaging U-Boot with Rockchip Miniloader"
                 rkpack_idbloader "rkminiloader"
                 rkpack_rkminiloader
             fi
             rkpack_rkboot
-            cp "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot-$BSP_BOARD_OVERRIDE/"
+            cp "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
             ;;
         *)
             error $EXIT_UNSUPPORTED_OPTION "$soc_family"
