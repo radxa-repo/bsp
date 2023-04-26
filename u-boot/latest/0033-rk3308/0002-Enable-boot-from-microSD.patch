@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Tue, 25 Apr 2023 20:56:37 +0800
+Subject: [PATCH] Enable boot from microSD
+
+---
+ arch/arm/dts/rk3308-rock-pi-s-u-boot.dtsi | 2 +-
+ arch/arm/dts/rk3308-u-boot.dtsi           | 6 ++++++
+ 2 files changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/rk3308-rock-pi-s-u-boot.dtsi b/arch/arm/dts/rk3308-rock-pi-s-u-boot.dtsi
+index 27735c49dd..cd7a458b71 100644
+--- a/arch/arm/dts/rk3308-rock-pi-s-u-boot.dtsi
++++ b/arch/arm/dts/rk3308-rock-pi-s-u-boot.dtsi
+@@ -6,7 +6,7 @@
+ 
+ / {
+ 	chosen {
+-		u-boot,spl-boot-order = "same-as-spl", &emmc;
++		u-boot,spl-boot-order = "same-as-spl", &emmc, &sdmmc;
+ 	};
+ };
+ 
+diff --git a/arch/arm/dts/rk3308-u-boot.dtsi b/arch/arm/dts/rk3308-u-boot.dtsi
+index ab5bfc2ce9..a62a75abfe 100644
+--- a/arch/arm/dts/rk3308-u-boot.dtsi
++++ b/arch/arm/dts/rk3308-u-boot.dtsi
+@@ -26,6 +26,12 @@
+ 	u-boot,dm-pre-reloc;
+ };
+ 
++&sdmmc {
++	/* mmc to sram can't do dma, prevent aborts transferring TF-A parts */
++	u-boot,spl-fifo-mode;
++	u-boot,dm-pre-reloc;
++};
++
+ &grf {
+ 	u-boot,dm-pre-reloc;
+ };
+-- 
+2.40.0
+
