@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Wed, 26 Apr 2023 15:24:14 +0800
+Subject: [PATCH] Increase SDIO Max Frequency from 1Mhz to 10Mhz
+
+Increases RTL8723-BS WiFi's throughput from 300KB/s to 2.4MB/s
+
+Originally a overlay from Armbian: overlays-11-add-rk3308bs.patch
+---
+ arch/arm64/boot/dts/rockchip/rk3308-rock-pi-s.dts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3308-rock-pi-s.dts b/arch/arm64/boot/dts/rockchip/rk3308-rock-pi-s.dts
+index 0d917658d24a2..8671c5454a5cf 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3308-rock-pi-s.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3308-rock-pi-s.dts
+@@ -201,6 +201,7 @@ &sdio {
+ 	cap-sd-highspeed;
+ 	cap-sdio-irq;
+ 	keep-power-in-suspend;
++	max-frequency = <10000000>;
+ 	mmc-pwrseq = <&sdio_pwrseq>;
+ 	non-removable;
+ 	no-mmc;
+-- 
+2.40.0
+
