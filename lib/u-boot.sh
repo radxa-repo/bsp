@@ -18,6 +18,7 @@ bsp_reset() {
 
     RKBIN_DDR=
     RKMINILOADER=
+    UBOOT_BASE_ADDR=
     USE_ATF="false"
 }
 
@@ -128,7 +129,7 @@ rkpack_idbloader() {
 
 rkpack_rkminiloader() {
     pushd $SCRIPT_DIR/.src/rkbin/
-    $SCRIPT_DIR/.src/rkbin/tools/loaderimage --pack --uboot "$TARGET_DIR/u-boot-dtb.bin" "$TARGET_DIR/uboot.img"
+    $SCRIPT_DIR/.src/rkbin/tools/loaderimage --pack --uboot "$TARGET_DIR/u-boot-dtb.bin" "$TARGET_DIR/uboot.img" ${UBOOT_BASE_ADDR}
     $SCRIPT_DIR/.src/rkbin/tools/trust_merger "$SCRIPT_DIR/.src/rkbin/RKTRUST/${BSP_TRUST_OVERRIDE^^}TRUST.ini"
     mv ./trust.img "$TARGET_DIR/trust.img"
     popd
