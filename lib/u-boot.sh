@@ -89,6 +89,8 @@ bsp_prepare() {
 }
 
 bsp_make() {
+    # To enable debug log, add the following line below:
+    # KCPPFLAGS=-DLOG_DEBUG \
     make -C "$TARGET_DIR" -j$(nproc) \
         ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE \
         UBOOTVERSION=$FORK-$(bsp_version)-${PKG_REVISION}${SOURCE_GITREV:+-$SOURCE_GITREV} \
