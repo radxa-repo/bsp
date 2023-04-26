@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Wed, 26 Apr 2023 11:59:00 +0800
+Subject: [PATCH] Update default FDT file
+
+Without this, U-Boot will load FDT for EVB:
+
+> Retrieving file: /usr/lib/linux-image-6.1.24-1-stable/rk3308-evb_rk3308.dtb
+> ** File not found /usr/lib/linux-image-6.1.24-1-stable/rk3308-evb_rk3308.dtb **
+---
+ configs/rock-pi-s-rk3308_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/rock-pi-s-rk3308_defconfig b/configs/rock-pi-s-rk3308_defconfig
+index c6fae07913..d1efdf288e 100644
+--- a/configs/rock-pi-s-rk3308_defconfig
++++ b/configs/rock-pi-s-rk3308_defconfig
+@@ -20,6 +20,7 @@ CONFIG_DEBUG_UART_BASE=0xFF0A0000
+ CONFIG_DEBUG_UART_CLOCK=24000000
+ CONFIG_SYS_LOAD_ADDR=0xc00800
+ CONFIG_DEBUG_UART=y
++CONFIG_DEFAULT_FDT_FILE="rockchip/rk3308-rock-pi-s.dtb"
+ CONFIG_ANDROID_BOOT_IMAGE=y
+ CONFIG_FIT=y
+ CONFIG_FIT_VERBOSE=y
+-- 
+2.40.0
+
