@@ -283,7 +283,7 @@ index 0000000000..5470e4eade
 +	disable-wp;
 +	vqmmc-supply = <&vccio_sd>;
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det &sdmmc0_pwren>;
++	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det>;
 +	status = "okay";
 +};
 +
