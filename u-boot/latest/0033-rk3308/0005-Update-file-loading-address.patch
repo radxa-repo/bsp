@@ -17,7 +17,7 @@ diff --git a/include/configs/rk3308_common.h b/include/configs/rk3308_common.h
 index 9e5de8e1a0..79cd116580 100644
 --- a/include/configs/rk3308_common.h
 +++ b/include/configs/rk3308_common.h
-@@ -16,7 +16,8 @@
+@@ -16,9 +16,12 @@
  #define ENV_MEM_LAYOUT_SETTINGS \
  	"scriptaddr=0x00500000\0" \
  	"pxefile_addr_r=0x00600000\0" \
@@ -25,8 +25,13 @@ index 9e5de8e1a0..79cd116580 100644
 +	"fdt_addr_r=0x1d000000\0" \
 +	"fdtoverlay_addr_r=0x1f000000\0" \
  	"kernel_addr_r=0x00680000\0" \
- 	"ramdisk_addr_r=0x04000000\0"
+- 	"ramdisk_addr_r=0x04000000\0"
++	"ramdisk_addr_r=0x04000000\0" \
++	"kernel_comp_addr_r=0x10000000\0" \
++	"kernel_comp_size=0x2000000\0"
  
+ #include <config_distro_bootcmd.h>
+ #define CFG_EXTRA_ENV_SETTINGS \
 -- 
 2.40.0
 
