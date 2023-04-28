@@ -240,7 +240,6 @@ main() {
                 ;;
             --dtb)
                 DTB_ONLY="true"
-                NO_CONFIG="true"
                 ;;
             -b|--backend)
                 CONTAINER_BACKEND="$1"
