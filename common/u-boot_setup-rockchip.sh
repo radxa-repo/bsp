@@ -5,7 +5,11 @@ maskrom() {
 }
 
 maskrom_spinor() {
-    rkdeveloptool db "$SCRIPT_DIR/rkboot_spinor.bin"
+    rkdeveloptool db "$SCRIPT_DIR/rkboot_SPINOR.bin"
+}
+
+maskrom_spinand() {
+    rkdeveloptool db "$SCRIPT_DIR/rkboot_SPI_NAND.bin"
 }
 
 maskrom_update_bootloader() {
