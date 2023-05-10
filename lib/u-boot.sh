@@ -16,6 +16,8 @@ bsp_reset() {
     BSP_BOARD_OVERRIDE=
     BSP_ROCKCHIP_TPL=
     BSP_RKMINILOADER=
+    BSP_RKMINILOADER_SPINOR=
+    BSP_RKMINILOADER_SPINAND=
 
     RKBIN_DDR=
     RKMINILOADER=
@@ -87,13 +89,25 @@ bsp_prepare() {
 
                 if [[ -n $RKMINILOADER ]]
                 then
-                    BSP_RKMINILOADER=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER} | sort | tail -n 1)
+                    BSP_RKMINILOADER=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}v | sort | tail -n 1)
                     if [[ -z $BSP_RKMINILOADER ]]
                     then
                         echo "Unable to find Rockchip miniloader. The resulting bootloader may not work!" >&2
                     else
                         echo "Using Rockchip TPL $(basename $BSP_ROCKCHIP_TPL)"
                         BSP_MAKE_EXTRA+=("ROCKCHIP_TPL=$BSP_ROCKCHIP_TPL")
+                    fi
+
+                    BSP_RKMINILOADER_SPINOR=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}spinor_v | sort | tail -n 1)
+                    if [[ -z $BSP_RKMINILOADER_SPINOR ]]
+                    then
+                        echo "Unable to find Rockchip miniloader for SPI NOR. The resulting bootloader may not work!" >&2
+                    fi
+
+                    BSP_RKMINILOADER_SPINAND=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}spinand_v | sort | tail -n 1)
+                    if [[ -z $BSP_RKMINILOADER_SPINAND ]]
+                    then
+                        echo "Unable to find Rockchip miniloader for SPI NAND. The resulting bootloader may not work!" >&2
                     fi
                 fi
             fi
@@ -129,7 +143,11 @@ rkpack_idbloader() {
     then
         echo "Using rkminiloader $(basename $BSP_RKMINILOADER)"
         cat "$BSP_RKMINILOADER" >> "$TARGET_DIR/idbloader.img"
-        $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}${BSP_RKMINILOADER}" "$TARGET_DIR/idbloader-spi.img"
+
+        if [[ -n $BSP_RKMINILOADER_SPINOR ]]
+        then
+            $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}${BSP_RKMINILOADER_SPINOR}" "$TARGET_DIR/idbloader-spi.img"
+        fi
     fi
 }
 
