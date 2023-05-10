@@ -89,25 +89,25 @@ bsp_prepare() {
 
                 if [[ -n $RKMINILOADER ]]
                 then
-                    BSP_RKMINILOADER=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}v | sort | tail -n 1)
-                    if [[ -z $BSP_RKMINILOADER ]]
+                    if ! BSP_RKMINILOADER=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}v | sort | tail -n 1) || [[ -z $BSP_RKMINILOADER ]]
                     then
                         echo "Unable to find Rockchip miniloader. The resulting bootloader may not work!" >&2
                     else
-                        echo "Using Rockchip TPL $(basename $BSP_ROCKCHIP_TPL)"
-                        BSP_MAKE_EXTRA+=("ROCKCHIP_TPL=$BSP_ROCKCHIP_TPL")
+                        echo "Using Rockchip miniloader $(basename $BSP_RKMINILOADER)"
                     fi
 
-                    BSP_RKMINILOADER_SPINOR=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}spinor_v | sort | tail -n 1)
-                    if [[ -z $BSP_RKMINILOADER_SPINOR ]]
+                    if ! BSP_RKMINILOADER_SPINOR=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}spinor_v | sort | tail -n 1) || [[ -z $BSP_RKMINILOADER_SPINOR ]]
                     then
-                        echo "Unable to find Rockchip miniloader for SPI NOR. The resulting bootloader may not work!" >&2
+                        echo "Unable to find Rockchip SPI NOR miniloader. This is only required for some platforms." >&2
+                    else
+                        echo "Using Rockchip SPI NOR miniloader $(basename $BSP_RKMINILOADER_SPINOR)"
                     fi
 
-                    BSP_RKMINILOADER_SPINAND=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}spinand_v | sort | tail -n 1)
-                    if [[ -z $BSP_RKMINILOADER_SPINAND ]]
+                    if ! BSP_RKMINILOADER_SPINAND=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}spinand_v | sort | tail -n 1) || [[ -z $BSP_RKMINILOADER_SPINAND ]]
                     then
-                        echo "Unable to find Rockchip miniloader for SPI NAND. The resulting bootloader may not work!" >&2
+                        echo "Unable to find Rockchip miniloader for SPI NAND. This is only required for all platforms." >&2
+                    else
+                        echo "Using Rockchip SPI NAND miniloader $(basename $BSP_RKMINILOADER_SPINAND)"
                     fi
                 fi
             fi
