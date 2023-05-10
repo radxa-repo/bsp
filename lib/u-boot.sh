@@ -15,6 +15,7 @@ bsp_reset() {
     BSP_TRUST_OVERRIDE=
     BSP_BOARD_OVERRIDE=
     BSP_ROCKCHIP_TPL=
+    BSP_RKMINILOADER=
 
     RKBIN_DDR=
     RKMINILOADER=
@@ -83,6 +84,18 @@ bsp_prepare() {
                         BSP_MAKE_EXTRA+=("ROCKCHIP_TPL=$BSP_ROCKCHIP_TPL")
                     fi
                 fi
+
+                if [[ -n $RKMINILOADER ]]
+                then
+                    BSP_RKMINILOADER=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER} | sort | tail -n 1)
+                    if [[ -z $BSP_RKMINILOADER ]]
+                    then
+                        echo "Unable to find Rockchip miniloader. The resulting bootloader may not work!" >&2
+                    else
+                        echo "Using Rockchip TPL $(basename $BSP_ROCKCHIP_TPL)"
+                        BSP_MAKE_EXTRA+=("ROCKCHIP_TPL=$BSP_ROCKCHIP_TPL")
+                    fi
+                fi
             fi
             ;;
     esac
@@ -90,7 +103,7 @@ bsp_prepare() {
 
 bsp_make() {
     # To enable debug log, add the following line below:
-    # KCPPFLAGS=-DLOG_DEBUG \
+    #   KCPPFLAGS=-DLOG_DEBUG \
     make -C "$TARGET_DIR" -j$(nproc) \
         ARCH=$BSP_ARCH CROSS_COMPILE=$CROSS_COMPILE \
         UBOOTVERSION=$FORK-$(bsp_version)-${PKG_REVISION}${SOURCE_GITREV:+-$SOURCE_GITREV} \
@@ -99,12 +112,10 @@ bsp_make() {
 
 rkpack_idbloader() {
     local flash_data=
-    if [[ -n $RKBIN_DDR ]] && [[ -n $BSP_ROCKCHIP_TPL ]]
+    if [[ -n $BSP_ROCKCHIP_TPL ]]
     then
-        flash_data="$BSP_ROCKCHIP_TPL"
         echo "Using rkbin $(basename $flash_data)"
-    else
-        error $EXIT_UNKNOWN_OPTION "$RKBIN_DDR"
+        flash_data="$BSP_ROCKCHIP_TPL"
     fi
 
     if [[ -e "${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin" ]] && [[ "$1" == "spl" ]]
@@ -117,15 +128,9 @@ rkpack_idbloader() {
 
     if [[ "$1" == "rkminiloader" ]]
     then
-        local flash_data="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER} | sort | tail -n 1)"
-        if [[ -z $flash_data ]]
-        then
-            error $EXIT_UNKNOWN_OPTION "$RKMINILOADER"
-        else
-            echo "Using rkminiloader $(basename $flash_data)"
-            cat "$flash_data" >> "$TARGET_DIR/idbloader.img"
-            cat "$flash_data" >> "$TARGET_DIR/idbloader-spi.img"
-        fi
+        echo "Using rkminiloader $(basename $BSP_RKMINILOADER)"
+        cat "$BSP_RKMINILOADER" >> "$TARGET_DIR/idbloader.img"
+        cat "$BSP_RKMINILOADER" >> "$TARGET_DIR/idbloader-spi.img"
     fi
 }
 
