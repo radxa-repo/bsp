@@ -1,5 +1,23 @@
 #!/bin/bash
 
+build_spinor() {
+    if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
+    then
+        truncate -s 16M /tmp/spi.img
+        dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader.img" of=/tmp/spi.img bs=512 seek=64
+        dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=16384
+    elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
+    then
+        truncate -s 4M /tmp/spi.img
+        dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader-spi.img" of=/tmp/spi.img bs=512 seek=64
+        dd conv=notrunc,fsync if="$SCRIPT_DIR/uboot.img" of=/tmp/spi.img bs=512 seek=4096
+        dd conv=notrunc,fsync if="$SCRIPT_DIR/trust.img" of=/tmp/spi.img bs=512 seek=6144
+    else
+        echo "Missing U-Boot binary!" >&2
+        return 2
+    fi
+}
+
 maskrom() {
     rkdeveloptool db "$SCRIPT_DIR/rkboot.bin"
 }
@@ -28,19 +46,10 @@ maskrom_update_bootloader() {
 }
 
 maskrom_update_spinor() {
+    build_spinor
     rkdeveloptool ef
-    rkdeveloptool wl 64 "$SCRIPT_DIR/idbloader-spi.img"
-    if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
-    then
-        rkdeveloptool wl 4096 "$SCRIPT_DIR/u-boot.itb"
-    elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
-    then
-        rkdeveloptool wl 4096 "$SCRIPT_DIR/uboot.img"
-        rkdeveloptool wl 6144 "$SCRIPT_DIR/trust.img"
-    else
-        echo "Missing U-Boot binary!" >&2
-        return 2
-    fi
+    rkdeveloptool wl 0 /tmp/spi.img
+    rm /tmp/spi.img
 }
 
 maskrom_dump() {
@@ -78,19 +87,8 @@ update_spinor() {
         return 1
     fi
 
-    dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader-spi.img" of=/tmp/spi.img bs=512 seek=64
-    if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
-    then
-        dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=4096
-    elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
-    then
-        dd conv=notrunc,fsync if="$SCRIPT_DIR/uboot.img" of=/tmp/spi.img bs=512 seek=4096
-        dd conv=notrunc,fsync if="$SCRIPT_DIR/trust.img" of=/tmp/spi.img bs=512 seek=6144
-    else
-        echo "Missing U-Boot binary!" >&2
-        return 2
-    fi
-    flash_eraseall /dev/mtdblock0
+    build_spinor
+    flash_erase /dev/mtd0 0 0
     dd conv=notrunc,fsync if=/tmp/spi.img of=/dev/mtdblock0 bs=4096
     rm /tmp/spi.img
     sync
