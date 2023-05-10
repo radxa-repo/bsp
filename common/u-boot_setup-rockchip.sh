@@ -89,7 +89,7 @@ update_spinor() {
 
     build_spinor
     flash_erase /dev/mtd0 0 0
-    dd conv=notrunc,fsync if=/tmp/spi.img of=/dev/mtdblock0 bs=4096
+    nandwrite -p /dev/mtd0 /tmp/spi.img
     rm /tmp/spi.img
     sync
 }
