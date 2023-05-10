@@ -124,13 +124,12 @@ rkpack_idbloader() {
     fi
 
     $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rksd -d "${flash_data}" "$TARGET_DIR/idbloader.img"
-    $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data}" "$TARGET_DIR/idbloader-spi.img"
 
     if [[ "$1" == "rkminiloader" ]]
     then
         echo "Using rkminiloader $(basename $BSP_RKMINILOADER)"
         cat "$BSP_RKMINILOADER" >> "$TARGET_DIR/idbloader.img"
-        cat "$BSP_RKMINILOADER" >> "$TARGET_DIR/idbloader-spi.img"
+        $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}${BSP_RKMINILOADER}" "$TARGET_DIR/idbloader-spi.img"
     fi
 }
 
