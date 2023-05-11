@@ -1,0 +1,82 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Thu, 11 May 2023 18:22:17 +0800
+Subject: [PATCH] arm: dts: enable SPI boot for ROCK 4
+
+---
+ arch/arm/dts/rk3399-rock-4c-plus.dts      | 11 +++++++++++
+ arch/arm/dts/rk3399-rock-pi-4-u-boot.dtsi | 10 +++++++++-
+ arch/arm/dts/rk3399-rock-pi-4.dtsi        | 11 +++++++++++
+ 3 files changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/rk3399-rock-4c-plus.dts b/arch/arm/dts/rk3399-rock-4c-plus.dts
+index 028eb508ae3..26aaf5c30d8 100644
+--- a/arch/arm/dts/rk3399-rock-4c-plus.dts
++++ b/arch/arm/dts/rk3399-rock-4c-plus.dts
+@@ -554,6 +554,17 @@
+ 	status = "okay";
+ };
+ 
++&spi1 {
++	max-freq = <10000000>;
++	status = "okay";
++
++	spiflash: flash@0 {
++		compatible = "jedec,spi-nor";
++		reg = <0>;
++		spi-max-frequency = <10000000>;
++	};
++};
++
+ &sdio0 {
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+diff --git a/arch/arm/dts/rk3399-rock-pi-4-u-boot.dtsi b/arch/arm/dts/rk3399-rock-pi-4-u-boot.dtsi
+index c17e769f649..92338898470 100644
+--- a/arch/arm/dts/rk3399-rock-pi-4-u-boot.dtsi
++++ b/arch/arm/dts/rk3399-rock-pi-4-u-boot.dtsi
+@@ -8,10 +8,18 @@
+ 
+ / {
+ 	chosen {
+-		u-boot,spl-boot-order = "same-as-spl", &sdhci, &sdmmc;
++		u-boot,spl-boot-order = "same-as-spl", &spiflash, &sdhci, &sdmmc;
++	};
++
++	config {
++		u-boot,spl-payload-offset = <0x60000>; /* @ 384KB */
+ 	};
+ };
+ 
+ &vdd_log {
+ 	regulator-init-microvolt = <950000>;
+ };
++
++&spiflash {
++	u-boot,dm-pre-reloc;
++};
+diff --git a/arch/arm/dts/rk3399-rock-pi-4.dtsi b/arch/arm/dts/rk3399-rock-pi-4.dtsi
+index 907071d4fe8..dbf49fd109f 100644
+--- a/arch/arm/dts/rk3399-rock-pi-4.dtsi
++++ b/arch/arm/dts/rk3399-rock-pi-4.dtsi
+@@ -652,6 +652,17 @@
+ 	status = "okay";
+ };
+ 
++&spi1 {
++	max-freq = <10000000>;
++	status = "okay";
++
++	spiflash: flash@0 {
++		compatible = "jedec,spi-nor";
++		reg = <0>;
++		spi-max-frequency = <10000000>;
++	};
++};
++
+ &sdio0 {
+ 	#address-cells = <1>;
+ 	#size-cells = <0>;
+-- 
+2.40.1
+

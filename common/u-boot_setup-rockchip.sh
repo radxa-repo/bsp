@@ -1,7 +1,12 @@
 #!/bin/bash
 
 build_spinor() {
-    if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
+    if [[ -f "$SCRIPT_DIR/idbloader-spi_spl.img" ]] && [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
+    then
+        truncate -s 4M /tmp/spi.img
+        dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader-spi_spl.img" of=/tmp/spi.img bs=512
+        dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=768
+    elif [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
     then
         truncate -s 16M /tmp/spi.img
         dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader.img" of=/tmp/spi.img bs=512 seek=64
@@ -9,7 +14,7 @@ build_spinor() {
     elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
     then
         truncate -s 4M /tmp/spi.img
-        dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader-spi.img" of=/tmp/spi.img bs=512 seek=64
+        dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader-spi.img" of=/tmp/spi.img bs=512
         dd conv=notrunc,fsync if="$SCRIPT_DIR/uboot.img" of=/tmp/spi.img bs=512 seek=4096
         dd conv=notrunc,fsync if="$SCRIPT_DIR/trust.img" of=/tmp/spi.img bs=512 seek=6144
     else
@@ -62,6 +67,10 @@ maskrom_dump() {
     rkdeveloptool rl 0 -1 "$OUTPUT"
 }
 
+maskrom_reset() {
+    rkdeveloptool rd
+}
+
 update_bootloader() {
     local DEVICE=$1
 
@@ -81,15 +90,17 @@ update_bootloader() {
 }
 
 update_spinor() {
-    if [[ ! -e /dev/mtdblock0 ]]
+    local DEVICE=${1:-/dev/mtd0}
+
+    if [[ ! -e $DEVICE ]]
     then
-        echo "/dev/mtdblock0 is missing." >&2
+        echo "$DEVICE is missing." >&2
         return 1
     fi
 
     build_spinor
-    flash_erase /dev/mtd0 0 0
-    nandwrite -p /dev/mtd0 /tmp/spi.img
+    flash_erase "$DEVICE" 0 0
+    nandwrite -p "$DEVICE" /tmp/spi.img
     rm /tmp/spi.img
     sync
 }

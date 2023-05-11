@@ -128,8 +128,12 @@ rkpack_idbloader() {
     local flash_data=
     if [[ -n $BSP_ROCKCHIP_TPL ]]
     then
-        echo "Using rkbin $(basename $flash_data)"
+        echo "Using rkbin $(basename $BSP_ROCKCHIP_TPL) as TPL"
         flash_data="$BSP_ROCKCHIP_TPL"
+    elif [[ -e "${SCRIPT_DIR}/.src/u-boot/tpl/u-boot-tpl.bin" ]] && [[ "$1" == "spl" ]]
+    then
+        echo "Using U-Boot TPL"
+        flash_data="${SCRIPT_DIR}/.src/u-boot/tpl/u-boot-tpl.bin"
     fi
 
     if [[ -e "${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin" ]] && [[ "$1" == "spl" ]]
@@ -137,6 +141,7 @@ rkpack_idbloader() {
         flash_data="${flash_data:+${flash_data}:}${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin"
     fi
 
+    rm -f "$TARGET_DIR/idbloader.img" "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader-spi_spl.img"
     $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rksd -d "${flash_data}" "$TARGET_DIR/idbloader.img"
 
     if [[ "$1" == "rkminiloader" ]]
@@ -146,15 +151,17 @@ rkpack_idbloader() {
 
         if [[ -n $BSP_RKMINILOADER_SPINOR ]]
         then
-            $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}${BSP_RKMINILOADER_SPINOR}" "$TARGET_DIR/idbloader-spi.img"
+            $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}$BSP_RKMINILOADER_SPINOR" "$TARGET_DIR/idbloader-spi.img"
         fi
+    else
+        $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data}" "$TARGET_DIR/idbloader-spi_spl.img"
     fi
 }
 
 rkpack_rkminiloader() {
     pushd $SCRIPT_DIR/.src/rkbin/
-    $SCRIPT_DIR/.src/rkbin/tools/loaderimage --pack --uboot "$TARGET_DIR/u-boot-dtb.bin" "$TARGET_DIR/uboot.img" ${UBOOT_BASE_ADDR}
-    $SCRIPT_DIR/.src/rkbin/tools/trust_merger "$SCRIPT_DIR/.src/rkbin/RKTRUST/${BSP_TRUST_OVERRIDE^^}TRUST.ini"
+    $SCRIPT_DIR/.src/rkbin/tools/loaderimage --pack --uboot "$TARGET_DIR/u-boot-dtb.bin" "$TARGET_DIR/uboot.img" ${UBOOT_BASE_ADDR} --size 1024 1
+    $SCRIPT_DIR/.src/rkbin/tools/trust_merger --size 1024 1 "$SCRIPT_DIR/.src/rkbin/RKTRUST/${BSP_TRUST_OVERRIDE^^}TRUST.ini"
     mv ./trust.img "$TARGET_DIR/trust.img"
     popd
 
@@ -201,7 +208,7 @@ bsp_preparedeb() {
                 rkpack_rkminiloader
             fi
             rkpack_rkboot
-            cp "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+            cp "$TARGET_DIR/idbloader-spi"*".img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
             ;;
         *)
             error $EXIT_UNSUPPORTED_OPTION "$soc_family"
