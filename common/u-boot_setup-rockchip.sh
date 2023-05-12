@@ -28,11 +28,21 @@ maskrom() {
 }
 
 maskrom_spinor() {
-    rkdeveloptool db "$SCRIPT_DIR/rkboot_SPINOR.bin"
+    if [[ -f "$SCRIPT_DIR/rkboot_SPINOR.bin" ]]
+    then
+        rkdeveloptool db "$SCRIPT_DIR/rkboot_SPINOR.bin"
+    else
+        maskrom
+    fi
 }
 
 maskrom_spinand() {
-    rkdeveloptool db "$SCRIPT_DIR/rkboot_SPI_NAND.bin"
+    if [[ -f "$SCRIPT_DIR/rkboot_SPI_NAND.bin" ]]
+    then
+        rkdeveloptool db "$SCRIPT_DIR/rkboot_SPI_NAND.bin"
+    else
+        maskrom
+    fi
 }
 
 maskrom_update_bootloader() {
