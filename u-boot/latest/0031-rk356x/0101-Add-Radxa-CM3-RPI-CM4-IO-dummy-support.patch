@@ -55,7 +55,7 @@ new file mode 100644
 index 0000000000..68ebc3aaa1
 --- /dev/null
 +++ b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts
-@@ -0,0 +1,272 @@
+@@ -0,0 +1,273 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2022 Radxa Limited
@@ -281,9 +281,10 @@ index 0000000000..68ebc3aaa1
 +	cap-mmc-highspeed;
 +	cap-sd-highspeed;
 +	disable-wp;
++	broken-cd;
 +	vqmmc-supply = <&vccio_sd>;
 +	pinctrl-names = "default";
-+	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_det &sdmmc0_pwren>;
++	pinctrl-0 = <&sdmmc0_bus4 &sdmmc0_clk &sdmmc0_cmd &sdmmc0_pwren>;
 +	status = "okay";
 +};
 +
