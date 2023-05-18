@@ -23,7 +23,7 @@ index 3e6578f27..62eab382a 100644
  	avdd-0v9-supply = <&vdda0v9_image>;
  	avdd-1v8-supply = <&vcca1v8_image>;
 @@ -105,6 +109,14 @@ &hdmi_sound {
- 	status = "okay";
+ 	};
  };
  
 +&pcie2x1 {
@@ -35,8 +35,8 @@ index 3e6578f27..62eab382a 100644
 +};
 +
  &pinctrl {
- 	leds {
- 		pi_nled_activity: pi-nled-activity {
+ 	gmac1 {
+ 		gmac1m0_miim: gmac1m0-miim {
 -- 
 2.34.1
 
