@@ -1,0 +1,250 @@
+From patchwork Sun Oct  9 20:07:07 2022
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Furkan Kardame <f.kardame@manjaro.org>
+X-Patchwork-Id: 13002143
+Return-Path: 
+ <linux-rockchip-bounces+linux-rockchip=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A877C433F5
+	for <linux-rockchip@archiver.kernel.org>;
+ Sun,  9 Oct 2022 20:08:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:MIME-Version:Message-Id:Date:Subject:Cc
+	:To:From:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:In-Reply-To:References:
+	List-Owner; bh=UudXdvN7YsKRSxrLo6u+9Q6LEw2i4MSI1xNmZGhUxC0=; b=0QJyfj4pTScdFG
+	PpJwVJIa3IZs+1hiKmu7lcNh6cigmMKJ3n76hETI6gd+bKiWqZpy1EO36OaOiyHA9LMLbVVRwHkCs
+	6gl2/fYHGuRwkG1FdiJXww7XZXuRN6Nk3OMpAcziYXhSLDAY1d45Ue5GwtSCOGQ5kSlb2mXRdqTJR
+	LzHYtambdFM0cH72CUX3t0zeJsT745aW992vsK6Jp+Byw4G5lHMDpB0zXXbSD8LVCtbOAtKwsVA+N
+	ray9p4vVlC8o37bSdWRl1FYOBjkoeThGO5xGdEOnrB1tBR4Ki4JWXKJyynXEcxfppxWftu27XhIdY
+	iPbNGoiztpdz7U/pg4+g==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1ohcaa-00G7Tt-Fz; Sun, 09 Oct 2022 20:07:56 +0000
+Received: from mail.manjaro.org ([116.203.91.91])
+	by bombadil.infradead.org with esmtps (Exim 4.94.2 #2 (Red Hat Linux))
+	id 1ohcaO-00G7Sv-9a; Sun, 09 Oct 2022 20:07:47 +0000
+From: Furkan Kardame <f.kardame@manjaro.org>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=manjaro.org; s=2021;
+	t=1665346057;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=htdL3Zq/WSuBKZwDH6878g5bVHkFnWBUPNKuEwMFRpc=;
+	b=RyiiVWSU+geHmeMGFqkujGbsFKbk2mAi2UhYz5x6LsD4QM93NYCUWYq+5oKQzA/oYCoKTj
+	GqrwTXn4QTR6Q8KzdGmM/2m/Yd4XmgfPREZOFQS+lteK+Xff28eAtCvZZiauZwOqlOgUDU
+	BXJMax6ucxUTGXD7CfUI6OfVz5VTLxpGU71SToazRgDq0tvyJhuMZvKpneX0fNNdWYPqAH
+	TRJgRo7X97+Bzmrl585mnD552j87qJj3VgV6VAg+HYjYdzu9ukbTzuRLF+A3c/mfbaIjsU
+	itu0/ddl4E7IIxRl0ef6iSqjQyzsKBCApEmrbuicSlohasyWFNE6D+uazPTA3A==
+To: pgwipeout@gmail.com
+Cc: heiko@sntech.de,
+	linux-rockchip@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	Furkan Kardame <f.kardame@manjaro.org>
+Subject: [PATCH] arm64: dts: rockchip: Enable pcie2 and audio jack on
+ rk3566-roc-pc
+Date: Sun,  9 Oct 2022 23:07:07 +0300
+Message-Id: <20221009200707.106046-1-f.kardame@manjaro.org>
+MIME-Version: 1.0
+Authentication-Results: ORIGINATING;
+	auth=pass smtp.auth=f.kardame@manjaro.org smtp.mailfrom=f.kardame@manjaro.org
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20221009_130744_685031_6F4C9FD5 
+X-CRM114-Status: UNSURE (   7.78  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-rockchip@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: Upstream kernel work for Rockchip platforms
+ <linux-rockchip.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip@lists.infradead.org>
+List-Help: <mailto:linux-rockchip-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request@lists.infradead.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces@lists.infradead.org>
+Errors-To: 
+ linux-rockchip-bounces+linux-rockchip=archiver.kernel.org@lists.infradead.org
+
+Add dts nodes to enable combphy2, pcie2 and audio jack.
+Disable i2c5 as it not used.
+
+Signed-off-by: Furkan Kardame <f.kardame@manjaro.org>
+---
+ .../arm64/boot/dts/rockchip/rk3566-roc-pc.dts | 97 ++++++++++++++++++-
+ 1 file changed, 93 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3566-roc-pc.dts b/arch/arm64/boot/dts/rockchip/rk3566-roc-pc.dts
+index dba648c2f..1e5c83012 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3566-roc-pc.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3566-roc-pc.dts
+@@ -39,6 +39,28 @@ hdmi_con_in: endpoint {
+ 		};
+ 	};
+ 
++	i2s1_8ch: i2s@fe410000 {
++		compatible = "rockchip,rk3568-i2s-tdm";
++		reg = <0x0 0xfe410000 0x0 0x1000>;
++		interrupts = <GIC_SPI 53 IRQ_TYPE_LEVEL_HIGH>;
++		assigned-clocks = <&cru CLK_I2S1_8CH_TX_SRC>, <&cru CLK_I2S1_8CH_RX_SRC>;
++		assigned-clock-rates = <1188000000>, <1188000000>;
++		clocks = <&cru MCLK_I2S1_8CH_TX>, <&cru MCLK_I2S1_8CH_RX>,
++			 <&cru HCLK_I2S1_8CH>;
++		clock-names = "mclk_tx", "mclk_rx", "hclk";
++		dmas = <&dmac1 3>, <&dmac1 2>;
++		dma-names = "rx", "tx";
++		resets = <&cru SRST_M_I2S1_8CH_TX>, <&cru SRST_M_I2S1_8CH_RX>;
++		reset-names = "tx-m", "rx-m";
++		rockchip,grf = <&grf>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&i2s1m0_sclktx &i2s1m0_sclkrx
++			     &i2s1m0_lrcktx &i2s1m0_lrckrx
++			     &i2s1m0_sdi0   &i2s1m0_sdo0>;
++		#sound-dai-cells = <0>;
++		status = "disabled";
++	};
++
+ 	leds {
+ 		compatible = "gpio-leds";
+ 
+@@ -53,6 +75,22 @@ led-user {
+ 		};
+ 	};
+ 
++	rk809-sound {
++		compatible = "simple-audio-card";
++		simple-audio-card,format = "i2s";
++		simple-audio-card,name = "STATION-M2-FRONT";
++		simple-audio-card,mclk-fs = <256>;
++		status = "okay";
++
++		simple-audio-card,cpu {
++			sound-dai = <&i2s1_8ch>;
++		};
++
++		simple-audio-card,codec {
++			sound-dai = <&rk809>;
++		};
++	};
++
+ 	sdio_pwrseq: sdio-pwrseq {
+ 		status = "okay";
+ 		compatible = "mmc-pwrseq-simple";
+@@ -82,6 +120,18 @@ vcc5v0_sys: vcc5v0-sys-regulator {
+ 		vin-supply = <&usb_5v>;
+ 	};
+ 
++	vcc3v3_pcie: vcc3v3-pcie-regulator {
++		compatible = "regulator-fixed";
++		enable-active-high;
++		gpio = <&gpio0 RK_PC4 GPIO_ACTIVE_HIGH>;
++		pinctrl-names = "default";
++		pinctrl-0 = <&pcie_enable_h>;
++		regulator-name = "vcc3v3_pcie";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		vin-supply = <&vcc5v0_sys>;
++	};
++
+ 	vcc3v3_sys: vcc3v3-sys-regulator {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "vcc3v3_sys";
+@@ -122,6 +172,10 @@ &combphy1 {
+ 	status = "okay";
+ };
+ 
++&combphy2 {
++	status = "okay";
++};
++
+ &cpu0 {
+ 	cpu-supply = <&vdd_cpu>;
+ };
+@@ -210,9 +264,13 @@ rk809: pmic@20 { 
+		interrupt-parent = <&gpio0>;
+ 		interrupts = <RK_PA7 IRQ_TYPE_LEVEL_LOW>;
+ 		clock-output-names = "rk808-clkout1", "rk808-clkout2";
+-
++		assigned-clocks = <&cru I2S1_MCLKOUT_TX>;
++		assigned-clock-parents = <&cru CLK_I2S1_8CH_TX>;
++		clock-names = "mclk";
++		clocks = <&cru I2S1_MCLKOUT_TX>;
++		pinctrl-0 = <&pmic_int>, <&i2s1m0_mclk>;
++		#sound-dai-cells = <0>;
+ 		pinctrl-names = "default";
+-		pinctrl-0 = <&pmic_int>;
+ 		rockchip,system-power-controller;
+ 		wakeup-source;
+ 		#clock-cells = <1>;
+@@ -419,6 +477,10 @@ vcc3v3_sd: SWITCH_REG2 {
+ 				regulator-boot-on;
+ 			};
+ 		};
++
++		codec {
++			mic-in-differential;
++		};
+ 	};
+ };
+
+@@ -498,6 +498,15 @@
+        status = "okay";
+ };
+ 
++&i2s0_8ch {
++       status = "okay";
++};
++
++&i2s1_8ch {
++       rockchip,trcm-sync-tx-only;
++       status = "okay";
++};
++
+ &mdio1 {
+        rgmii_phy1: ethernet-phy@0 {
+                compatible = "ethernet-phy-ieee802.3-c22"; 
+@@ -447,6 +518,14 @@ rgmii_phy1: ethernet-phy@0 {
+ 	};
+ };
+ 
++&pcie2x1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pcie_reset_h>;
++	reset-gpios = <&gpio1 RK_PB2 GPIO_ACTIVE_HIGH>;
++	vpcie3v3-supply = <&vcc3v3_pcie>;
++	status = "okay";
++};
++
+ &pinctrl {
+ 	bt {
+ 		bt_enable_h: bt-enable-h {
+@@ -468,6 +547,16 @@ user_led_enable_h: user-led-enable-h {
+ 		};
+ 	};
+ 
++	pcie {
++		pcie_enable_h: pcie-enable-h {
++			rockchip,pins = <0 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		pcie_reset_h: pcie-reset-h {
++			rockchip,pins = <1 RK_PB2 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++
+ 	pmic {
+ 		pmic_int: pmic_int {
+ 			rockchip,pins =
+
+
