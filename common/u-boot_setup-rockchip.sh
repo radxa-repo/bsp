@@ -1,6 +1,7 @@
 #!/bin/bash
 
 build_spinor() {
+    rm -f /tmp/spi.img
     if [[ -f "$SCRIPT_DIR/idbloader-spi_spl.img" ]] && [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
     then
         echo "Building Upstream RK3399 SPI U-Boot..."
