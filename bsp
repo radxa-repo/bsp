@@ -15,6 +15,7 @@ Supported package generation options:
     --no-prepare-source     Allow building against locally modified repos
     --no-config             Do not load defconfig or apply kconfig
     --no-container-update   Do not update the container image
+                            Suppress --local-container
     --dirty                 Build without modifying the source tree.
                             Equals --no-prepare-source --no-config --no-container-update
     --no-build              Prepare the source tree but do not build.
