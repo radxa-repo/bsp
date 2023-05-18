@@ -154,7 +154,10 @@ rkpack_idbloader() {
             $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}$BSP_RKMINILOADER_SPINOR" "$TARGET_DIR/idbloader-spi.img"
         fi
     else
-        $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data}" "$TARGET_DIR/idbloader-spi_spl.img"
+        if [[ "$BSP_SOC_OVERRIDE" =~ "rk3399" ]]
+        then
+            $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data}" "$TARGET_DIR/idbloader-spi_spl.img"
+        fi
     fi
 }
 
