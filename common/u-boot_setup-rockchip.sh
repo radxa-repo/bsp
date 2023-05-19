@@ -71,6 +71,12 @@ maskrom_update_spinor() {
     rm /tmp/spi.img
 }
 
+maskrom_autoupdate_bootloader() {
+    maskrom || true
+    maskrom_update_bootloader
+    maskrom_reset
+}
+
 maskrom_autoupdate_spinor() {
     maskrom_spinor || true
     maskrom_update_spinor
