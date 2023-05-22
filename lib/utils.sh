@@ -12,6 +12,7 @@ EXIT_UNKNOWN_OPTION=1
 EXIT_TOO_FEW_ARGUMENTS=2
 EXIT_UNSUPPORTED_OPTION=3
 EXIT_NO_SUBMODULE=4
+EXIT_BAD_BLOCK_DEVICE=5
 
 error() {
     case "$1" in
@@ -32,6 +33,9 @@ Part of the code in this script are stored in git submodules.
 However, it appears that submodules were not initialized in this repo.
 Please run "git submodule init && git submodule update" to fix this issue.
 EOF
+            ;;
+        $EXIT_BAD_BLOCK_DEVICE)
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: '$2' is not a block device." >&2
             ;;
         *)
             echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Unknown exit code." >&2

@@ -149,6 +149,10 @@ _import() {
 
 _install() {
     local deb="$1" blk="$2"
+    if [[ ! -b "$2" ]]
+    then
+        error $EXIT_BAD_BLOCK_DEVICE "$2"
+    fi
     sudo umount "$blk" || true
     sudo mount "$blk" /mnt
     sudo cp "$deb" /mnt
