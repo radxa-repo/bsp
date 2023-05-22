@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Stephen <stephen@vamrs.com>
+Date: Fri, 10 Dec 2021 09:38:57 +0800
+Subject: [PATCH] revert meson drv shutdown
+
+Problem: connected with HDMI monitor, command reboot does not restart
+the system.
+[  OK  ] Started Reboot.
+[  OK  ] Reached target Reboot.
+[  141.734304] printk: systemd-shutdow: 24 output lines suppressed due to ratelimiting
+[  141.794707] systemd-shutdown[1]: Syncing filesystems and block devices.
+[  142.294581] systemd-shutdown[1]: Sending SIGTERM to remaining processes...
+[  142.304272] systemd-journald[1448]: Received SIGTERM from PID 1 (systemd-shutdow).
+[  142.343369] systemd-shutdown[1]: Sending SIGKILL to remaining processes...
+[  142.353248] systemd-shutdown[1]: Unmounting file systems.
+[  142.355617] [1762]: Remounting '/' read-only in with options '(null)'.
+[  142.377999] EXT4-fs (mmcblk1p2): re-mounted. Opts: (null)
+[  142.387765] systemd-shutdown[1]: All filesystems unmounted.
+[  142.387897] systemd-shutdown[1]: Deactivating swaps.
+[  142.393160] systemd-shutdown[1]: All swaps deactivated.
+[  142.397933] systemd-shutdown[1]: Detaching loop devices.
+[  142.405637] systemd-shutdown[1]: All loop devices detached.
+[  142.408683] systemd-shutdown[1]: Detaching DM devices.
+[  142.429138] kvm: exiting hardware virtualization
+...STUCK...
+
+Solution: remove shutdown function to meson_drm driver
+[  OK  ] Started Reboot.
+[  OK  ] Reached target Reboot.
+[   24.509429] printk: systemd-shutdow: 24 output lines suppressed due to ratelimiting
+[   24.569328] systemd-shutdown[1]: Syncing filesystems and block devices.
+[   25.307349] systemd-shutdown[1]: Sending SIGTERM to remaining processes...
+[   25.322408] systemd-journald[1439]: Received SIGTERM from PID 1 (systemd-shutdow).
+[   25.361382] systemd-shutdown[1]: Sending SIGKILL to remaining processes...
+[   25.371413] systemd-shutdown[1]: Unmounting file systems.
+[   25.373722] [1755]: Remounting '/' read-only in with options '(null)'.
+[   25.398110] EXT4-fs (mmcblk1p2): re-mounted. Opts: (null)
+[   25.407865] systemd-shutdown[1]: All filesystems unmounted.
+[   25.407992] systemd-shutdown[1]: Deactivating swaps.
+[   25.413000] systemd-shutdown[1]: All swaps deactivated.
+[   25.417991] systemd-shutdown[1]: Detaching loop devices.
+[   25.425649] systemd-shutdown[1]: All loop devices detached.
+[   25.428783] systemd-shutdown[1]: Detaching DM devices.
+[   25.448956] kvm: exiting hardware virtualization
+[   25.479811] reboot: Restarting system
+bl31 reboot reason: 0xd
+bl31 reboot reason: 0x0
+system cmd  1.
+...REBOOT...
+
+Signed-off-by: Stephen <stephen@vamrs.com>
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ drivers/gpu/drm/meson/meson_drv.c | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/drivers/gpu/drm/meson/meson_drv.c b/drivers/gpu/drm/meson/meson_drv.c
+index 2753067c08..3d1de9cbb1 100644
+--- a/drivers/gpu/drm/meson/meson_drv.c
++++ b/drivers/gpu/drm/meson/meson_drv.c
+@@ -482,17 +482,6 @@ static int meson_probe_remote(struct platform_device *pdev,
+ 	return count;
+ }
+ 
+-static void meson_drv_shutdown(struct platform_device *pdev)
+-{
+-	struct meson_drm *priv = dev_get_drvdata(&pdev->dev);
+-
+-	if (!priv)
+-		return;
+-
+-	drm_kms_helper_poll_fini(priv->drm);
+-	drm_atomic_helper_shutdown(priv->drm);
+-}
+-
+ static int meson_drv_probe(struct platform_device *pdev)
+ {
+ 	struct component_match *match = NULL;
+@@ -564,7 +553,6 @@ static const struct dev_pm_ops meson_drv_pm_ops = {
+ static struct platform_driver meson_drm_platform_driver = {
+ 	.probe      = meson_drv_probe,
+ 	.remove     = meson_drv_remove,
+-	.shutdown   = meson_drv_shutdown,
+ 	.driver     = {
+ 		.name	= "meson-drm",
+ 		.of_match_table = dt_match,
+-- 
+2.36.1
+

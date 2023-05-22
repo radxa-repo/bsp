@@ -1,0 +1,98 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Yuntian Zhang <yt@radxa.com>
+Date: Mon, 23 May 2022 15:36:50 +0800
+Subject: [PATCH] VENDOR: Add Radxa overlays
+
+Signed-off-by: Yuntian Zhang <yt@radxa.com>
+---
+ arch/arm64/boot/dts/amlogic/Makefile  |  5 +++++
+ arch/arm64/boot/dts/rockchip/Makefile | 14 ++++++++++++++
+ scripts/Makefile.dtbinst              | 10 +++++++++-
+ scripts/Makefile.lib                  |  6 ++++++
+ 4 files changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/Makefile
+index 0e1e43054..f3db46fd3 100644
+--- a/arch/arm64/boot/dts/amlogic/Makefile
++++ b/arch/arm64/boot/dts/amlogic/Makefile
+@@ -1,3 +1,8 @@
++DTC_FLAGS_meson-g12a-radxa-zero := -@
++DTC_FLAGS_meson-g12b-radxa-zero2 := -@
++
++subdir-y += overlays
++
+ # SPDX-License-Identifier: GPL-2.0
+ dtb-$(CONFIG_ARCH_MESON) += meson-axg-s400.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12a-radxa-zero.dtb
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+index 26661c7b7..7fa60528e 100644
+--- a/arch/arm64/boot/dts/rockchip/Makefile
++++ b/arch/arm64/boot/dts/rockchip/Makefile
+@@ -1,3 +1,17 @@
++DTC_FLAGS_rk3328-rock-pi-e := -@
++DTC_FLAGS_rk3399-rock-pi-4a-plus := -@
++DTC_FLAGS_rk3399-rock-pi-4a := -@
++DTC_FLAGS_rk3399-rock-pi-4b-plus := -@
++DTC_FLAGS_rk3399-rock-pi-4b := -@
++DTC_FLAGS_rk3399-rock-pi-4c-plus := -@
++DTC_FLAGS_rk3399-rock-pi-4c := -@
++DTC_FLAGS_rk3568-rock-3a := -@
++DTC_FLAGS_rk3588-rock-5a := -@
++DTC_FLAGS_rk3588-rock-5b-v11 := -@
++DTC_FLAGS_rk3588-rock-5b := -@
++
++subdir-y += overlays
++
+ # SPDX-License-Identifier: GPL-2.0
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-evb.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3308-evb.dtb
+diff --git a/scripts/Makefile.dtbinst b/scripts/Makefile.dtbinst
+index ba01f5ba2..46f4739a2 100644
+--- a/scripts/Makefile.dtbinst
++++ b/scripts/Makefile.dtbinst
+@@ -18,9 +18,11 @@ include scripts/Kbuild.include
+ include $(src)/Makefile
+ 
+ dtbs    := $(addprefix $(dst)/, $(dtb-y) $(if $(CONFIG_OF_ALL_DTBS),$(dtb-)))
++scrs    := $(addprefix $(dst)/, $(scr-y))
++dtbotxts:= $(addprefix $(dst)/, $(dtbotxt-y))
+ subdirs := $(addprefix $(obj)/, $(subdir-y) $(subdir-m))
+ 
+-__dtbs_install: $(dtbs) $(subdirs)
++__dtbs_install: $(dtbs) $(scrs) $(dtbotxts) $(subdirs)
+ 	@:
+ 
+ quiet_cmd_dtb_install = INSTALL $@
+@@ -32,6 +34,12 @@ $(dst)/%.dtb: $(obj)/%.dtb
+ $(dst)/%.dtbo: $(obj)/%.dtbo
+ 	$(call cmd,dtb_install)
+ 
++$(dst)/%.scr: $(obj)/%.scr
++	$(call cmd,dtb_install)
++
++$(dst)/README.overlays: $(src)/README.overlays
++	$(call cmd,dtb_install)
++
+ PHONY += $(subdirs)
+ $(subdirs):
+ 	$(Q)$(MAKE) $(dtbinst)=$@ dst=$(patsubst $(obj)/%,$(dst)/%,$@)
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 3c62e7670..532c3911d 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -406,6 +406,12 @@ quiet_cmd_uimage = UIMAGE  $@
+ 			-a $(UIMAGE_LOADADDR) -e $(UIMAGE_ENTRYADDR) \
+ 			-n $(UIMAGE_NAME) -d $< $@
+ 
++quiet_cmd_scr = MKIMAGE $@
++	  cmd_scr = mkimage -C none -A $(ARCH) -T script -d $< $@
++
++$(obj)/%.scr: $(src)/%.cmd FORCE
++	$(call if_changed,scr)
++
+ # XZ
+ # ---------------------------------------------------------------------------
+ # Use xzkern to compress the kernel image and xzmisc to compress other things.
+-- 
+2.34.1
+
