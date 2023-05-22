@@ -1,29 +1,29 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Christian Hewitt <christianshewitt@gmail.com>
-Date: Wed, 16 Feb 2022 07:27:07 +0000
-Subject: [PATCH] dt-bindings: arm: amlogic: add support for Radxa Zero2
+Date: Sat, 29 Feb 2020 15:13:02 +0000
+Subject: [PATCH] WIP: dt-bindings: arm: amlogic: add support for the Tanix TX5
+ Max
 
-The Radxa Zero2 is a small form-factor SBC using the Amlogic
-A311D chip.
+The Oranth (Tanix) TX5 Max is based on the Amlogic U200 reference
+board with an S905X2 chip.
 
 Signed-off-by: Christian Hewitt <christianshewitt@gmail.com>
-Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
  Documentation/devicetree/bindings/arm/amlogic.yaml | 1 +
  1 file changed, 1 insertion(+)
 
 diff --git a/Documentation/devicetree/bindings/arm/amlogic.yaml b/Documentation/devicetree/bindings/arm/amlogic.yaml
-index 36081734f..ac6e1e79f 100644
+index 94f68e7c85ed..845a5eb56ff3 100644
 --- a/Documentation/devicetree/bindings/arm/amlogic.yaml
 +++ b/Documentation/devicetree/bindings/arm/amlogic.yaml
-@@ -151,6 +151,7 @@ properties:
-         items:
+@@ -146,6 +146,7 @@ properties:
            - enum:
-               - khadas,vim3
-+              - radxa,zero2
-           - const: amlogic,a311d
-           - const: amlogic,g12b
- 
+               - amediatech,x96-max
+               - amlogic,u200
++              - oranth,tx5-max
+               - radxa,zero
+               - seirobotics,sei510
+           - const: amlogic,g12a
 -- 
-2.36.1
+2.40.1
 

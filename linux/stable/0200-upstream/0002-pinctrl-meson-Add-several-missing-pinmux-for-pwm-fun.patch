@@ -20,8 +20,8 @@ index ee8fcae9f..d938f883c 100644
 --- a/arch/arm64/boot/dts/amlogic/meson-g12b.dtsi
 +++ b/arch/arm64/boot/dts/amlogic/meson-g12b.dtsi
 @@ -139,3 +139,37 @@ map1 {
- &mali {
- 	dma-coherent;
+ &npu {
+ 	power-domains = <&pwrc PWRC_G12A_NNA_ID>;
  };
 +
 +&periphs_pinctrl {
