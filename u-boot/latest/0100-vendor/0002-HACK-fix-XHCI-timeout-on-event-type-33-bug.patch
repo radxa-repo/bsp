@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Wed, 24 May 2023 18:15:28 +0800
+Subject: [PATCH] HACK: fix XHCI timeout on event type 33 bug
+
+---
+ drivers/usb/host/usb_bootdev.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/usb/host/usb_bootdev.c b/drivers/usb/host/usb_bootdev.c
+index 32919f99286..c4e680b6bac 100644
+--- a/drivers/usb/host/usb_bootdev.c
++++ b/drivers/usb/host/usb_bootdev.c
+@@ -22,6 +22,7 @@ static int usb_bootdev_bind(struct udevice *dev)
+ 
+ static int usb_bootdev_hunt(struct bootdev_hunter *info, bool show)
+ {
++	usb_stop();
+ 	return usb_init();
+ }
+ 
+-- 
+2.40.1
+
