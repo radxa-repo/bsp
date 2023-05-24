@@ -1,0 +1,107 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Thu, 18 May 2023 16:03:20 +0800
+Subject: [PATCH] Enable NVMe
+
+---
+ configs/radxa-cm3-io-rk3566_defconfig         | 2 ++
+ configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig | 2 ++
+ configs/radxa-cm3-sodimm-io-rk3566_defconfig  | 2 ++
+ configs/radxa-e23-rk3566_defconfig            | 2 ++
+ configs/radxa-e25-rk3568_defconfig            | 2 ++
+ configs/rock-3a-rk3568_defconfig              | 2 ++
+ configs/rock-3b-rk3568_defconfig              | 2 ++
+ configs/rock-3c-rk3566_defconfig              | 2 ++
+ 8 files changed, 16 insertions(+)
+
+diff --git a/configs/radxa-cm3-io-rk3566_defconfig b/configs/radxa-cm3-io-rk3566_defconfig
+index 2100cf2cb2c..a53f91512ab 100644
+--- a/configs/radxa-cm3-io-rk3566_defconfig
++++ b/configs/radxa-cm3-io-rk3566_defconfig
+@@ -75,3 +75,6 @@ CONFIG_USB_EHCI_GENERIC=y
+ CONFIG_SPI_FLASH_GIGADEVICE=y
+ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
++CONFIG_NVME=y
++CONFIG_PCI=y
++CONFIG_NVME_PCI=y
+diff --git a/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig b/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
+index 4df6fdbd757..277c0eb5125 100644
+--- a/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
++++ b/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
+@@ -75,3 +75,6 @@ CONFIG_USB_EHCI_GENERIC=y
+ CONFIG_SPI_FLASH_GIGADEVICE=y
+ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
++CONFIG_NVME=y
++CONFIG_PCI=y
++CONFIG_NVME_PCI=y
+diff --git a/configs/radxa-cm3-sodimm-io-rk3566_defconfig b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+index 2930649e302..ac92e277845 100644
+--- a/configs/radxa-cm3-sodimm-io-rk3566_defconfig
++++ b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+@@ -75,3 +75,6 @@ CONFIG_USB_EHCI_GENERIC=y
+ CONFIG_SPI_FLASH_GIGADEVICE=y
+ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
++CONFIG_NVME=y
++CONFIG_PCI=y
++CONFIG_NVME_PCI=y
+diff --git a/configs/radxa-e23-rk3566_defconfig b/configs/radxa-e23-rk3566_defconfig
+index 3a38baf3fad..6285bbce6ce 100644
+--- a/configs/radxa-e23-rk3566_defconfig
++++ b/configs/radxa-e23-rk3566_defconfig
+@@ -75,3 +75,6 @@ CONFIG_USB_EHCI_GENERIC=y
+ CONFIG_SPI_FLASH_GIGADEVICE=y
+ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
++CONFIG_NVME=y
++CONFIG_PCI=y
++CONFIG_NVME_PCI=y
+diff --git a/configs/radxa-e25-rk3568_defconfig b/configs/radxa-e25-rk3568_defconfig
+index a093cd99a91..d0da860354e 100644
+--- a/configs/radxa-e25-rk3568_defconfig
++++ b/configs/radxa-e25-rk3568_defconfig
+@@ -75,3 +75,6 @@ CONFIG_USB_EHCI_GENERIC=y
+ CONFIG_SPI_FLASH_GIGADEVICE=y
+ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
++CONFIG_NVME=y
++CONFIG_PCI=y
++CONFIG_NVME_PCI=y
+diff --git a/configs/rock-3a-rk3568_defconfig b/configs/rock-3a-rk3568_defconfig
+index 8c603ada533..653b3fbf089 100644
+--- a/configs/rock-3a-rk3568_defconfig
++++ b/configs/rock-3a-rk3568_defconfig
+@@ -75,3 +75,6 @@ CONFIG_USB_EHCI_GENERIC=y
+ CONFIG_SPI_FLASH_GIGADEVICE=y
+ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
++CONFIG_NVME=y
++CONFIG_PCI=y
++CONFIG_NVME_PCI=y
+diff --git a/configs/rock-3b-rk3568_defconfig b/configs/rock-3b-rk3568_defconfig
+index f771862849e..f1fe8446c1c 100644
+--- a/configs/rock-3b-rk3568_defconfig
++++ b/configs/rock-3b-rk3568_defconfig
+@@ -75,3 +75,6 @@ CONFIG_USB_EHCI_GENERIC=y
+ CONFIG_SPI_FLASH_GIGADEVICE=y
+ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
++CONFIG_NVME=y
++CONFIG_PCI=y
++CONFIG_NVME_PCI=y
+diff --git a/configs/rock-3c-rk3566_defconfig b/configs/rock-3c-rk3566_defconfig
+index 8ce74328fbb..54f1d1817a5 100644
+--- a/configs/rock-3c-rk3566_defconfig
++++ b/configs/rock-3c-rk3566_defconfig
+@@ -75,3 +75,6 @@ CONFIG_USB_EHCI_GENERIC=y
+ CONFIG_SPI_FLASH_GIGADEVICE=y
+ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
++CONFIG_NVME=y
++CONFIG_PCI=y
++CONFIG_NVME_PCI=y
+-- 
+2.40.1
+
