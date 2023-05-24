@@ -12,6 +12,7 @@ bsp_reset() {
     BSP_SOC=
     BSP_SOC_OVERRIDE=
     BSP_BL31_OVERRIDE=
+    BSP_BL31_VARIANT=
     BSP_TRUST_OVERRIDE=
     BSP_BOARD_OVERRIDE=
     BSP_ROCKCHIP_TPL=
@@ -65,7 +66,7 @@ bsp_prepare() {
                 local rkbin_bl31
                 if [[ -n $BSP_BL31_OVERRIDE ]]
                 then
-                    rkbin_bl31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e "${BSP_BL31_OVERRIDE}_bl31_v" | sort | tail -n 1)
+                    rkbin_bl31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e "${BSP_BL31_OVERRIDE}_bl31_${BSP_BL31_VARIANT:-v}" | sort | tail -n 1)
                     if [[ -z $rkbin_bl31 ]]
                     then
                         echo "Unable to find prebuilt bl31. The resulting bootloader may not work!" >&2

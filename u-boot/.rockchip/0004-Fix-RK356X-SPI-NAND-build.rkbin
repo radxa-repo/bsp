@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Wed, 24 May 2023 17:29:12 +0800
+Subject: [PATCH] Fix RK356X SPI NAND build
+
+---
+ RKBOOT/RK3568MINIALL_SPI_NAND.ini | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/RKBOOT/RK3568MINIALL_SPI_NAND.ini b/RKBOOT/RK3568MINIALL_SPI_NAND.ini
+index c119971..d0fffb9 100755
+--- a/RKBOOT/RK3568MINIALL_SPI_NAND.ini
++++ b/RKBOOT/RK3568MINIALL_SPI_NAND.ini
+@@ -9,7 +9,7 @@ Path1=bin/rk35/rk3568_ddr_1332MHz_v1.10.bin
+ Sleep=1
+ [CODE472_OPTION]
+ NUM=1
+-Path1=bin/rk35/rk356x_usbplug_v1.12.bin
++Path1=bin/rk35/rk356x_usbplug_v1.14.bin
+ [LOADER_OPTION]
+ NUM=2
+ LOADER1=FlashData
+-- 
+2.40.1
+
