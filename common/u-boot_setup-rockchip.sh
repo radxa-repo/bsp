@@ -64,6 +64,12 @@ maskrom_update_bootloader() {
     fi
 }
 
+maskrom_erase_bootloader() {
+    dd if=/dev/zero of=/tmp/zero.img bs=1 count=8M
+    rkdeveloptool wl 64 /tmp/zero.img
+    rm /tmp/zero.img
+}
+
 maskrom_update_spinor() {
     build_spinor
     rkdeveloptool ef
