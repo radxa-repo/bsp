@@ -11,7 +11,7 @@ Signed-off-by: FUKAUMI Naoki <naoki@radxa.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index c160e884bf..760cff5295 100644
+index 3385948d22..14905c28b1 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -165,8 +165,8 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
@@ -25,5 +25,5 @@ index c160e884bf..760cff5295 100644
  
  dtb-$(CONFIG_ROCKCHIP_RK3588) += \
 -- 
-2.40.0
+2.40.1
 

@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Thu, 25 May 2023 15:57:21 +0800
+Subject: [PATCH] Fix build issue with BOOT_TARGET_SF
+
+---
+ include/configs/rockchip-common.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/rockchip-common.h b/include/configs/rockchip-common.h
+index 0ee5e5bec0d..b98bb93b7ee 100644
+--- a/include/configs/rockchip-common.h
++++ b/include/configs/rockchip-common.h
+@@ -6,6 +6,7 @@
+ #ifndef _ROCKCHIP_COMMON_H_
+ #define _ROCKCHIP_COMMON_H_
+ #include <linux/sizes.h>
++#include <environment/distro/sf.h>
+ 
+ #ifndef CFG_CPUID_OFFSET
+ #define CFG_CPUID_OFFSET	0x7
+-- 
+2.40.1
+

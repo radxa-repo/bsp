@@ -16,5 +16,5 @@ similarity index 100%
 rename from configs/rock5b-rk3588_defconfig
 rename to configs/rock-5b-rk3588_defconfig
 -- 
-2.40.0
+2.40.1
 

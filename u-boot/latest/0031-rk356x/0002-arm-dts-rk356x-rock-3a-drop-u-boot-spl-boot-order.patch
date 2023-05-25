@@ -11,7 +11,7 @@ Signed-off-by: FUKAUMI Naoki <naoki@radxa.com>
  1 file changed, 1 deletion(-)
 
 diff --git a/arch/arm/dts/rk3568-rock-3a-u-boot.dtsi b/arch/arm/dts/rk3568-rock-3a-u-boot.dtsi
-index 04bbb01b5d..e4fc298f30 100644
+index 801c91af5b..c785513590 100644
 --- a/arch/arm/dts/rk3568-rock-3a-u-boot.dtsi
 +++ b/arch/arm/dts/rk3568-rock-3a-u-boot.dtsi
 @@ -9,7 +9,6 @@
@@ -23,5 +23,5 @@ index 04bbb01b5d..e4fc298f30 100644
  };
  
 -- 
-2.40.0
+2.40.1
 

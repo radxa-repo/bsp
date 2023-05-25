@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Thu, 25 May 2023 15:37:53 +0800
+Subject: [PATCH] rockchip: rk356x: enable boot from SCSI
+
+---
+ configs/radxa-cm3-io-rk3566_defconfig        | 7 +++++++
+ configs/radxa-cm3-sodimm-io-rk3566_defconfig | 7 +++++++
+ configs/radxa-e25-rk3568_defconfig           | 7 +++++++
+ configs/rock-3a-rk3568_defconfig             | 6 ++++++
+ 4 files changed, 27 insertions(+)
+
+diff --git a/configs/radxa-cm3-io-rk3566_defconfig b/configs/radxa-cm3-io-rk3566_defconfig
+index 9584a155124..ddf41a7d6f7 100644
+--- a/configs/radxa-cm3-io-rk3566_defconfig
++++ b/configs/radxa-cm3-io-rk3566_defconfig
+@@ -84,3 +84,10 @@ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SPI_FLASH_XTX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
+ CONFIG_SF_DEFAULT_MODE=0x2000
++CONFIG_SATA=y
++CONFIG_SCSI_AHCI=y
++CONFIG_AHCI_PCI=y
++CONFIG_SATA_SIL=y
++CONFIG_SCSI=y
++CONFIG_DM_SCSI=y
++CONFIG_CMD_SF=y
+diff --git a/configs/radxa-cm3-sodimm-io-rk3566_defconfig b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+index 03461fc52c0..6c944c82ec9 100644
+--- a/configs/radxa-cm3-sodimm-io-rk3566_defconfig
++++ b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+@@ -83,3 +83,10 @@ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SPI_FLASH_XTX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
+ CONFIG_SF_DEFAULT_MODE=0x2000
++CONFIG_SATA=y
++CONFIG_SCSI_AHCI=y
++CONFIG_AHCI_PCI=y
++CONFIG_SATA_SIL=y
++CONFIG_SCSI=y
++CONFIG_DM_SCSI=y
++CONFIG_CMD_SF=y
+diff --git a/configs/radxa-e25-rk3568_defconfig b/configs/radxa-e25-rk3568_defconfig
+index d0caa058211..33197b76bb8 100644
+--- a/configs/radxa-e25-rk3568_defconfig
++++ b/configs/radxa-e25-rk3568_defconfig
+@@ -82,3 +82,10 @@ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SPI_FLASH_XTX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
+ CONFIG_SF_DEFAULT_MODE=0x2000
++CONFIG_SATA=y
++CONFIG_SCSI_AHCI=y
++CONFIG_AHCI_PCI=y
++CONFIG_SATA_SIL=y
++CONFIG_SCSI=y
++CONFIG_DM_SCSI=y
++CONFIG_CMD_SF=y
+diff --git a/configs/rock-3a-rk3568_defconfig b/configs/rock-3a-rk3568_defconfig
+index 408e70fd574..7000187a1c2 100644
+--- a/configs/rock-3a-rk3568_defconfig
++++ b/configs/rock-3a-rk3568_defconfig
+@@ -92,3 +92,10 @@ CONFIG_SPI_FLASH_MACRONIX=y
+ CONFIG_SPI_FLASH_XTX=y
+ CONFIG_SF_DEFAULT_SPEED=24000000
+ CONFIG_SF_DEFAULT_MODE=0x2000
++CONFIG_SATA=y
++CONFIG_SCSI_AHCI=y
++CONFIG_AHCI_PCI=y
++CONFIG_SATA_SIL=y
++CONFIG_SCSI=y
++CONFIG_DM_SCSI=y
++CONFIG_CMD_SF=y
+-- 
+2.40.1
+

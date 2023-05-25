@@ -23,15 +23,15 @@ Signed-off-by: FUKAUMI Naoki <naoki@radxa.com>
 ---
  arch/arm/dts/Makefile                     |   1 +
  arch/arm/dts/rk3568-radxa-cm3i.dtsi       | 415 ++++++++++++++++++++++
- arch/arm/dts/rk3568-radxa-e25-u-boot.dtsi |  22 ++
+ arch/arm/dts/rk3568-radxa-e25-u-boot.dtsi |  26 ++
  arch/arm/dts/rk3568-radxa-e25.dts         | 228 ++++++++++++
- 4 files changed, 666 insertions(+)
+ 4 files changed, 670 insertions(+)
  create mode 100644 arch/arm/dts/rk3568-radxa-cm3i.dtsi
  create mode 100644 arch/arm/dts/rk3568-radxa-e25-u-boot.dtsi
  create mode 100644 arch/arm/dts/rk3568-radxa-e25.dts
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 760cff5295..36dcff5052 100644
+index 14905c28b1..bb55217c28 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -167,6 +167,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
@@ -465,10 +465,10 @@ index 0000000000..c50fbdd486
 +};
 diff --git a/arch/arm/dts/rk3568-radxa-e25-u-boot.dtsi b/arch/arm/dts/rk3568-radxa-e25-u-boot.dtsi
 new file mode 100644
-index 0000000000..2bacdc53bd
+index 0000000000..bef7eb6621
 --- /dev/null
 +++ b/arch/arm/dts/rk3568-radxa-e25-u-boot.dtsi
-@@ -0,0 +1,22 @@
+@@ -0,0 +1,26 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2023 Radxa Limited
@@ -490,6 +490,10 @@ index 0000000000..2bacdc53bd
 +
 +&usb_host0_xhci {
 +	dr_mode ="host";
++};
++
++&vbus_typec {
++	regulator-boot-on;
 +};
 diff --git a/arch/arm/dts/rk3568-radxa-e25.dts b/arch/arm/dts/rk3568-radxa-e25.dts
 new file mode 100644
@@ -726,5 +730,5 @@ index 0000000000..63c4bd8731
 +	status = "okay";
 +};
 -- 
-2.40.0
+2.40.1
 
