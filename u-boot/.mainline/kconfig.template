@@ -1,0 +1,5 @@
+# Enable DM USB Gadget
+CONFIG_DM_USB_GADGET=y
+
+## START OF DYNAMIC CONFIGURATION SECTION
+## Please check fork.conf
