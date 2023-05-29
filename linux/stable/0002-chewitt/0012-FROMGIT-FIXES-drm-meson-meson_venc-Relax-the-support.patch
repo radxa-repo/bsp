@@ -22,11 +22,11 @@ index 3c55ed003359..fcd532db19c1 100644
  		return MODE_BAD;
  
 -	if (mode->hdisplay < 640 || mode->hdisplay > 1920)
-+	if (mode->hdisplay < 400 || mode->hdisplay > 2560)
++	if (mode->hdisplay < 400 || mode->hdisplay > 4096)
  		return MODE_BAD_HVALUE;
  
 -	if (mode->vdisplay < 480 || mode->vdisplay > 1200)
-+	if (mode->vdisplay < 480 || mode->vdisplay > 1920)
++	if (mode->vdisplay < 400 || mode->vdisplay > 4096)
  		return MODE_BAD_VVALUE;
  
  	return MODE_OK;
