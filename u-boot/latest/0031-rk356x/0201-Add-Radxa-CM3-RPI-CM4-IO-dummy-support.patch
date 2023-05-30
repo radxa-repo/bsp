@@ -3,7 +3,15 @@ From: bsp <bsp@radxa.com>
 Date: Tue, 30 May 2023 16:30:51 +0800
 Subject: [PATCH] Add Radxa CM3 RPI CM4 IO dummy support
 
-DTS does not match the hardware.
+Support SPI install, microSD/eMMC/NVMe boot. No further validation were
+performed.
+
+USB hub uses the same OTG USB controller. However, there is no dual role
+switching support in U-Boot, so ums and USB boot cannot be enabled at the
+same time.
+
+Currently default to enable ums support. Edit dr_mode in rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
+to enable USB boot and disable ums command.
 ---
  arch/arm/dts/Makefile                         |   1 +
  .../rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi   |  58 ++++
