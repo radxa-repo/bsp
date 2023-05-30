@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Tue, 30 May 2023 15:12:34 +0800
+Subject: [PATCH] rockchip: rk356x: enable boot from NVMe
+
+---
+ configs/radxa-cm3-io-rk3566_defconfig        | 4 ++++
+ configs/radxa-cm3-sodimm-io-rk3566_defconfig | 4 ++++
+ configs/radxa-e25-rk3568_defconfig           | 4 ++++
+ 3 files changed, 12 insertions(+)
+
+diff --git a/configs/radxa-cm3-io-rk3566_defconfig b/configs/radxa-cm3-io-rk3566_defconfig
+index c9e78c54eaa..a2dc171c333 100644
+--- a/configs/radxa-cm3-io-rk3566_defconfig
++++ b/configs/radxa-cm3-io-rk3566_defconfig
+@@ -94,3 +94,7 @@ CONFIG_CMD_SF=y
+ CONFIG_SYS_SATA_MAX_DEVICE=2
+ CONFIG_USB_GADGET=y
+ CONFIG_USB_DWC3_GENERIC=y
++CONFIG_PCI=y
++CONFIG_CMD_PCI=y
++CONFIG_NVME_PCI=y
++CONFIG_PCIE_DW_ROCKCHIP=y
+diff --git a/configs/radxa-cm3-sodimm-io-rk3566_defconfig b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+index fadb032135e..318cbb52bd1 100644
+--- a/configs/radxa-cm3-sodimm-io-rk3566_defconfig
++++ b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+@@ -92,3 +92,7 @@ CONFIG_DM_SCSI=y
+ CONFIG_CMD_SF=y
+ CONFIG_SYS_SATA_MAX_DEVICE=2
+ CONFIG_USB_GADGET=y
++CONFIG_PCI=y
++CONFIG_CMD_PCI=y
++CONFIG_NVME_PCI=y
++CONFIG_PCIE_DW_ROCKCHIP=y
+diff --git a/configs/radxa-e25-rk3568_defconfig b/configs/radxa-e25-rk3568_defconfig
+index 030ce33203b..93c9ce6a4ac 100644
+--- a/configs/radxa-e25-rk3568_defconfig
++++ b/configs/radxa-e25-rk3568_defconfig
+@@ -91,3 +91,7 @@ CONFIG_DM_SCSI=y
+ CONFIG_CMD_SF=y
+ CONFIG_SYS_SATA_MAX_DEVICE=2
+ CONFIG_USB_GADGET=y
++CONFIG_PCI=y
++CONFIG_CMD_PCI=y
++CONFIG_NVME_PCI=y
++CONFIG_PCIE_DW_ROCKCHIP=y
+-- 
+2.40.1
+
