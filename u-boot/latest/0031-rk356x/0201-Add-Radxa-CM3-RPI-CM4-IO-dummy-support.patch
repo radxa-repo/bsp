@@ -1,21 +1,21 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: ZHANG Yuntian <95260730+RadxaYuntian@users.noreply.github.com>
-Date: Mon, 17 Apr 2023 10:50:26 +0800
+From: bsp <bsp@radxa.com>
+Date: Tue, 30 May 2023 16:30:51 +0800
 Subject: [PATCH] Add Radxa CM3 RPI CM4 IO dummy support
 
 DTS does not match the hardware.
 ---
  arch/arm/dts/Makefile                         |   1 +
- .../rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi   |  18 ++
- arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts  | 272 ++++++++++++++++++
- configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig |  77 +++++
- 4 files changed, 368 insertions(+)
+ .../rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi   |  58 ++++
+ arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts  | 266 ++++++++++++++++++
+ configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig | 100 +++++++
+ 4 files changed, 425 insertions(+)
  create mode 100644 arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
  create mode 100644 arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts
  create mode 100644 configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index ff9357c6a6..7dd08f9278 100644
+index d75d1dfb8de..51a88eb0a03 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -171,6 +171,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
@@ -28,10 +28,10 @@ index ff9357c6a6..7dd08f9278 100644
  	rk3568-radxa-e25.dtb \
 diff --git a/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
 new file mode 100644
-index 0000000000..589332503e
+index 00000000000..358dca62487
 --- /dev/null
 +++ b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
-@@ -0,0 +1,18 @@
+@@ -0,0 +1,58 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * (C) Copyright 2021 Rockchip Electronics Co., Ltd
@@ -43,6 +43,13 @@ index 0000000000..589332503e
 +	chosen {
 +		stdout-path = &uart2;
 +	};
++
++	ch482d_pcie: ch482d-pcie-regulator {
++		compatible = "regulator-fixed";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		regulator-name = "ch482d_pcie";
++	};
 +};
 +
 +&uart2 {
@@ -50,12 +57,45 @@ index 0000000000..589332503e
 +	u-boot,dm-pre-reloc;
 +	status = "okay";
 +};
++
++&usb2phy0_otg {
++	status = "okay";
++};
++
++&usb_host0_xhci {
++	status = "okay";
++	// dr_mode = "host";
++};
++
++&combphy2 {
++	status = "okay";
++};
++
++&pinctrl {
++	pcie {
++		pcie_enable_h: pcie-enable-h {
++			rockchip,pins = <3 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++
++		pcie_reset_h: pcie-reset-h {
++			rockchip,pins = <1 RK_PB2 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
++	};
++};
++
++&pcie2x1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pcie20m1_pins &pcie_reset_h>;
++	reset-gpios = <&gpio1 RK_PB2 GPIO_ACTIVE_HIGH>;
++	vpcie3v3-supply = <&ch482d_pcie>;
++	status = "okay";
++};
 diff --git a/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts
 new file mode 100644
-index 0000000000..68ebc3aaa1
+index 00000000000..faf71b304c8
 --- /dev/null
 +++ b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts
-@@ -0,0 +1,273 @@
+@@ -0,0 +1,266 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2022 Radxa Limited
@@ -108,19 +148,15 @@ index 0000000000..68ebc3aaa1
 +			pinctrl-names = "default";
 +			pinctrl-0 = <&pi_nled_activity>;
 +		};
-+	};
 +
-+	vcc5v0_usb30: vcc5v0-usb30-regulator {
-+		compatible = "regulator-fixed";
-+		regulator-name = "vcc5v0_usb30";
-+		enable-active-high;
-+		gpio = <&gpio3 RK_PC2 GPIO_ACTIVE_HIGH>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&vcc5v0_usb30_en_h>;
-+		regulator-always-on;
-+		regulator-min-microvolt = <5000000>;
-+		regulator-max-microvolt = <5000000>;
-+		vin-supply = <&vcc_sys>;
++		led-2 {
++			gpios = <&gpio4 RK_PB7 GPIO_ACTIVE_LOW>;
++			color = <LED_COLOR_ID_RED>;
++			function = LED_FUNCTION_POWER;
++			linux,default-trigger = "default-on";
++			pinctrl-names = "default";
++			pinctrl-0 = <&pi_nled_power>;
++		};
 +	};
 +
 +	vcca1v8_image: vcca1v8-image-regulator {
@@ -261,17 +297,15 @@ index 0000000000..68ebc3aaa1
 +		pi_nled_activity: pi-nled-activity {
 +			rockchip,pins = <4 RK_PA4 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
++
++		pi_nled_power: pi-nled-power {
++			rockchip,pins = <4 RK_PB7 RK_FUNC_GPIO &pcfg_pull_none>;
++		};
 +	};
 +
 +	sdcard {
 +		sdmmc_pwren: sdmmc-pwren {
 +			rockchip,pins = <0 RK_PA5 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+	};
-+
-+	usb {
-+		vcc5v0_usb30_en_h: vcc5v0-host-en-h {
-+			rockchip,pins = <3 RK_PC2 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
 +	};
 +};
@@ -293,7 +327,6 @@ index 0000000000..68ebc3aaa1
 +};
 +
 +&usb2phy0_host {
-+	phy-supply = <&vcc5v0_usb30>;
 +	status = "okay";
 +};
 +
@@ -331,10 +364,10 @@ index 0000000000..68ebc3aaa1
 +};
 diff --git a/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig b/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
 new file mode 100644
-index 0000000000..2930649e30
+index 00000000000..8ad3abad4d2
 --- /dev/null
 +++ b/configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,100 @@
 +CONFIG_ARM=y
 +CONFIG_SKIP_LOWLEVEL_INIT=y
 +CONFIG_COUNTER_FREQUENCY=24000000
@@ -360,7 +393,6 @@ index 0000000000..2930649e30
 +CONFIG_DEBUG_UART=y
 +CONFIG_FIT=y
 +CONFIG_FIT_VERBOSE=y
-+CONFIG_SPL_FIT_SIGNATURE=y
 +CONFIG_SPL_LOAD_FIT=y
 +CONFIG_DEFAULT_FDT_FILE="rockchip/rk3566-radxa-cm3-rpi-cm4-io.dtb"
 +# CONFIG_DISPLAY_CPUINFO is not set
@@ -374,11 +406,13 @@ index 0000000000..2930649e30
 +# CONFIG_SPL_SHARES_INIT_SP_ADDR is not set
 +CONFIG_SPL_STACK_R=y
 +CONFIG_SPL_ATF=y
-+CONFIG_SPL_ATF_NO_PLATFORM_PARAM=y
 +CONFIG_CMD_GPT=y
++CONFIG_CMD_I2C=y
 +CONFIG_CMD_MMC=y
 +CONFIG_CMD_USB=y
 +# CONFIG_CMD_SETEXPR is not set
++CONFIG_CMD_PMIC=y
++CONFIG_CMD_REGULATOR=y
 +# CONFIG_SPL_DOS_PARTITION is not set
 +CONFIG_SPL_OF_CONTROL=y
 +CONFIG_OF_LIVE=y
@@ -399,8 +433,9 @@ index 0000000000..2930649e30
 +CONFIG_GMAC_ROCKCHIP=y
 +CONFIG_PHY_ROCKCHIP_INNO_USB2=y
 +CONFIG_PHY_ROCKCHIP_NANENG_COMBOPHY=y
-+CONFIG_REGULATOR_PWM=y
-+CONFIG_DM_REGULATOR_GPIO=y
++CONFIG_DM_PMIC=y
++CONFIG_PMIC_RK8XX=y
++CONFIG_REGULATOR_RK8XX=y
 +CONFIG_PWM_ROCKCHIP=y
 +CONFIG_SPL_RAM=y
 +CONFIG_BAUDRATE=1500000
@@ -409,9 +444,30 @@ index 0000000000..2930649e30
 +CONFIG_USB=y
 +CONFIG_USB_XHCI_HCD=y
 +CONFIG_USB_XHCI_DWC3=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_GENERIC=y
 +CONFIG_USB_DWC3=y
-+CONFIG_USB_DWC3_GENERIC=y
 +CONFIG_ERRNO_STR=y
++CONFIG_ROCKCHIP_SFC=y
++CONFIG_SPI_FLASH_GIGADEVICE=y
++CONFIG_SPI_FLASH_MACRONIX=y
++CONFIG_SPI_FLASH_XTX=y
++CONFIG_SF_DEFAULT_SPEED=24000000
++CONFIG_SF_DEFAULT_MODE=0x2000
++CONFIG_SATA=y
++CONFIG_SCSI_AHCI=y
++CONFIG_AHCI_PCI=y
++CONFIG_SATA_SIL=y
++CONFIG_SCSI=y
++CONFIG_DM_SCSI=y
++CONFIG_CMD_SF=y
++CONFIG_SYS_SATA_MAX_DEVICE=2
++CONFIG_USB_GADGET=y
++CONFIG_USB_DWC3_GENERIC=y
++CONFIG_PCI=y
++CONFIG_CMD_PCI=y
++CONFIG_NVME_PCI=y
++CONFIG_PCIE_DW_ROCKCHIP=y
 -- 
-2.40.0
+2.40.1
 
