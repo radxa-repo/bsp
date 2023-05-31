@@ -14,10 +14,10 @@ Currently default to enable ums support. Edit dr_mode in rk3566-radxa-cm3-rpi-cm
 to enable USB boot and disable ums command.
 ---
  arch/arm/dts/Makefile                         |   1 +
- .../rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi   |  58 ++++
+ .../rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi   |  54 ++++
  arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts  | 266 ++++++++++++++++++
  configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig | 100 +++++++
- 4 files changed, 425 insertions(+)
+ 4 files changed, 421 insertions(+)
  create mode 100644 arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
  create mode 100644 arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts
  create mode 100644 configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
@@ -39,7 +39,7 @@ new file mode 100644
 index 00000000000..358dca62487
 --- /dev/null
 +++ b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
-@@ -0,0 +1,58 @@
+@@ -0,0 +1,54 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * (C) Copyright 2021 Rockchip Electronics Co., Ltd
@@ -52,11 +52,11 @@ index 00000000000..358dca62487
 +		stdout-path = &uart2;
 +	};
 +
-+	ch482d_pcie: ch482d-pcie-regulator {
++	vcc3v3_pcie: vcc3v3-pcie-regulator {
 +		compatible = "regulator-fixed";
 +		regulator-min-microvolt = <3300000>;
 +		regulator-max-microvolt = <3300000>;
-+		regulator-name = "ch482d_pcie";
++		regulator-name = "vcc3v3_pcie";
 +	};
 +};
 +
@@ -81,10 +81,6 @@ index 00000000000..358dca62487
 +
 +&pinctrl {
 +	pcie {
-+		pcie_enable_h: pcie-enable-h {
-+			rockchip,pins = <3 RK_PC6 RK_FUNC_GPIO &pcfg_pull_none>;
-+		};
-+
 +		pcie_reset_h: pcie-reset-h {
 +			rockchip,pins = <1 RK_PB2 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
@@ -95,7 +91,7 @@ index 00000000000..358dca62487
 +	pinctrl-names = "default";
 +	pinctrl-0 = <&pcie20m1_pins &pcie_reset_h>;
 +	reset-gpios = <&gpio1 RK_PB2 GPIO_ACTIVE_HIGH>;
-+	vpcie3v3-supply = <&ch482d_pcie>;
++	vpcie3v3-supply = <&vcc3v3_pcie>;
 +	status = "okay";
 +};
 diff --git a/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts
