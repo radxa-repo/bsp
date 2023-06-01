@@ -6,18 +6,19 @@ Subject: [PATCH] Add Radxa CM3 RPI CM4 IO dummy support
 Support SPI install, microSD/eMMC/NVMe boot. No further validation were
 performed.
 
-USB hub uses the same OTG USB controller. However, there is no dual role
-switching support in U-Boot, so ums and USB boot cannot be enabled at the
-same time.
+USB hub uses the same OTG USB controller. However, currently produced CM3
+does not have pull up on USB_OTG0_VBUSDET. This results in no dual role
+support: when dr_mode == otg (default), only OTG is working; when dr_mode == host,
+only USB host is working.
 
-Currently default to enable ums support. Edit dr_mode in rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
-to enable USB boot and disable ums command.
+With pull up and dr_mode == host, both OTG and host can work with the same
+code.
 ---
  arch/arm/dts/Makefile                         |   1 +
- .../rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi   |  54 ++++
- arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts  | 266 ++++++++++++++++++
+ .../rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi   |  49 ++++
+ arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts  | 258 ++++++++++++++++++
  configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig | 100 +++++++
- 4 files changed, 421 insertions(+)
+ 4 files changed, 408 insertions(+)
  create mode 100644 arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
  create mode 100644 arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts
  create mode 100644 configs/radxa-cm3-rpi-cm4-io-rk3566_defconfig
@@ -36,10 +37,10 @@ index d75d1dfb8de..51a88eb0a03 100644
  	rk3568-radxa-e25.dtb \
 diff --git a/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
 new file mode 100644
-index 00000000000..358dca62487
+index 00000000000..01a6e4f59b5
 --- /dev/null
 +++ b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
-@@ -0,0 +1,54 @@
+@@ -0,0 +1,49 @@
 +// SPDX-License-Identifier: GPL-2.0+
 +/*
 + * (C) Copyright 2021 Rockchip Electronics Co., Ltd
@@ -66,13 +67,8 @@ index 00000000000..358dca62487
 +	status = "okay";
 +};
 +
-+&usb2phy0_otg {
-+	status = "okay";
-+};
-+
 +&usb_host0_xhci {
-+	status = "okay";
-+	// dr_mode = "host";
++	dr_mode ="host";
 +};
 +
 +&combphy2 {
@@ -96,10 +92,10 @@ index 00000000000..358dca62487
 +};
 diff --git a/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts
 new file mode 100644
-index 00000000000..faf71b304c8
+index 00000000000..9622a6ae1b9
 --- /dev/null
 +++ b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io.dts
-@@ -0,0 +1,266 @@
+@@ -0,0 +1,258 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2022 Radxa Limited
@@ -330,23 +326,15 @@ index 00000000000..faf71b304c8
 +	status = "okay";
 +};
 +
-+&usb2phy0_host {
++&usb2phy0 {
 +	status = "okay";
 +};
 +
-+&usb2phy1_host {
++&usb2phy0_otg {
 +	status = "okay";
 +};
 +
-+&usb2phy1_otg {
-+	status = "okay";
-+};
-+
-+&usb_host0_ehci {
-+	status = "okay";
-+};
-+
-+&usb_host1_xhci {
++&usb_host0_xhci {
 +	status = "okay";
 +};
 +
