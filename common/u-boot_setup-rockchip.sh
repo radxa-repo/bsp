@@ -70,9 +70,13 @@ maskrom_erase_bootloader() {
     rm /tmp/zero.img
 }
 
+maskrom_erase_spinor() {
+    rkdeveloptool ef
+}
+
 maskrom_update_spinor() {
     build_spinor
-    rkdeveloptool ef
+    maskrom_erase_spinor
     rkdeveloptool wl 0 /tmp/spi.img
     rm /tmp/spi.img
 }
@@ -86,6 +90,18 @@ maskrom_autoupdate_bootloader() {
 maskrom_autoupdate_spinor() {
     maskrom_spinor || true
     maskrom_update_spinor
+    maskrom_reset
+}
+
+maskrom_autoerase_bootloader() {
+    maskrom || true
+    maskrom_erase_bootloader
+    maskrom_reset
+}
+
+maskrom_autoerase_spinor() {
+    maskrom_spinor || true
+    maskrom_erase_spinor
     maskrom_reset
 }
 
