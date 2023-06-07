@@ -153,18 +153,42 @@ update_spinor() {
     sync
 }
 
-set -euo pipefail
-shopt -s nullglob
+# https://stackoverflow.com/a/28776166
+is_sourced() {
+    if [ -n "$ZSH_VERSION" ]
+    then 
+        case $ZSH_EVAL_CONTEXT in
+            *:file:*)
+                return 0
+                ;;
+        esac
+    else  # Add additional POSIX-compatible shell names here, if needed.
+        case ${0##*/} in
+            dash|-dash|bash|-bash|ksh|-ksh|sh|-sh)
+                return 0
+                ;;
+        esac
+    fi
+    return 1  # NOT sourced.
+}
 
-SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-
-ACTION="$1"
-shift
-
-if [[ $(type -t $ACTION) == function ]]
+if ! is_sourced
 then
-    $ACTION "$@"
-else
-    echo "Unsupported action: '$ACTION'" >&2
-    exit 1
+
+    set -euo pipefail
+    shopt -s nullglob
+
+    SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+
+    ACTION="$1"
+    shift
+
+    if [[ $(type -t $ACTION) == function ]]
+    then
+        $ACTION "$@"
+    else
+        echo "Unsupported action: '$ACTION'" >&2
+        exit 1
+    fi
+
 fi
