@@ -250,7 +250,7 @@ prepare_source() {
                         patch -N -p1 < "$p"
                     done
                     git add .
-                    git commit -m "bsp patchset $(basename $d)"
+                    git commit --no-verify -m "bsp patchset $(basename $d)"
                 else
                     git am --reject --whitespace=fix "${patches[@]}"
                 fi
