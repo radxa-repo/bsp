@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Fri, 9 Jun 2023 20:07:07 +0800
+Subject: [PATCH] Disable boot blocking components
+
+---
+ .../boot/dts/amlogic/g12b_a311d_radxa_zero2.dts      | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/amlogic/g12b_a311d_radxa_zero2.dts b/arch/arm64/boot/dts/amlogic/g12b_a311d_radxa_zero2.dts
+index 63adc85952eab..8d77d4f7a86a2 100644
+--- a/arch/arm64/boot/dts/amlogic/g12b_a311d_radxa_zero2.dts
++++ b/arch/arm64/boot/dts/amlogic/g12b_a311d_radxa_zero2.dts
+@@ -67,3 +67,15 @@
+ &ethmac {
+ 	status = "disabled";
+ };
++
++&secmon_reserved {
++	alloc-ranges = <0x0 0x77400000 0x0 0x400000>;
++};
++
++&usb2_phy_v2 {
++	status = "disabled";
++};
++
++&usb3_phy_v2 {
++	status = "disabled";
++};
+\ No newline at end of file
+-- 
+2.41.0
+

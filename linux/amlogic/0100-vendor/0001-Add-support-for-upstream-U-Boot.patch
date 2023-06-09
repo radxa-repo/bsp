@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Fri, 9 Jun 2023 18:22:00 +0800
+Subject: [PATCH] Add support for upstream U-Boot
+
+---
+ arch/arm64/boot/dts/amlogic/Makefile                   | 2 ++
+ arch/arm64/boot/dts/amlogic/meson-g12a-radxa-zero.dts  | 1 +
+ arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts | 1 +
+ 3 files changed, 4 insertions(+)
+ create mode 120000 arch/arm64/boot/dts/amlogic/meson-g12a-radxa-zero.dts
+ create mode 120000 arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
+
+diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/Makefile
+index 9a58fe36b8b47..6011311d600d4 100644
+--- a/arch/arm64/boot/dts/amlogic/Makefile
++++ b/arch/arm64/boot/dts/amlogic/Makefile
+@@ -33,6 +33,8 @@ dtb-$(CONFIG_ARM64) += g12b_s922x_ugoos_am6b_rev_a_2g.dtb
+ dtb-$(CONFIG_ARM64) += g12b_s922x_ugoos_am6b_rev_a_4g.dtb
+ dtb-$(CONFIG_ARM64) += g12b_s922x_x88_king_rev_a.dtb
+ dtb-$(CONFIG_ARM64) += g12b_s922x_bananapi_m2s.dtb
++dtb-$(CONFIG_ARM64) += meson-g12a-radxa-zero.dtb
++dtb-$(CONFIG_ARM64) += meson-g12b-radxa-zero2.dtb
+ dtb-$(CONFIG_ARM64) += sc2_s905x4_2g.dtb
+ dtb-$(CONFIG_ARM64) += sc2_s905x4_2g_1gbit.dtb
+ dtb-$(CONFIG_ARM64) += sc2_s905x4_4g.dtb
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12a-radxa-zero.dts b/arch/arm64/boot/dts/amlogic/meson-g12a-radxa-zero.dts
+new file mode 120000
+index 0000000000000..6047a27001eb0
+--- /dev/null
++++ b/arch/arm64/boot/dts/amlogic/meson-g12a-radxa-zero.dts
+@@ -0,0 +1 @@
++g12a_s905y2_radxa_zero.dts
+\ No newline at end of file
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts b/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
+new file mode 120000
+index 0000000000000..6047a27001eb0
+--- /dev/null
++++ b/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
+@@ -0,0 +1 @@
++g12b_a311d_radxa_zero2.dts
+\ No newline at end of file
+-- 
+2.41.0
+
