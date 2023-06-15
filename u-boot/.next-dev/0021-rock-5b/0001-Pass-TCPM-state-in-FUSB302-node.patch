@@ -1,0 +1,1340 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Mon, 15 May 2023 20:47:57 +0800
+Subject: [PATCH] Pass TCPM state in FUSB302 node
+
+---
+ arch/arm/mach-rockchip/board.c         | 243 ++++++++++++++
+ drivers/power/power_delivery/fusb302.c |  46 +--
+ drivers/power/power_delivery/tcpm.c    | 437 -------------------------
+ include/power/power_delivery/fusb302.h |  58 ++++
+ include/power/power_delivery/tcpm.h    | 437 ++++++++++++++++++++++++-
+ 5 files changed, 738 insertions(+), 483 deletions(-)
+ create mode 100644 include/power/power_delivery/fusb302.h
+
+diff --git a/arch/arm/mach-rockchip/board.c b/arch/arm/mach-rockchip/board.c
+index 1d0ae1bbe0c..4248e091ed1 100644
+--- a/arch/arm/mach-rockchip/board.c
++++ b/arch/arm/mach-rockchip/board.c
+@@ -38,6 +38,8 @@
+ #include <dm/root.h>
+ #include <power/charge_display.h>
+ #include <power/regulator.h>
++#include <power/power_delivery/fusb302.h>
++#include <power/power_delivery/tcpm.h>
+ #include <optee_include/OpteeClientInterface.h>
+ #include <optee_include/OpteeClientApiLib.h>
+ #include <optee_include/tee_api_defines.h>
+@@ -555,6 +557,103 @@ int board_fdt_fixup(void *blob)
+ 	return rk_board_fdt_fixup(blob);
+ }
+ 
++#define tcpm_printf(port, field) printf("  tcpm_port->" #field " = %i\n", port->field)
++void print_tcpm_state(struct tcpm_port *port)
++{
++	tcpm_printf(port, vconn_role);
++	tcpm_printf(port, pwr_role);
++	tcpm_printf(port, data_role);
++	tcpm_printf(port, pwr_opmode);
++	tcpm_printf(port, cc_req);
++	tcpm_printf(port, cc1);
++	tcpm_printf(port, cc2);
++	tcpm_printf(port, polarity);
++	tcpm_printf(port, attached);
++	tcpm_printf(port, connected);
++	tcpm_printf(port, poll_event_cnt);
++	tcpm_printf(port, port_type);
++	tcpm_printf(port, vbus_present);
++	tcpm_printf(port, vbus_vsafe0v);
++	tcpm_printf(port, vbus_never_low);
++	tcpm_printf(port, vbus_source);
++	tcpm_printf(port, vbus_charge);
++	tcpm_printf(port, send_discover);
++	tcpm_printf(port, op_vsafe5v);
++	tcpm_printf(port, try_role);
++	tcpm_printf(port, try_snk_count);
++	tcpm_printf(port, try_src_count);
++	tcpm_printf(port, queued_message);
++	tcpm_printf(port, enter_state);
++	tcpm_printf(port, prev_state);
++	tcpm_printf(port, state);
++	tcpm_printf(port, delayed_state);
++	tcpm_printf(port, pd_events);
++	tcpm_printf(port, state_machine_running);
++	tcpm_printf(port, vdm_sm_running);
++	tcpm_printf(port, tx_complete);
++	tcpm_printf(port, tx_status);
++	tcpm_printf(port, swap_pending);
++	tcpm_printf(port, non_pd_role_swap);
++	tcpm_printf(port, swap_status);
++	tcpm_printf(port, negotiated_rev);
++	tcpm_printf(port, message_id);
++	tcpm_printf(port, caps_count);
++	tcpm_printf(port, hard_reset_count);
++	tcpm_printf(port, pd_capable);
++	tcpm_printf(port, explicit_contract);
++	tcpm_printf(port, rx_msgid);
++	tcpm_printf(port, sink_request);
++	tcpm_printf(port, nr_source_caps);
++	tcpm_printf(port, nr_sink_caps);
++	tcpm_printf(port, wait_dr_swap_Message);
++	tcpm_printf(port, nr_src_pdo);
++	tcpm_printf(port, nr_snk_pdo);
++	tcpm_printf(port, nr_snk_vdo_v1);
++	tcpm_printf(port, nr_snk_vdo);
++	tcpm_printf(port, operating_snk_mw);
++	tcpm_printf(port, update_sink_caps);
++	tcpm_printf(port, req_current_limit);
++	tcpm_printf(port, req_supply_voltage);
++	tcpm_printf(port, current_limit);
++	tcpm_printf(port, supply_voltage);
++	tcpm_printf(port, usb_type);
++	tcpm_printf(port, bist_request);
++	tcpm_printf(port, vdm_state);
++	tcpm_printf(port, vdm_retries);
++	tcpm_printf(port, vdo_count);
++	tcpm_printf(port, vdo_retry);
++	tcpm_printf(port, pps_pending);
++	tcpm_printf(port, pps_status);
++	tcpm_printf(port, self_powered);
++	tcpm_printf(port, new_source_frs_current);
++	tcpm_printf(port, sink_cap_done);
++	tcpm_printf(port, debouncing);
++	tcpm_printf(port, upcoming_state);
++	tcpm_printf(port, ams);
++	tcpm_printf(port, next_ams);
++	tcpm_printf(port, in_ams);
++	tcpm_printf(port, auto_vbus_discharge_enabled);
++	tcpm_printf(port, slow_charger_loop);
++}
++
++#define fusb_printf(chip, field) printf("  chip->" #field " = %i\n", chip->field)
++void print_fusb_state(struct fusb302_chip *chip)
++{
++	fusb_printf(chip, toggling_mode);
++	fusb_printf(chip, src_current_status);
++	fusb_printf(chip, intr_togdone);
++	fusb_printf(chip, intr_bc_lvl);
++	fusb_printf(chip, intr_comp_chng);
++	fusb_printf(chip, vconn_on);
++	fusb_printf(chip, vbus_on);
++	fusb_printf(chip, charge_on);
++	fusb_printf(chip, vbus_present);
++	fusb_printf(chip, gpio_cc_int_present);
++	fusb_printf(chip, cc_polarity);
++	fusb_printf(chip, cc1);
++	fusb_printf(chip, cc2);
++}
++
+ #if defined(CONFIG_ARM64_BOOT_AARCH32) || !defined(CONFIG_ARM64)
+ /*
+  * Common for OP-TEE:
+@@ -593,6 +692,11 @@ int board_initr_caches_fixup(void)
+ 
+ void arch_preboot_os(uint32_t bootm_state, bootm_headers_t *images)
+ {
++	struct udevice *dev;
++	struct uclass *uc;
++	struct fusb302_chip *chip;
++	int node, ret;
++
+ 	if (!(bootm_state & BOOTM_STATE_OS_PREP))
+ 		return;
+ 
+@@ -627,7 +731,146 @@ void arch_preboot_os(uint32_t bootm_state, bootm_headers_t *images)
+ 			images->ep += 0x80000;
+ 	}
+ #endif
++
+ 	hotkey_run(HK_CLI_OS_PRE);
++
++	// Passing the PD state in ATAG
++	printf("Passing the PD state in FDT...\n");
++
++	ret = uclass_get(UCLASS_PD, &uc);
++	if (ret) {
++		printf("No UCLASS_PD is available!\n");
++		return;
++	}
++
++	for (uclass_first_device(UCLASS_PD, &dev);
++	     dev;
++	     uclass_next_device(&dev)) {
++		printf("Found driver %s.\n", dev->driver->name);
++		if (strcmp(dev->driver->name, "fusb302")) {
++			printf("%s is not fusb302, skip.\n", dev->driver->name);
++			continue;
++		}
++
++		chip = dev_get_priv(dev);
++		if (!chip || !chip->tcpm_port) {
++			printf("TCPM Port is unavailable!\n");
++		}
++
++		ret = fdt_shrink_to_minimum(images->ft_addr, 8192);
++		if (ret < 0) {
++			printf("Cannot shrink FDT, reason: %s\n", fdt_strerror(ret));
++			break;
++		}
++
++		node = fdt_path_offset(images->ft_addr, "/i2c@feac0000/fusb302@22");
++		if (node < 0) {
++			printf("Cannot find fusb302 node, end.\n");
++			break;
++		}
++
++		ret = fdt_setprop(images->ft_addr, node, "u-boot,pd-is-negotiated", NULL, 0);
++		if (ret < 0)
++			printf("Cannot set u-boot,pd-is-negotiated, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,negotiated_rev", chip->tcpm_port->negotiated_rev);
++		if (ret < 0)
++			printf("Cannot set u-boot,negotiated_rev, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,message_id", chip->tcpm_port->message_id);
++		if (ret < 0)
++			printf("Cannot set u-boot,message_id, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,pwr_role", chip->tcpm_port->pwr_role);
++		if (ret < 0)
++			printf("Cannot set u-boot,pwr_roled, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,data_role", chip->tcpm_port->data_role);
++		if (ret < 0)
++			printf("Cannot set u-boot,data_role, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,polarity", chip->tcpm_port->polarity);
++		if (ret < 0)
++			printf("Cannot set u-boot,polarity, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,port_type", chip->tcpm_port->port_type);
++		if (ret < 0)
++			printf("Cannot set u-boot,port_type, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,cc1", chip->tcpm_port->cc1);
++		if (ret < 0)
++			printf("Cannot set u-boot,cc1, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,cc2", chip->tcpm_port->cc2);
++		if (ret < 0)
++			printf("Cannot set u-boot,cc2, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,attached", chip->tcpm_port->attached);
++		if (ret < 0)
++			printf("Cannot set u-boot,attached, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,connected", chip->tcpm_port->connected);
++		if (ret < 0)
++			printf("Cannot set u-boot,connected, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,port_type", chip->tcpm_port->port_type);
++		if (ret < 0)
++			printf("Cannot set u-boot,port_type, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,vbus_present", chip->tcpm_port->vbus_present);
++		if (ret < 0)
++			printf("Cannot set u-boot,vbus_present, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,vbus_charge", chip->tcpm_port->vbus_charge);
++		if (ret < 0)
++			printf("Cannot set u-boot,vbus_charge, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,pd_capable", chip->tcpm_port->pd_capable);
++		if (ret < 0)
++			printf("Cannot set u-boot,pd_capable, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,explicit_contract", chip->tcpm_port->explicit_contract);
++		if (ret < 0)
++			printf("Cannot set u-boot,explicit_contract, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,rx_msgid", chip->tcpm_port->rx_msgid);
++		if (ret < 0)
++			printf("Cannot set u-boot,rx_msgid, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,nr_source_caps", chip->tcpm_port->nr_source_caps);
++		if (ret < 0)
++			printf("Cannot set u-boot,nr_source_caps, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,req_current_limit", chip->tcpm_port->req_current_limit);
++		if (ret < 0)
++			printf("Cannot set u-boot,req_current_limit, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,req_supply_voltage", chip->tcpm_port->req_supply_voltage);
++		if (ret < 0)
++			printf("Cannot set u-boot,req_supply_voltage, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,current_limit", chip->tcpm_port->current_limit);
++		if (ret < 0)
++			printf("Cannot set u-boot,current_limit, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,supply_voltage", chip->tcpm_port->supply_voltage);
++		if (ret < 0)
++			printf("Cannot set u-boot,supply_voltage, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop_u32(images->ft_addr, node, "u-boot,usb_type", chip->tcpm_port->usb_type);
++		if (ret < 0)
++			printf("Cannot set u-boot,usb_type, reason: %s\n", fdt_strerror(ret));
++
++		ret = fdt_setprop(images->ft_addr, node, "u-boot,source_caps", chip->tcpm_port->source_caps, sizeof(chip->tcpm_port->source_caps));
++		if (ret < 0)
++			printf("Cannot set u-boot,source_caps, reason: %s\n", fdt_strerror(ret));
++
++		images->ft_len = fdt_totalsize(images->ft_addr);
++		printf("fusb302 node has been preseeded.\n");
++		// print_tcpm_state(chip->tcpm_port);
++		// print_fusb_state(chip);
++		break;
++	}
+ }
+ 
+ void enable_caches(void)
+diff --git a/drivers/power/power_delivery/fusb302.c b/drivers/power/power_delivery/fusb302.c
+index 395455d06bd..184fff8c567 100644
+--- a/drivers/power/power_delivery/fusb302.c
++++ b/drivers/power/power_delivery/fusb302.c
+@@ -5,11 +5,7 @@
+  * Fairchild FUSB302 Type-C Chip Driver
+  */
+ 
+-#include <dm.h>
+-#include <i2c.h>
+-#include <asm/gpio.h>
+-#include <power/power_delivery/tcpm.h>
+-#include <power/power_delivery/power_delivery.h>
++#include <power/power_delivery/fusb302.h>
+ #include "fusb302_reg.h"
+ 
+ /*
+@@ -23,19 +19,6 @@
+ #define msleep(a)	udelay(a * 1000)
+ #define usleep_range(a, b) udelay((b))
+ 
+-enum toggling_mode {
+-	TOGGLING_MODE_OFF,
+-	TOGGLING_MODE_DRP,
+-	TOGGLING_MODE_SNK,
+-	TOGGLING_MODE_SRC,
+-};
+-
+-enum src_current_status {
+-	SRC_CURRENT_DEFAULT,
+-	SRC_CURRENT_MEDIUM,
+-	SRC_CURRENT_HIGH,
+-};
+-
+ static const u8 ra_mda_value[] = {
+ 	[SRC_CURRENT_DEFAULT] = 4,	/* 210mV */
+ 	[SRC_CURRENT_MEDIUM] = 9,	/* 420mV */
+@@ -51,33 +34,6 @@ static const u8 rd_mda_value[] = {
+ #define LOG_BUFFER_ENTRIES	1024
+ #define LOG_BUFFER_ENTRY_SIZE	128
+ 
+-struct fusb302_chip {
+-	struct udevice *udev;
+-	struct udevice *vbus_regulator;
+-	struct ofnode *child_node;
+-	struct tcpm_port *tcpm_port;
+-	struct tcpc_dev tcpc_dev;
+-	struct gpio_desc gpio_cc_int;
+-
+-	int irq;
+-
+-	enum toggling_mode toggling_mode;
+-	enum src_current_status src_current_status;
+-	bool intr_togdone;
+-	bool intr_bc_lvl;
+-	bool intr_comp_chng;
+-
+-	/* port status */
+-	bool vconn_on;
+-	bool vbus_on;
+-	bool charge_on;
+-	bool vbus_present;
+-	bool gpio_cc_int_present;
+-	enum typec_cc_polarity cc_polarity;
+-	enum typec_cc_status cc1;
+-	enum typec_cc_status cc2;
+-};
+-
+ static int fusb302_i2c_write(struct fusb302_chip *chip,
+ 			     u8 address, u8 data)
+ {
+diff --git a/drivers/power/power_delivery/tcpm.c b/drivers/power/power_delivery/tcpm.c
+index 1b94a401836..cfda01e9840 100644
+--- a/drivers/power/power_delivery/tcpm.c
++++ b/drivers/power/power_delivery/tcpm.c
+@@ -12,452 +12,15 @@
+ #include <irq-generic.h>
+ #include <rk_timer_irq.h>
+ #include <power/power_delivery/tcpm.h>
+-#include <power/power_delivery/pd_vdo.h>
+-
+-#define FOREACH_STATE(S)			\
+-	S(INVALID_STATE),			\
+-	S(TOGGLING),			\
+-	S(SRC_UNATTACHED),			\
+-	S(SRC_ATTACH_WAIT),			\
+-	S(SRC_ATTACHED),			\
+-	S(SRC_STARTUP),				\
+-	S(SRC_SEND_CAPABILITIES),		\
+-	S(SRC_SEND_CAPABILITIES_TIMEOUT),	\
+-	S(SRC_NEGOTIATE_CAPABILITIES),		\
+-	S(SRC_TRANSITION_SUPPLY),		\
+-	S(SRC_READY),				\
+-	S(SRC_WAIT_NEW_CAPABILITIES),		\
+-						\
+-	S(SNK_UNATTACHED),			\
+-	S(SNK_ATTACH_WAIT),			\
+-	S(SNK_DEBOUNCED),			\
+-	S(SNK_ATTACHED),			\
+-	S(SNK_STARTUP),				\
+-	S(SNK_DISCOVERY),			\
+-	S(SNK_DISCOVERY_DEBOUNCE),		\
+-	S(SNK_DISCOVERY_DEBOUNCE_DONE),		\
+-	S(SNK_WAIT_CAPABILITIES),		\
+-	S(SNK_NEGOTIATE_CAPABILITIES),		\
+-	S(SNK_NEGOTIATE_PPS_CAPABILITIES),	\
+-	S(SNK_TRANSITION_SINK),			\
+-	S(SNK_TRANSITION_SINK_VBUS),		\
+-	S(SNK_READY),				\
+-						\
+-	S(ACC_UNATTACHED),			\
+-	S(DEBUG_ACC_ATTACHED),			\
+-	S(AUDIO_ACC_ATTACHED),			\
+-	S(AUDIO_ACC_DEBOUNCE),			\
+-						\
+-	S(HARD_RESET_SEND),			\
+-	S(HARD_RESET_START),			\
+-	S(SRC_HARD_RESET_VBUS_OFF),		\
+-	S(SRC_HARD_RESET_VBUS_ON),		\
+-	S(SNK_HARD_RESET_SINK_OFF),		\
+-	S(SNK_HARD_RESET_WAIT_VBUS),		\
+-	S(SNK_HARD_RESET_SINK_ON),		\
+-						\
+-	S(SOFT_RESET),				\
+-	S(SRC_SOFT_RESET_WAIT_SNK_TX),		\
+-	S(SNK_SOFT_RESET),			\
+-	S(SOFT_RESET_SEND),			\
+-						\
+-	S(DR_SWAP_ACCEPT),			\
+-	S(DR_SWAP_SEND),			\
+-	S(DR_SWAP_SEND_TIMEOUT),		\
+-	S(DR_SWAP_CANCEL),			\
+-	S(DR_SWAP_CHANGE_DR),			\
+-						\
+-	S(PR_SWAP_ACCEPT),			\
+-	S(PR_SWAP_SEND),			\
+-	S(PR_SWAP_SEND_TIMEOUT),		\
+-	S(PR_SWAP_CANCEL),			\
+-	S(PR_SWAP_START),			\
+-	S(PR_SWAP_SRC_SNK_TRANSITION_OFF),	\
+-	S(PR_SWAP_SRC_SNK_SOURCE_OFF),		\
+-	S(PR_SWAP_SRC_SNK_SOURCE_OFF_CC_DEBOUNCED), \
+-	S(PR_SWAP_SRC_SNK_SINK_ON),		\
+-	S(PR_SWAP_SNK_SRC_SINK_OFF),		\
+-	S(PR_SWAP_SNK_SRC_SOURCE_ON),		\
+-	S(PR_SWAP_SNK_SRC_SOURCE_ON_VBUS_RAMPED_UP),    \
+-						\
+-	S(VCONN_SWAP_ACCEPT),			\
+-	S(VCONN_SWAP_SEND),			\
+-	S(VCONN_SWAP_SEND_TIMEOUT),		\
+-	S(VCONN_SWAP_CANCEL),			\
+-	S(VCONN_SWAP_START),			\
+-	S(VCONN_SWAP_WAIT_FOR_VCONN),		\
+-	S(VCONN_SWAP_TURN_ON_VCONN),		\
+-	S(VCONN_SWAP_TURN_OFF_VCONN),		\
+-						\
+-	S(FR_SWAP_SEND),			\
+-	S(FR_SWAP_SEND_TIMEOUT),		\
+-	S(FR_SWAP_SNK_SRC_TRANSITION_TO_OFF),			\
+-	S(FR_SWAP_SNK_SRC_NEW_SINK_READY),		\
+-	S(FR_SWAP_SNK_SRC_SOURCE_VBUS_APPLIED),	\
+-	S(FR_SWAP_CANCEL),			\
+-						\
+-	S(SNK_TRY),				\
+-	S(SNK_TRY_WAIT),			\
+-	S(SNK_TRY_WAIT_DEBOUNCE),               \
+-	S(SNK_TRY_WAIT_DEBOUNCE_CHECK_VBUS),    \
+-	S(SRC_TRYWAIT),				\
+-	S(SRC_TRYWAIT_DEBOUNCE),		\
+-	S(SRC_TRYWAIT_UNATTACHED),		\
+-						\
+-	S(SRC_TRY),				\
+-	S(SRC_TRY_WAIT),                        \
+-	S(SRC_TRY_DEBOUNCE),			\
+-	S(SNK_TRYWAIT),				\
+-	S(SNK_TRYWAIT_DEBOUNCE),		\
+-	S(SNK_TRYWAIT_VBUS),			\
+-	S(BIST_RX),				\
+-						\
+-	S(GET_STATUS_SEND),			\
+-	S(GET_STATUS_SEND_TIMEOUT),		\
+-	S(GET_PPS_STATUS_SEND),			\
+-	S(GET_PPS_STATUS_SEND_TIMEOUT),		\
+-						\
+-	S(GET_SINK_CAP),			\
+-	S(GET_SINK_CAP_TIMEOUT),		\
+-						\
+-	S(ERROR_RECOVERY),			\
+-	S(PORT_RESET),				\
+-	S(PORT_RESET_WAIT_OFF),			\
+-						\
+-	S(AMS_START),				\
+-	S(CHUNK_NOT_SUPP)
+-
+-#define FOREACH_AMS(S)				\
+-	S(NONE_AMS),				\
+-	S(POWER_NEGOTIATION),			\
+-	S(GOTOMIN),				\
+-	S(SOFT_RESET_AMS),			\
+-	S(HARD_RESET),				\
+-	S(CABLE_RESET),				\
+-	S(GET_SOURCE_CAPABILITIES),		\
+-	S(GET_SINK_CAPABILITIES),		\
+-	S(POWER_ROLE_SWAP),			\
+-	S(FAST_ROLE_SWAP),			\
+-	S(DATA_ROLE_SWAP),			\
+-	S(VCONN_SWAP),				\
+-	S(SOURCE_ALERT),			\
+-	S(GETTING_SOURCE_EXTENDED_CAPABILITIES),\
+-	S(GETTING_SOURCE_SINK_STATUS),		\
+-	S(GETTING_BATTERY_CAPABILITIES),	\
+-	S(GETTING_BATTERY_STATUS),		\
+-	S(GETTING_MANUFACTURER_INFORMATION),	\
+-	S(SECURITY),				\
+-	S(FIRMWARE_UPDATE),			\
+-	S(DISCOVER_IDENTITY),			\
+-	S(SOURCE_STARTUP_CABLE_PLUG_DISCOVER_IDENTITY),	\
+-	S(DISCOVER_SVIDS),			\
+-	S(DISCOVER_MODES),			\
+-	S(DFP_TO_UFP_ENTER_MODE),		\
+-	S(DFP_TO_UFP_EXIT_MODE),		\
+-	S(DFP_TO_CABLE_PLUG_ENTER_MODE),	\
+-	S(DFP_TO_CABLE_PLUG_EXIT_MODE),		\
+-	S(ATTENTION),				\
+-	S(BIST),				\
+-	S(UNSTRUCTURED_VDMS),			\
+-	S(STRUCTURED_VDMS),			\
+-	S(COUNTRY_INFO),			\
+-	S(COUNTRY_CODES)
+-
+-#define GENERATE_ENUM(e)	e
+-#define GENERATE_STRING(s)	#s
+-#define TCPM_POLL_EVENT_TIME_OUT 2000
+-
+-enum tcpm_state {
+-	FOREACH_STATE(GENERATE_ENUM)
+-};
+ 
+ static const char * const tcpm_states[] = {
+ 	FOREACH_STATE(GENERATE_STRING)
+ };
+ 
+-enum tcpm_ams {
+-	FOREACH_AMS(GENERATE_ENUM)
+-};
+-
+ static const char * const tcpm_ams_str[] = {
+ 	FOREACH_AMS(GENERATE_STRING)
+ };
+ 
+-enum vdm_states {
+-	VDM_STATE_ERR_BUSY = -3,
+-	VDM_STATE_ERR_SEND = -2,
+-	VDM_STATE_ERR_TMOUT = -1,
+-	VDM_STATE_DONE = 0,
+-	/* Anything >0 represents an active state */
+-	VDM_STATE_READY = 1,
+-	VDM_STATE_BUSY = 2,
+-	VDM_STATE_WAIT_RSP_BUSY = 3,
+-	VDM_STATE_SEND_MESSAGE = 4,
+-};
+-
+-enum pd_msg_request {
+-	PD_MSG_NONE = 0,
+-	PD_MSG_CTRL_REJECT,
+-	PD_MSG_CTRL_WAIT,
+-	PD_MSG_CTRL_NOT_SUPP,
+-	PD_MSG_DATA_SINK_CAP,
+-	PD_MSG_DATA_SOURCE_CAP,
+-};
+-
+-enum adev_actions {
+-	ADEV_NONE = 0,
+-	ADEV_NOTIFY_USB_AND_QUEUE_VDM,
+-	ADEV_QUEUE_VDM,
+-	ADEV_QUEUE_VDM_SEND_EXIT_MODE_ON_FAIL,
+-	ADEV_ATTENTION,
+-};
+-
+-/*
+- * Initial current capability of the new source when vSafe5V is applied during PD3.0 Fast Role Swap.
+- * Based on "Table 6-14 Fixed Supply PDO - Sink" of "USB Power Delivery Specification Revision 3.0,
+- * Version 1.2"
+- */
+-enum frs_typec_current {
+-	FRS_NOT_SUPPORTED,
+-	FRS_DEFAULT_POWER,
+-	FRS_5V_1P5A,
+-	FRS_5V_3A,
+-};
+-
+-/* Events from low level driver */
+-
+-#define TCPM_CC_EVENT		BIT(0)
+-#define TCPM_VBUS_EVENT		BIT(1)
+-#define TCPM_RESET_EVENT	BIT(2)
+-#define TCPM_FRS_EVENT		BIT(3)
+-#define TCPM_SOURCING_VBUS	BIT(4)
+-
+-#define LOG_BUFFER_ENTRIES	1024
+-#define LOG_BUFFER_ENTRY_SIZE	128
+-
+-/* Alternate mode support */
+-
+-#define SVID_DISCOVERY_MAX	16
+-#define ALTMODE_DISCOVERY_MAX	(SVID_DISCOVERY_MAX * MODE_DISCOVERY_MAX)
+-
+-#define GET_SINK_CAP_RETRY_MS	100
+-#define SEND_DISCOVER_RETRY_MS	100
+-
+-/*
+- * @min_volt: Actual min voltage at the local port
+- * @req_min_volt: Requested min voltage to the port partner
+- * @max_volt: Actual max voltage at the local port
+- * @req_max_volt: Requested max voltage to the port partner
+- * @max_curr: Actual max current at the local port
+- * @req_max_curr: Requested max current of the port partner
+- * @req_out_volt: Requested output voltage to the port partner
+- * @req_op_curr: Requested operating current to the port partner
+- * @supported: Parter has atleast one APDO hence supports PPS
+- * @active: PPS mode is active
+- */
+-struct pd_pps_data {
+-	u32 min_volt;
+-	u32 req_min_volt;
+-	u32 max_volt;
+-	u32 req_max_volt;
+-	u32 max_curr;
+-	u32 req_max_curr;
+-	u32 req_out_volt;
+-	u32 req_op_curr;
+-	bool supported;
+-	bool active;
+-};
+-
+-enum power_supply_usb_type {
+-	POWER_SUPPLY_USB_TYPE_UNKNOWN = 0,
+-	POWER_SUPPLY_USB_TYPE_SDP,              /* Standard Downstream Port */
+-	POWER_SUPPLY_USB_TYPE_DCP,              /* Dedicated Charging Port */
+-	POWER_SUPPLY_USB_TYPE_CDP,              /* Charging Downstream Port */
+-	POWER_SUPPLY_USB_TYPE_ACA,              /* Accessory Charger Adapters */
+-	POWER_SUPPLY_USB_TYPE_C,                /* Type C Port */
+-	POWER_SUPPLY_USB_TYPE_PD,               /* Power Delivery Port */
+-	POWER_SUPPLY_USB_TYPE_PD_DRP,           /* PD Dual Role Port */
+-	POWER_SUPPLY_USB_TYPE_PD_PPS,           /* PD Programmable Power Supply */
+-	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,   /* Apple Charging Method */
+-};
+-
+-struct tcpm_port {
+-	struct udevice *dev;
+-	struct typec_capability typec_caps;
+-	struct tcpc_dev	*tcpc;
+-
+-	enum typec_role vconn_role;
+-	enum typec_role pwr_role;
+-	enum typec_data_role data_role;
+-	enum typec_pwr_opmode pwr_opmode;
+-
+-	struct usb_pd_identity partner_ident;
+-	struct typec_partner_desc partner_desc;
+-	struct typec_partner *partner;
+-
+-	enum typec_cc_status cc_req;
+-
+-	enum typec_cc_status cc1;
+-	enum typec_cc_status cc2;
+-	enum typec_cc_polarity polarity;
+-
+-	bool attached;
+-	bool connected;
+-	int poll_event_cnt;
+-	enum typec_port_type port_type;
+-
+-	/*
+-	 * Set to true when vbus is greater than VSAFE5V min.
+-	 * Set to false when vbus falls below vSinkDisconnect max threshold.
+-	 */
+-	bool vbus_present;
+-
+-	/*
+-	 * Set to true when vbus is less than VSAFE0V max.
+-	 * Set to false when vbus is greater than VSAFE0V max.
+-	 */
+-	bool vbus_vsafe0v;
+-
+-	bool vbus_never_low;
+-	bool vbus_source;
+-	bool vbus_charge;
+-
+-	/* Set to true when Discover_Identity Command is expected to be sent in Ready states. */
+-	bool send_discover;
+-	bool op_vsafe5v;
+-
+-	int try_role;
+-	int try_snk_count;
+-	int try_src_count;
+-
+-	enum pd_msg_request queued_message;
+-
+-	enum tcpm_state enter_state;
+-	enum tcpm_state prev_state;
+-	enum tcpm_state state;
+-	enum tcpm_state delayed_state;
+-	unsigned long delay_ms;
+-
+-	spinlock_t pd_event_lock;
+-	u32 pd_events;
+-
+-	bool state_machine_running;
+-	/* Set to true when VDM State Machine has following actions. */
+-	bool vdm_sm_running;
+-
+-	bool tx_complete;
+-	enum tcpm_transmit_status tx_status;
+-
+-	struct mutex swap_lock;		/* swap command lock */
+-	bool swap_pending;
+-	bool non_pd_role_swap;
+-	int swap_status;
+-
+-	unsigned int negotiated_rev;
+-	unsigned int message_id;
+-	unsigned int caps_count;
+-	unsigned int hard_reset_count;
+-	bool pd_capable;
+-	bool explicit_contract;
+-	unsigned int rx_msgid;
+-
+-	/* Partner capabilities/requests */
+-	u32 sink_request;
+-	u32 source_caps[PDO_MAX_OBJECTS];
+-	unsigned int nr_source_caps;
+-	u32 sink_caps[PDO_MAX_OBJECTS];
+-	unsigned int nr_sink_caps;
+-
+-	/*
+-	 * whether to wait for the Type-C device to send the DR_SWAP Message flag
+-	 * For Type-C device with Dual-Role Power and Dual-Role Data, the port side
+-	 * is used as sink + ufp, then the tcpm framework needs to wait for Type-C
+-	 * device to initiate DR_swap Message.
+-	 */
+-	bool wait_dr_swap_Message;
+-
+-	/* Local capabilities */
+-	u32 src_pdo[PDO_MAX_OBJECTS];
+-	unsigned int nr_src_pdo;
+-	u32 snk_pdo[PDO_MAX_OBJECTS];
+-	unsigned int nr_snk_pdo;
+-	u32 snk_vdo_v1[VDO_MAX_OBJECTS];
+-	unsigned int nr_snk_vdo_v1;
+-	u32 snk_vdo[VDO_MAX_OBJECTS];
+-	unsigned int nr_snk_vdo;
+-
+-	unsigned int operating_snk_mw;
+-	bool update_sink_caps;
+-
+-	/* Requested current / voltage to the port partner */
+-	u32 req_current_limit;
+-	u32 req_supply_voltage;
+-	/* Actual current / voltage limit of the local port */
+-	u32 current_limit;
+-	u32 supply_voltage;
+-
+-	enum power_supply_usb_type usb_type;
+-
+-	u32 bist_request;
+-
+-	/* PD state for Vendor Defined Messages */
+-	enum vdm_states vdm_state;
+-	u32 vdm_retries;
+-	/* next Vendor Defined Message to send */
+-	u32 vdo_data[VDO_MAX_SIZE];
+-	u8 vdo_count;
+-	/* VDO to retry if UFP responder replied busy */
+-	u32 vdo_retry;
+-
+-	/* PPS */
+-	struct pd_pps_data pps_data;
+-	bool pps_pending;
+-	int pps_status;
+-
+-	/* Deadline in jiffies to exit src_try_wait state */
+-	unsigned long max_wait;
+-
+-	/* port belongs to a self powered device */
+-	bool self_powered;
+-
+-	/* Sink FRS */
+-	enum frs_typec_current new_source_frs_current;
+-
+-	/* Sink caps have been queried */
+-	bool sink_cap_done;
+-
+-	/* Port is still in tCCDebounce */
+-	bool debouncing;
+-
+-	/* Collision Avoidance and Atomic Message Sequence */
+-	enum tcpm_state upcoming_state;
+-	enum tcpm_ams ams;
+-	enum tcpm_ams next_ams;
+-	bool in_ams;
+-
+-	/* Auto vbus discharge status */
+-	bool auto_vbus_discharge_enabled;
+-
+-	/*
+-	 * When set, port requests PD_P_SNK_STDBY_MW upon entering SNK_DISCOVERY and
+-	 * the actual currrent limit after RX of PD_CTRL_PSRDY for PD link,
+-	 * SNK_READY for non-pd link.
+-	 */
+-	bool slow_charger_loop;
+-#ifdef CONFIG_DEBUG_FS
+-	struct dentry *dentry;
+-	struct mutex logbuffer_lock;	/* log buffer access lock */
+-	int logbuffer_head;
+-	int logbuffer_tail;
+-	u8 *logbuffer[LOG_BUFFER_ENTRIES];
+-#endif
+-};
+-
+-struct pd_rx_event {
+-	struct tcpm_port *port;
+-	struct pd_message msg;
+-};
+-
+ static const char * const pd_rev[] = {
+ 	[PD_REV10]		= "rev1",
+ 	[PD_REV20]		= "rev2",
+diff --git a/include/power/power_delivery/fusb302.h b/include/power/power_delivery/fusb302.h
+new file mode 100644
+index 00000000000..d04eec574c5
+--- /dev/null
++++ b/include/power/power_delivery/fusb302.h
+@@ -0,0 +1,58 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * Copyright 2016-2017 Google, Inc
++ *
++ * Fairchild FUSB302 Type-C Chip Driver
++ */
++
++#ifndef __LINUX_USB_PD_FUSB302_H
++#define __LINUX_USB_PD_FUSB302_H
++
++#include <dm.h>
++#include <i2c.h>
++#include <asm/gpio.h>
++#include <power/power_delivery/tcpm.h>
++#include <power/power_delivery/power_delivery.h>
++
++enum toggling_mode {
++	TOGGLING_MODE_OFF,
++	TOGGLING_MODE_DRP,
++	TOGGLING_MODE_SNK,
++	TOGGLING_MODE_SRC,
++};
++
++enum src_current_status {
++	SRC_CURRENT_DEFAULT,
++	SRC_CURRENT_MEDIUM,
++	SRC_CURRENT_HIGH,
++};
++
++struct fusb302_chip {
++	struct udevice *udev;
++	struct udevice *vbus_regulator;
++	struct ofnode *child_node;
++	struct tcpm_port *tcpm_port;
++	struct tcpc_dev tcpc_dev;
++	struct gpio_desc gpio_cc_int;
++
++	int irq;
++
++	enum toggling_mode toggling_mode;
++	enum src_current_status src_current_status;
++	bool intr_togdone;
++	bool intr_bc_lvl;
++	bool intr_comp_chng;
++
++	/* port status */
++	bool vconn_on;
++	bool vbus_on;
++	bool charge_on;
++	bool vbus_present;
++	bool gpio_cc_int_present;
++	enum typec_cc_polarity cc_polarity;
++	enum typec_cc_status cc1;
++	enum typec_cc_status cc2;
++};
++
++
++#endif /* __LINUX_USB_PD_FUSB302_H */
+diff --git a/include/power/power_delivery/tcpm.h b/include/power/power_delivery/tcpm.h
+index 0049682106e..4b2ac2758c2 100644
+--- a/include/power/power_delivery/tcpm.h
++++ b/include/power/power_delivery/tcpm.h
+@@ -7,6 +7,7 @@
+ #define __LINUX_USB_TCPM_H
+ 
+ #include <linux/bitops.h>
++#include <power/power_delivery/pd_vdo.h>
+ #include "typec.h"
+ #include "pd.h"
+ 
+@@ -165,7 +166,441 @@ struct tcpc_dev {
+ 	int (*enter_low_power_mode)(struct tcpc_dev *dev, bool attached, bool pd_capable);
+ };
+ 
+-struct tcpm_port;
++#define GENERATE_ENUM(e)	e
++#define GENERATE_STRING(s)	#s
++#define TCPM_POLL_EVENT_TIME_OUT 2000
++
++#define FOREACH_STATE(S)			\
++	S(INVALID_STATE),			\
++	S(TOGGLING),			\
++	S(SRC_UNATTACHED),			\
++	S(SRC_ATTACH_WAIT),			\
++	S(SRC_ATTACHED),			\
++	S(SRC_STARTUP),				\
++	S(SRC_SEND_CAPABILITIES),		\
++	S(SRC_SEND_CAPABILITIES_TIMEOUT),	\
++	S(SRC_NEGOTIATE_CAPABILITIES),		\
++	S(SRC_TRANSITION_SUPPLY),		\
++	S(SRC_READY),				\
++	S(SRC_WAIT_NEW_CAPABILITIES),		\
++						\
++	S(SNK_UNATTACHED),			\
++	S(SNK_ATTACH_WAIT),			\
++	S(SNK_DEBOUNCED),			\
++	S(SNK_ATTACHED),			\
++	S(SNK_STARTUP),				\
++	S(SNK_DISCOVERY),			\
++	S(SNK_DISCOVERY_DEBOUNCE),		\
++	S(SNK_DISCOVERY_DEBOUNCE_DONE),		\
++	S(SNK_WAIT_CAPABILITIES),		\
++	S(SNK_NEGOTIATE_CAPABILITIES),		\
++	S(SNK_NEGOTIATE_PPS_CAPABILITIES),	\
++	S(SNK_TRANSITION_SINK),			\
++	S(SNK_TRANSITION_SINK_VBUS),		\
++	S(SNK_READY),				\
++						\
++	S(ACC_UNATTACHED),			\
++	S(DEBUG_ACC_ATTACHED),			\
++	S(AUDIO_ACC_ATTACHED),			\
++	S(AUDIO_ACC_DEBOUNCE),			\
++						\
++	S(HARD_RESET_SEND),			\
++	S(HARD_RESET_START),			\
++	S(SRC_HARD_RESET_VBUS_OFF),		\
++	S(SRC_HARD_RESET_VBUS_ON),		\
++	S(SNK_HARD_RESET_SINK_OFF),		\
++	S(SNK_HARD_RESET_WAIT_VBUS),		\
++	S(SNK_HARD_RESET_SINK_ON),		\
++						\
++	S(SOFT_RESET),				\
++	S(SRC_SOFT_RESET_WAIT_SNK_TX),		\
++	S(SNK_SOFT_RESET),			\
++	S(SOFT_RESET_SEND),			\
++						\
++	S(DR_SWAP_ACCEPT),			\
++	S(DR_SWAP_SEND),			\
++	S(DR_SWAP_SEND_TIMEOUT),		\
++	S(DR_SWAP_CANCEL),			\
++	S(DR_SWAP_CHANGE_DR),			\
++						\
++	S(PR_SWAP_ACCEPT),			\
++	S(PR_SWAP_SEND),			\
++	S(PR_SWAP_SEND_TIMEOUT),		\
++	S(PR_SWAP_CANCEL),			\
++	S(PR_SWAP_START),			\
++	S(PR_SWAP_SRC_SNK_TRANSITION_OFF),	\
++	S(PR_SWAP_SRC_SNK_SOURCE_OFF),		\
++	S(PR_SWAP_SRC_SNK_SOURCE_OFF_CC_DEBOUNCED), \
++	S(PR_SWAP_SRC_SNK_SINK_ON),		\
++	S(PR_SWAP_SNK_SRC_SINK_OFF),		\
++	S(PR_SWAP_SNK_SRC_SOURCE_ON),		\
++	S(PR_SWAP_SNK_SRC_SOURCE_ON_VBUS_RAMPED_UP),    \
++						\
++	S(VCONN_SWAP_ACCEPT),			\
++	S(VCONN_SWAP_SEND),			\
++	S(VCONN_SWAP_SEND_TIMEOUT),		\
++	S(VCONN_SWAP_CANCEL),			\
++	S(VCONN_SWAP_START),			\
++	S(VCONN_SWAP_WAIT_FOR_VCONN),		\
++	S(VCONN_SWAP_TURN_ON_VCONN),		\
++	S(VCONN_SWAP_TURN_OFF_VCONN),		\
++						\
++	S(FR_SWAP_SEND),			\
++	S(FR_SWAP_SEND_TIMEOUT),		\
++	S(FR_SWAP_SNK_SRC_TRANSITION_TO_OFF),			\
++	S(FR_SWAP_SNK_SRC_NEW_SINK_READY),		\
++	S(FR_SWAP_SNK_SRC_SOURCE_VBUS_APPLIED),	\
++	S(FR_SWAP_CANCEL),			\
++						\
++	S(SNK_TRY),				\
++	S(SNK_TRY_WAIT),			\
++	S(SNK_TRY_WAIT_DEBOUNCE),               \
++	S(SNK_TRY_WAIT_DEBOUNCE_CHECK_VBUS),    \
++	S(SRC_TRYWAIT),				\
++	S(SRC_TRYWAIT_DEBOUNCE),		\
++	S(SRC_TRYWAIT_UNATTACHED),		\
++						\
++	S(SRC_TRY),				\
++	S(SRC_TRY_WAIT),                        \
++	S(SRC_TRY_DEBOUNCE),			\
++	S(SNK_TRYWAIT),				\
++	S(SNK_TRYWAIT_DEBOUNCE),		\
++	S(SNK_TRYWAIT_VBUS),			\
++	S(BIST_RX),				\
++						\
++	S(GET_STATUS_SEND),			\
++	S(GET_STATUS_SEND_TIMEOUT),		\
++	S(GET_PPS_STATUS_SEND),			\
++	S(GET_PPS_STATUS_SEND_TIMEOUT),		\
++						\
++	S(GET_SINK_CAP),			\
++	S(GET_SINK_CAP_TIMEOUT),		\
++						\
++	S(ERROR_RECOVERY),			\
++	S(PORT_RESET),				\
++	S(PORT_RESET_WAIT_OFF),			\
++						\
++	S(AMS_START),				\
++	S(CHUNK_NOT_SUPP)
++
++#define FOREACH_AMS(S)				\
++	S(NONE_AMS),				\
++	S(POWER_NEGOTIATION),			\
++	S(GOTOMIN),				\
++	S(SOFT_RESET_AMS),			\
++	S(HARD_RESET),				\
++	S(CABLE_RESET),				\
++	S(GET_SOURCE_CAPABILITIES),		\
++	S(GET_SINK_CAPABILITIES),		\
++	S(POWER_ROLE_SWAP),			\
++	S(FAST_ROLE_SWAP),			\
++	S(DATA_ROLE_SWAP),			\
++	S(VCONN_SWAP),				\
++	S(SOURCE_ALERT),			\
++	S(GETTING_SOURCE_EXTENDED_CAPABILITIES),\
++	S(GETTING_SOURCE_SINK_STATUS),		\
++	S(GETTING_BATTERY_CAPABILITIES),	\
++	S(GETTING_BATTERY_STATUS),		\
++	S(GETTING_MANUFACTURER_INFORMATION),	\
++	S(SECURITY),				\
++	S(FIRMWARE_UPDATE),			\
++	S(DISCOVER_IDENTITY),			\
++	S(SOURCE_STARTUP_CABLE_PLUG_DISCOVER_IDENTITY),	\
++	S(DISCOVER_SVIDS),			\
++	S(DISCOVER_MODES),			\
++	S(DFP_TO_UFP_ENTER_MODE),		\
++	S(DFP_TO_UFP_EXIT_MODE),		\
++	S(DFP_TO_CABLE_PLUG_ENTER_MODE),	\
++	S(DFP_TO_CABLE_PLUG_EXIT_MODE),		\
++	S(ATTENTION),				\
++	S(BIST),				\
++	S(UNSTRUCTURED_VDMS),			\
++	S(STRUCTURED_VDMS),			\
++	S(COUNTRY_INFO),			\
++	S(COUNTRY_CODES)
++
++enum tcpm_state {
++	FOREACH_STATE(GENERATE_ENUM)
++};
++
++enum tcpm_ams {
++	FOREACH_AMS(GENERATE_ENUM)
++};
++
++/*
++ * Initial current capability of the new source when vSafe5V is applied during PD3.0 Fast Role Swap.
++ * Based on "Table 6-14 Fixed Supply PDO - Sink" of "USB Power Delivery Specification Revision 3.0,
++ * Version 1.2"
++ */
++enum frs_typec_current {
++	FRS_NOT_SUPPORTED,
++	FRS_DEFAULT_POWER,
++	FRS_5V_1P5A,
++	FRS_5V_3A,
++};
++
++/*
++ * @min_volt: Actual min voltage at the local port
++ * @req_min_volt: Requested min voltage to the port partner
++ * @max_volt: Actual max voltage at the local port
++ * @req_max_volt: Requested max voltage to the port partner
++ * @max_curr: Actual max current at the local port
++ * @req_max_curr: Requested max current of the port partner
++ * @req_out_volt: Requested output voltage to the port partner
++ * @req_op_curr: Requested operating current to the port partner
++ * @supported: Parter has atleast one APDO hence supports PPS
++ * @active: PPS mode is active
++ */
++struct pd_pps_data {
++	u32 min_volt;
++	u32 req_min_volt;
++	u32 max_volt;
++	u32 req_max_volt;
++	u32 max_curr;
++	u32 req_max_curr;
++	u32 req_out_volt;
++	u32 req_op_curr;
++	bool supported;
++	bool active;
++};
++
++enum power_supply_usb_type {
++	POWER_SUPPLY_USB_TYPE_UNKNOWN = 0,
++	POWER_SUPPLY_USB_TYPE_SDP,              /* Standard Downstream Port */
++	POWER_SUPPLY_USB_TYPE_DCP,              /* Dedicated Charging Port */
++	POWER_SUPPLY_USB_TYPE_CDP,              /* Charging Downstream Port */
++	POWER_SUPPLY_USB_TYPE_ACA,              /* Accessory Charger Adapters */
++	POWER_SUPPLY_USB_TYPE_C,                /* Type C Port */
++	POWER_SUPPLY_USB_TYPE_PD,               /* Power Delivery Port */
++	POWER_SUPPLY_USB_TYPE_PD_DRP,           /* PD Dual Role Port */
++	POWER_SUPPLY_USB_TYPE_PD_PPS,           /* PD Programmable Power Supply */
++	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,   /* Apple Charging Method */
++};
++
++struct pd_rx_event {
++	struct tcpm_port *port;
++	struct pd_message msg;
++};
++
++enum vdm_states {
++	VDM_STATE_ERR_BUSY = -3,
++	VDM_STATE_ERR_SEND = -2,
++	VDM_STATE_ERR_TMOUT = -1,
++	VDM_STATE_DONE = 0,
++	/* Anything >0 represents an active state */
++	VDM_STATE_READY = 1,
++	VDM_STATE_BUSY = 2,
++	VDM_STATE_WAIT_RSP_BUSY = 3,
++	VDM_STATE_SEND_MESSAGE = 4,
++};
++
++enum pd_msg_request {
++	PD_MSG_NONE = 0,
++	PD_MSG_CTRL_REJECT,
++	PD_MSG_CTRL_WAIT,
++	PD_MSG_CTRL_NOT_SUPP,
++	PD_MSG_DATA_SINK_CAP,
++	PD_MSG_DATA_SOURCE_CAP,
++};
++
++enum adev_actions {
++	ADEV_NONE = 0,
++	ADEV_NOTIFY_USB_AND_QUEUE_VDM,
++	ADEV_QUEUE_VDM,
++	ADEV_QUEUE_VDM_SEND_EXIT_MODE_ON_FAIL,
++	ADEV_ATTENTION,
++};
++
++/* Events from low level driver */
++
++#define TCPM_CC_EVENT		BIT(0)
++#define TCPM_VBUS_EVENT		BIT(1)
++#define TCPM_RESET_EVENT	BIT(2)
++#define TCPM_FRS_EVENT		BIT(3)
++#define TCPM_SOURCING_VBUS	BIT(4)
++
++#define LOG_BUFFER_ENTRIES	1024
++#define LOG_BUFFER_ENTRY_SIZE	128
++
++/* Alternate mode support */
++
++#define SVID_DISCOVERY_MAX	16
++#define ALTMODE_DISCOVERY_MAX	(SVID_DISCOVERY_MAX * MODE_DISCOVERY_MAX)
++
++#define GET_SINK_CAP_RETRY_MS	100
++#define SEND_DISCOVER_RETRY_MS	100
++
++struct tcpm_port {
++	struct udevice *dev;
++	struct typec_capability typec_caps;
++	struct tcpc_dev	*tcpc;
++
++	enum typec_role vconn_role;
++	enum typec_role pwr_role;
++	enum typec_data_role data_role;
++	enum typec_pwr_opmode pwr_opmode;
++
++	struct usb_pd_identity partner_ident;
++	struct typec_partner_desc partner_desc;
++	struct typec_partner *partner;
++
++	enum typec_cc_status cc_req;
++
++	enum typec_cc_status cc1;
++	enum typec_cc_status cc2;
++	enum typec_cc_polarity polarity;
++
++	bool attached;
++	bool connected;
++	int poll_event_cnt;
++	enum typec_port_type port_type;
++
++	/*
++	 * Set to true when vbus is greater than VSAFE5V min.
++	 * Set to false when vbus falls below vSinkDisconnect max threshold.
++	 */
++	bool vbus_present;
++
++	/*
++	 * Set to true when vbus is less than VSAFE0V max.
++	 * Set to false when vbus is greater than VSAFE0V max.
++	 */
++	bool vbus_vsafe0v;
++
++	bool vbus_never_low;
++	bool vbus_source;
++	bool vbus_charge;
++
++	/* Set to true when Discover_Identity Command is expected to be sent in Ready states. */
++	bool send_discover;
++	bool op_vsafe5v;
++
++	int try_role;
++	int try_snk_count;
++	int try_src_count;
++
++	enum pd_msg_request queued_message;
++
++	enum tcpm_state enter_state;
++	enum tcpm_state prev_state;
++	enum tcpm_state state;
++	enum tcpm_state delayed_state;
++	unsigned long delay_ms;
++
++	spinlock_t pd_event_lock;
++	u32 pd_events;
++
++	bool state_machine_running;
++	/* Set to true when VDM State Machine has following actions. */
++	bool vdm_sm_running;
++
++	bool tx_complete;
++	enum tcpm_transmit_status tx_status;
++
++	struct mutex swap_lock;		/* swap command lock */
++	bool swap_pending;
++	bool non_pd_role_swap;
++	int swap_status;
++
++	unsigned int negotiated_rev;
++	unsigned int message_id;
++	unsigned int caps_count;
++	unsigned int hard_reset_count;
++	bool pd_capable;
++	bool explicit_contract;
++	unsigned int rx_msgid;
++
++	/* Partner capabilities/requests */
++	u32 sink_request;
++	u32 source_caps[PDO_MAX_OBJECTS];
++	unsigned int nr_source_caps;
++	u32 sink_caps[PDO_MAX_OBJECTS];
++	unsigned int nr_sink_caps;
++
++	/*
++	 * whether to wait for the Type-C device to send the DR_SWAP Message flag
++	 * For Type-C device with Dual-Role Power and Dual-Role Data, the port side
++	 * is used as sink + ufp, then the tcpm framework needs to wait for Type-C
++	 * device to initiate DR_swap Message.
++	 */
++	bool wait_dr_swap_Message;
++
++	/* Local capabilities */
++	u32 src_pdo[PDO_MAX_OBJECTS];
++	unsigned int nr_src_pdo;
++	u32 snk_pdo[PDO_MAX_OBJECTS];
++	unsigned int nr_snk_pdo;
++	u32 snk_vdo_v1[VDO_MAX_OBJECTS];
++	unsigned int nr_snk_vdo_v1;
++	u32 snk_vdo[VDO_MAX_OBJECTS];
++	unsigned int nr_snk_vdo;
++
++	unsigned int operating_snk_mw;
++	bool update_sink_caps;
++
++	/* Requested current / voltage to the port partner */
++	u32 req_current_limit;
++	u32 req_supply_voltage;
++	/* Actual current / voltage limit of the local port */
++	u32 current_limit;
++	u32 supply_voltage;
++
++	enum power_supply_usb_type usb_type;
++
++	u32 bist_request;
++
++	/* PD state for Vendor Defined Messages */
++	enum vdm_states vdm_state;
++	u32 vdm_retries;
++	/* next Vendor Defined Message to send */
++	u32 vdo_data[VDO_MAX_SIZE];
++	u8 vdo_count;
++	/* VDO to retry if UFP responder replied busy */
++	u32 vdo_retry;
++
++	/* PPS */
++	struct pd_pps_data pps_data;
++	bool pps_pending;
++	int pps_status;
++
++	/* Deadline in jiffies to exit src_try_wait state */
++	unsigned long max_wait;
++
++	/* port belongs to a self powered device */
++	bool self_powered;
++
++	/* Sink FRS */
++	enum frs_typec_current new_source_frs_current;
++
++	/* Sink caps have been queried */
++	bool sink_cap_done;
++
++	/* Port is still in tCCDebounce */
++	bool debouncing;
++
++	/* Collision Avoidance and Atomic Message Sequence */
++	enum tcpm_state upcoming_state;
++	enum tcpm_ams ams;
++	enum tcpm_ams next_ams;
++	bool in_ams;
++
++	/* Auto vbus discharge status */
++	bool auto_vbus_discharge_enabled;
++
++	/*
++	 * When set, port requests PD_P_SNK_STDBY_MW upon entering SNK_DISCOVERY and
++	 * the actual currrent limit after RX of PD_CTRL_PSRDY for PD link,
++	 * SNK_READY for non-pd link.
++	 */
++	bool slow_charger_loop;
++#ifdef CONFIG_DEBUG_FS
++	struct dentry *dentry;
++	struct mutex logbuffer_lock;	/* log buffer access lock */
++	int logbuffer_head;
++	int logbuffer_tail;
++	u8 *logbuffer[LOG_BUFFER_ENTRIES];
++#endif
++};
+ 
+ struct tcpm_port *tcpm_port_init(struct udevice *dev, struct tcpc_dev *tcpc);
+ void tcpm_poll_event(struct tcpm_port *port);
+-- 
+2.40.1
+

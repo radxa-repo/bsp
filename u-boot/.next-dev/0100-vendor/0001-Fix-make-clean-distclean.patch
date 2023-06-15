@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Tue, 9 May 2023 21:17:38 +0800
+Subject: [PATCH] Fix make clean/distclean
+
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 590fd4c1f2c..ed61fdea561 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1517,7 +1517,7 @@ CLEAN_DIRS  += $(MODVERDIR) \
+ 			$(filter-out include, $(shell ls -1 $d 2>/dev/null))))
+ 
+ CLEAN_FILES += include/bmp_logo.h include/bmp_logo_data.h \
+-	       boot* u-boot* MLO* SPL System.map fit-dtb.blob *.bin *.img *.gz .cc
++	       u-boot* MLO* SPL System.map fit-dtb.blob *.bin *.img *.gz .cc
+ 
+ # Directories & files removed with 'make mrproper'
+ MRPROPER_DIRS  += include/config include/generated spl tpl \
+-- 
+2.40.1
+
