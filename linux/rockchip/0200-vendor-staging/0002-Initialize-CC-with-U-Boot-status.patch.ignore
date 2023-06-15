@@ -1,0 +1,362 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Wed, 17 May 2023 19:20:25 +0800
+Subject: [PATCH] Initialize CC with U-Boot status
+
+---
+ drivers/usb/typec/tcpm/fusb302.c |  40 +++++
+ drivers/usb/typec/tcpm/tcpm.c    | 263 +++++++++++++++++++++++++++++++
+ 2 files changed, 303 insertions(+)
+
+diff --git a/drivers/usb/typec/tcpm/fusb302.c b/drivers/usb/typec/tcpm/fusb302.c
+index 2c5875796cff7..1db1b53ef04c3 100644
+--- a/drivers/usb/typec/tcpm/fusb302.c
++++ b/drivers/usb/typec/tcpm/fusb302.c
+@@ -1680,6 +1680,24 @@ static struct fwnode_handle *fusb302_fwnode_get(struct device *dev)
+ 	return fwnode;
+ }
+ 
++#define fusb_printf(chip, field) dev_err(chip->dev, "  chip->" #field " = %i\n", chip->field)
++void print_fusb_state(struct fusb302_chip *chip)
++{
++	fusb_printf(chip, toggling_mode);
++	fusb_printf(chip, src_current_status);
++	fusb_printf(chip, intr_togdone);
++	fusb_printf(chip, intr_bc_lvl);
++	fusb_printf(chip, intr_comp_chng);
++	fusb_printf(chip, vconn_on);
++	fusb_printf(chip, vbus_on);
++	fusb_printf(chip, charge_on);
++	fusb_printf(chip, vbus_present);
++	//fusb_printf(chip, gpio_cc_int_present);
++	fusb_printf(chip, cc_polarity);
++	fusb_printf(chip, cc1);
++	fusb_printf(chip, cc2);
++}
++
+ static int fusb302_probe(struct i2c_client *client,
+ 			 const struct i2c_device_id *id)
+ {
+@@ -1748,6 +1766,28 @@ static int fusb302_probe(struct i2c_client *client,
+ 		goto destroy_workqueue;
+ 	}
+ 
++	if (device_property_present(dev, "u-boot,pd-is-negotiated")) {
++		chip->vconn_on = true;
++		chip->vbus_on = true;
++		chip->vbus_present = true;
++
++		ret = device_property_read_u32(dev, "u-boot,polarity", &(chip->cc_polarity));
++		if (ret) {
++			dev_err(dev, "Cannot read u-boot,polarity, ret=%d", ret);
++		}
++
++		ret = device_property_read_u32(dev, "u-boot,cc1", &(chip->cc1));
++		if (ret) {
++			dev_err(dev, "Cannot read u-boot,cc1, ret=%d", ret);
++		}
++
++		ret = device_property_read_u32(dev, "u-boot,cc2", &(chip->cc2));
++		if (ret) {
++			dev_err(dev, "Cannot read u-boot,cc2, ret=%d", ret);
++		}
++		print_fusb_state(chip);
++	}
++
+ 	chip->tcpm_port = tcpm_register_port(&client->dev, &chip->tcpc_dev);
+ 	if (IS_ERR(chip->tcpm_port)) {
+ 		fwnode_handle_put(chip->tcpc_dev.fwnode);
+diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
+index df8a15394e3b8..7503379cec8df 100644
+--- a/drivers/usb/typec/tcpm/tcpm.c
++++ b/drivers/usb/typec/tcpm/tcpm.c
+@@ -3426,6 +3426,20 @@ static int tcpm_pd_send_request(struct tcpm_port *port)
+ 	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
+ }
+ 
++static int tcpm_pd_send_get_source_cap(struct tcpm_port *port)
++{
++	struct pd_message msg;
++
++	memset(&msg, 0, sizeof(msg));
++	msg.header = PD_HEADER_LE(PD_CTRL_GET_SOURCE_CAP,
++				  port->pwr_role,
++				  port->data_role,
++				  port->negotiated_rev,
++				  port->message_id, 0);
++
++	return tcpm_pd_transmit(port, TCPC_TX_SOP, &msg);
++}
++
+ static int tcpm_pd_build_pps_request(struct tcpm_port *port, u32 *rdo)
+ {
+ 	unsigned int out_mv, op_ma, op_mw, max_mv, max_ma, flags;
+@@ -4263,6 +4277,12 @@ static void run_state_machine(struct tcpm_port *port)
+ 			/* SRC -> SNK POWER/FAST_ROLE_SWAP finished */
+ 			tcpm_ams_finish(port);
+ 
++		ret = tcpm_pd_send_get_source_cap(port);
++		if (ret < 0)
++			tcpm_log_force(port, "failed to send get_source_cap message: %i", ret);
++		else
++			tcpm_log_force(port, "get_source_cap message sent");
++
+ 		timer_val_msecs = 0;
+ 		trace_android_vh_typec_tcpm_get_timer(tcpm_states[SNK_STARTUP],
+ 						      SINK_DISCOVERY_BC12, &timer_val_msecs);
+@@ -5960,9 +5980,252 @@ static int tcpm_pps_activate(struct tcpm_port *port, bool activate)
+ 	return ret;
+ }
+ 
++#define tcpm_printf(port, field) tcpm_log_force(port, "  tcpm_port->" #field " = %i", port->field)
++void print_tcpm_state(struct tcpm_port *port)
++{
++	tcpm_printf(port, vconn_role);
++	tcpm_printf(port, pwr_role);
++	tcpm_printf(port, data_role);
++	tcpm_printf(port, pwr_opmode);
++	tcpm_printf(port, cc_req);
++	tcpm_printf(port, cc1);
++	tcpm_printf(port, cc2);
++	tcpm_printf(port, polarity);
++	tcpm_printf(port, attached);
++	tcpm_printf(port, connected);
++	//tcpm_printf(port, poll_event_cnt);
++	tcpm_printf(port, port_type);
++	tcpm_printf(port, vbus_present);
++	tcpm_printf(port, vbus_vsafe0v);
++	tcpm_printf(port, vbus_never_low);
++	tcpm_printf(port, vbus_source);
++	tcpm_printf(port, vbus_charge);
++	tcpm_printf(port, send_discover);
++	tcpm_printf(port, op_vsafe5v);
++	tcpm_printf(port, try_role);
++	tcpm_printf(port, try_snk_count);
++	tcpm_printf(port, try_src_count);
++	tcpm_printf(port, queued_message);
++	tcpm_printf(port, enter_state);
++	tcpm_printf(port, prev_state);
++	tcpm_printf(port, state);
++	tcpm_printf(port, delayed_state);
++	tcpm_printf(port, pd_events);
++	tcpm_printf(port, state_machine_running);
++	tcpm_printf(port, vdm_sm_running);
++	//tcpm_printf(port, tx_complete);
++	tcpm_printf(port, tx_status);
++	tcpm_printf(port, swap_pending);
++	tcpm_printf(port, non_pd_role_swap);
++	tcpm_printf(port, swap_status);
++	tcpm_printf(port, negotiated_rev);
++	tcpm_printf(port, message_id);
++	tcpm_printf(port, caps_count);
++	tcpm_printf(port, hard_reset_count);
++	tcpm_printf(port, pd_capable);
++	tcpm_printf(port, explicit_contract);
++	tcpm_printf(port, rx_msgid);
++	tcpm_printf(port, sink_request);
++	tcpm_printf(port, nr_source_caps);
++	tcpm_printf(port, nr_sink_caps);
++	//tcpm_printf(port, wait_dr_swap_Message);
++	tcpm_printf(port, nr_src_pdo);
++	tcpm_printf(port, nr_snk_pdo);
++	tcpm_printf(port, nr_snk_vdo_v1);
++	tcpm_printf(port, nr_snk_vdo);
++	tcpm_printf(port, operating_snk_mw);
++	tcpm_printf(port, update_sink_caps);
++	tcpm_printf(port, req_current_limit);
++	tcpm_printf(port, req_supply_voltage);
++	tcpm_printf(port, current_limit);
++	tcpm_printf(port, supply_voltage);
++	tcpm_printf(port, usb_type);
++	tcpm_printf(port, bist_request);
++	tcpm_printf(port, vdm_state);
++	tcpm_printf(port, vdm_retries);
++	tcpm_printf(port, vdo_count);
++	tcpm_printf(port, vdo_retry);
++	tcpm_printf(port, pps_pending);
++	tcpm_printf(port, pps_status);
++	tcpm_printf(port, self_powered);
++	tcpm_printf(port, new_source_frs_current);
++	tcpm_printf(port, sink_cap_done);
++	tcpm_printf(port, debouncing);
++	tcpm_printf(port, upcoming_state);
++	tcpm_printf(port, ams);
++	tcpm_printf(port, next_ams);
++	tcpm_printf(port, in_ams);
++	tcpm_printf(port, auto_vbus_discharge_enabled);
++	tcpm_printf(port, slow_charger_loop);
++}
++
+ static void tcpm_init(struct tcpm_port *port)
+ {
+ 	enum typec_cc_status cc1, cc2;
++	bool pd_is_negotiated = false;
++	int ret;
++	//int bool_data;
++
++	if (!strcmp(port->dev->driver->name, "typec_fusb302")) {
++		if (device_property_present(port->dev, "u-boot,pd-is-negotiated")) {
++			pd_is_negotiated = true;
++			tcpm_log_force(port, "PD is negotiated during U-Boot:");
++
++			ret = device_property_read_u32(port->dev, "u-boot,polarity", &(port->polarity));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,polarity, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,cc1", &(port->cc1));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,cc1, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,cc2", &(port->cc2));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,cc2, ret=%d", ret);
++			}
++/*
++			ret = device_property_read_u32(port->dev, "u-boot,negotiated_rev",&(port->negotiated_rev));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,negotiated_rev, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,message_id", &(port->message_id));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,message_id, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,pwr_role", &(port->pwr_role));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,pwr_role, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,data_role", &(port->data_role));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,data_role, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,port_type", &(port->polarity));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,port_type, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,attached", &bool_data);
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,attached, ret=%d", ret);
++			} else {
++				port->attached = !!bool_data;
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,connected", &bool_data);
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,connected, ret=%d", ret);
++			} else {
++				port->connected = !!bool_data;
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,port_type", &(port->port_type));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,port_type, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,vbus_present", &bool_data);
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,vbus_present, ret=%d", ret);
++			} else {
++				port->vbus_present = !!bool_data;
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,vbus_charge", &bool_data);
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,vbus_charge, ret=%d", ret);
++			} else {
++				port->vbus_charge = !!bool_data;
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,pd_capable", &bool_data);
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,pd_capable, ret=%d", ret);
++			} else {
++				port->pd_capable = !!bool_data;
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,explicit_contract", &bool_data);
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,explicit_contract, ret=%d", ret);
++			} else {
++				port->explicit_contract = !!bool_data;
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,rx_msgid", &(port->rx_msgid));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,rx_msgid, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,nr_source_caps", &(port->nr_source_caps));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,nr_source_caps, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,req_current_limit", &(port->req_current_limit));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,req_current_limit, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,req_supply_voltage", &(port->req_supply_voltage));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,req_supply_voltage, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,current_limit", &(port->current_limit));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,current_limit, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,supply_voltage", &(port->supply_voltage));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,supply_voltage, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32(port->dev, "u-boot,usb_type", &(port->usb_type));
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,usb_type, ret=%d", ret);
++			}
++
++			ret = device_property_read_u32_array(port->dev, "u-boot,source_caps", port->source_caps, PDO_MAX_OBJECTS);
++			if (ret) {
++				pd_is_negotiated = false;
++				tcpm_log_force(port, "Cannot read u-boot,source_caps, ret=%d", ret);
++			}
++*/
++		}
++
++		if (pd_is_negotiated)
++			print_tcpm_state(port);
++	}
+ 
+ 	port->tcpc->init(port->tcpc);
+ 
+-- 
+2.40.1
+

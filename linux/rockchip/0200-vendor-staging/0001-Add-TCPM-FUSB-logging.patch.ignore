@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Fri, 12 May 2023 17:56:07 +0800
+Subject: [PATCH] Add TCPM & FUSB logging
+
+---
+ drivers/usb/typec/tcpm/fusb302.c |  6 +++++-
+ drivers/usb/typec/tcpm/tcpm.c    | 10 ++++++++--
+ 2 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/usb/typec/tcpm/fusb302.c b/drivers/usb/typec/tcpm/fusb302.c
+index 3c9735483238c..2c5875796cff7 100644
+--- a/drivers/usb/typec/tcpm/fusb302.c
++++ b/drivers/usb/typec/tcpm/fusb302.c
+@@ -30,6 +30,7 @@
+ #include <linux/usb/tcpm.h>
+ #include <linux/usb/pd.h>
+ #include <linux/workqueue.h>
++#include <linux/printk.h>
+ 
+ #include "fusb302_reg.h"
+ 
+@@ -139,6 +140,7 @@ static void _fusb302_log(struct fusb302_chip *chip, const char *fmt,
+ 	u64 ts_nsec = local_clock();
+ 	unsigned long rem_nsec;
+ 
++	vprintk(fmt, args);
+ 	if (!chip->logbuffer[chip->logbuffer_head]) {
+ 		chip->logbuffer[chip->logbuffer_head] =
+ 				kzalloc(LOG_BUFFER_ENTRY_SIZE, GFP_KERNEL);
+@@ -179,8 +181,10 @@ static void _fusb302_log(struct fusb302_chip *chip, const char *fmt,
+ 	mutex_unlock(&chip->logbuffer_lock);
+ }
+ 
++#define fusb302_log(chip, fmt, ...) fusb302_log_real(chip, "[FUSB] " fmt, ##__VA_ARGS__)
++
+ __printf(2, 3)
+-static void fusb302_log(struct fusb302_chip *chip, const char *fmt, ...)
++static void fusb302_log_real(struct fusb302_chip *chip, const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+diff --git a/drivers/usb/typec/tcpm/tcpm.c b/drivers/usb/typec/tcpm/tcpm.c
+index 4714f7cd59e7c..df8a15394e3b8 100644
+--- a/drivers/usb/typec/tcpm/tcpm.c
++++ b/drivers/usb/typec/tcpm/tcpm.c
+@@ -30,6 +30,7 @@
+ #include <linux/usb/role.h>
+ #include <linux/usb/tcpm.h>
+ #include <linux/usb/typec_altmode.h>
++#include <linux/printk.h>
+ 
+ #include <trace/hooks/typec.h>
+ #include <uapi/linux/sched/types.h>
+@@ -595,6 +596,7 @@ static void _tcpm_log(struct tcpm_port *port, const char *fmt, va_list args)
+ 	unsigned long rem_nsec;
+ 	bool bypass_log = false;
+ 
++	vprintk(fmt, args);
+ 	mutex_lock(&port->logbuffer_lock);
+ 	if (!port->logbuffer[port->logbuffer_head]) {
+ 		port->logbuffer[port->logbuffer_head] =
+@@ -639,8 +641,10 @@ static void _tcpm_log(struct tcpm_port *port, const char *fmt, va_list args)
+ 	mutex_unlock(&port->logbuffer_lock);
+ }
+ 
++#define tcpm_log(chip, fmt, ...) tcpm_log_real(port, "[TCPM] " fmt, ##__VA_ARGS__)
++
+ __printf(2, 3)
+-static void tcpm_log(struct tcpm_port *port, const char *fmt, ...)
++static void tcpm_log_real(struct tcpm_port *port, const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+@@ -655,8 +659,10 @@ static void tcpm_log(struct tcpm_port *port, const char *fmt, ...)
+ 	va_end(args);
+ }
+ 
++#define tcpm_log_force(chip, fmt, ...) tcpm_log_force_real(port, "[TCPM] " fmt, ##__VA_ARGS__)
++
+ __printf(2, 3)
+-static void tcpm_log_force(struct tcpm_port *port, const char *fmt, ...)
++static void tcpm_log_force_real(struct tcpm_port *port, const char *fmt, ...)
+ {
+ 	va_list args;
+ 
+-- 
+2.40.1
+
