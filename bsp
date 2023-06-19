@@ -186,9 +186,9 @@ main() {
     rm -f "$SCRIPT_DIR/.src/build.log"
 
     local ARGV=("$@")
-    if ! local TEMP="$(getopt -o "r:cCphnlsdb:" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-container,container-shell,debug,dtb,long-version,backend:,no-submodule-check,dirty,no-build,no-container-update" -n "$0" -- "$@")"
+    local TEMP
+    if ! TEMP="$(getopt -o "r:cCphnlsdb:" -l "revision:,clean,distclean,no-prepare-source,no-config,help,native-build,local-container,container-shell,debug,dtb,long-version,backend:,no-submodule-check,dirty,no-build,no-container-update" -n "$0" -- "$@")"
     then
-        usage
         return
     fi
     eval set -- "$TEMP"
