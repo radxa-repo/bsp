@@ -188,7 +188,7 @@ then
         $ACTION "$@"
     else
         echo "Unsupported action: '$ACTION'" >&2
-        exit 1
+        exit 100
     fi
 
 fi

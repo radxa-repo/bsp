@@ -12,6 +12,14 @@ update_bootloader() {
     sync
 }
 
+update_emmc_boot() {
+    if [[ -f "/sys/class/block/$(basename "$1")/force_ro" ]]
+    then
+        echo 0 > "/sys/class/block/$(basename "$1")/force_ro"
+    fi
+    update_bootloader "$@"
+}
+
 # https://stackoverflow.com/a/28776166
 is_sourced() {
     if [ -n "$ZSH_VERSION" ]
@@ -47,7 +55,7 @@ then
         $ACTION "$@"
     else
         echo "Unsupported action: '$ACTION'" >&2
-        exit 1
+        exit 100
     fi
 
 fi
