@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <95260730+RadxaYuntian@users.noreply.github.com>
+Date: Tue, 30 Aug 2022 17:41:34 +0800
+Subject: [PATCH] Disable bl32 for rk3399
+
+This causes mainline kernel to panic.
+---
+ RKTRUST/RK3399TRUST.ini | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/RKTRUST/RK3399TRUST.ini b/RKTRUST/RK3399TRUST.ini
+index 707e8c9..0af883a 100644
+--- a/RKTRUST/RK3399TRUST.ini
++++ b/RKTRUST/RK3399TRUST.ini
+@@ -8,9 +8,7 @@ SEC=1
+ PATH=bin/rk33/rk3399_bl31_v1.35.elf
+ ADDR=0x00010000
+ [BL32_OPTION]
+-SEC=1
+-PATH=bin/rk33/rk3399_bl32_v2.01.bin
+-ADDR=0x08400000
++SEC=0
+ [BL33_OPTION]
+ SEC=0
+ [OUTPUT]
+-- 
+2.38.1
