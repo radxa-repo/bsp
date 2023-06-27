@@ -3,6 +3,9 @@ From: bsp <bsp@radxa.com>
 Date: Fri, 16 Jun 2023 19:56:14 +0800
 Subject: [PATCH] Enable 1.8V SD data rates
 
+This is currently disabled since U-Boot does not support 1.8V signaling, thus
+failed to read the card after reboot.
+
 ---
  .../dts/amlogic/meson-g12a-radxa-zero.dts     | 22 +++++++++++++++++--
  .../dts/amlogic/meson-g12b-radxa-zero2.dts    | 22 +++++++++++++++++--
