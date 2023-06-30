@@ -1,0 +1,94 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Fri, 30 Jun 2023 12:09:14 +0800
+Subject: [PATCH]  arm64: dts: meson: radxa-zero2: add support for the usb
+ type-c controller
+
+Radxa ZERO 2 uses an FUSB302 type-c controller, so lets enable it.
+
+NB: Polarity swapping via GPIO is not implemented in the current driver
+(see drivers/usb/typec/tcpm/fusb302.c) so it is not possible to handle
+GPIOC_7 for USB3 polarity control.
+
+---
+ .../dts/amlogic/meson-g12b-radxa-zero2.dts    | 53 +++++++++++++++++++
+ 1 file changed, 53 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts b/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
+index a1cbe2858c4b..55555e97bc9c 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
++++ b/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
+@@ -86,6 +86,19 @@ sdio_pwrseq: sdio-pwrseq {
+ 		clock-names = "ext_clock";
+ 	};
+ 
++	typec2_vbus: regulator-typec2_vbus {
++		compatible = "regulator-fixed";
++		regulator-name = "TYPEC2_VBUS";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&ao_5v>;
++		/*
++			FIXME: actually controlled by GPIOH_8
++			However, with it defined the regulator is never on
++			Might need the proper port definition with polarity swapping
++		*/
++	};
++
+ 	ao_5v: regulator-ao-5v {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "AO_5V";
+@@ -391,6 +404,38 @@ &ir {
+ 	pinctrl-names = "default";
+ };
+ 
++&i2c3 {
++	pinctrl-0 = <&i2c3_sda_a_pins>, <&i2c3_sck_a_pins>;
++	pinctrl-names = "default";
++	status = "okay";
++
++	fusb302@22 {
++		compatible = "fcs,fusb302";
++		reg = <0x22>;
++
++		pinctrl-0 = <&fusb302_irq_pins>;
++		pinctrl-names = "default";
++		interrupt-parent = <&gpio_intc>;
++		interrupts = <74 IRQ_TYPE_LEVEL_LOW>;
++
++		vbus-supply = <&typec2_vbus>;
++
++		status = "okay";
++	};
++};
++
++&periphs_pinctrl {
++	/* Ensure the TYPE C controller irq pin is not driven by the SoC */
++	fusb302_irq_pins: fusb302_irq {
++		mux {
++			groups = "GPIOA_13";
++			function = "gpio_periphs";
++			bias-pull-up;
++			output-disable;
++		};
++	};
++};
++
+ &pwm_ab {
+ 	pinctrl-0 = <&pwm_a_e_pins>;
+ 	pinctrl-names = "default";
+@@ -530,3 +575,11 @@ &uart_AO {
+ &usb {
+ 	status = "okay";
+ };
++
++&usb2_phy0 {
++	phy-supply = <&typec2_vbus>;
++};
++
++&usb3_pcie_phy {
++	phy-supply = <&typec2_vbus>;
++};
+-- 
+2.41.0
+
