@@ -4,22 +4,21 @@ Date: Tue, 30 May 2023 16:07:16 +0800
 Subject: [PATCH] Enable PCIe for Radxa CM3 IO
 
 ---
- arch/arm/dts/rk3566-radxa-cm3-io-u-boot.dtsi | 35 ++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ arch/arm/dts/rk3566-radxa-cm3-io-u-boot.dtsi | 34 ++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
 diff --git a/arch/arm/dts/rk3566-radxa-cm3-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3-io-u-boot.dtsi
 index 92432fbe9de..26794f3a9fa 100644
 --- a/arch/arm/dts/rk3566-radxa-cm3-io-u-boot.dtsi
 +++ b/arch/arm/dts/rk3566-radxa-cm3-io-u-boot.dtsi
-@@ -9,6 +9,17 @@
+@@ -9,6 +9,16 @@
  	chosen {
  		stdout-path = &uart2;
  	};
 +
 +	ch482d_pcie: ch482d-pcie-regulator {
 +		compatible = "regulator-fixed";
-+		enable-active-low;
-+		gpios = <&gpio3 RK_PC6 GPIO_ACTIVE_HIGH>;
++		gpios = <&gpio3 RK_PC6 GPIO_ACTIVE_LOW>;
 +		pinctrl-names = "default";
 +		pinctrl-0 = <&pcie_enable_h>;
 +		regulator-min-microvolt = <3300000>;
