@@ -13,11 +13,11 @@ In this example, we will recreate `linux-rockchip` 5.10.110-5 package.
 | linux-headers-5.10.110-5-rockchip_5.10.110-5-1932709cf_arm64.deb | 7.4 MB |
 | linux-headers-radxa-nx5-io_5.10.110-5-3a557f6_all.deb            | 1.1 KB |
 
-3. As our packages are built with `bsp` and `radxa/kernel`, there are 2 git commits that we need to find out to accurately reproduce those packages.  
-   Since the real package (the one with larger file size) is closely related to `radxa/kernel`, `1932709cf` is the commit for it.
+3. As our packages are built with `bsp` and `radxa/kernel`, there are 2 git commits that we need to find out to accurately reproduce those packages:  
+   Since the real package (the one with larger file size) is closely related to `radxa/kernel`, `1932709cf` is the commit for it.  
    Since the meta package (the one with smaller file size) is closely related to `bsp`, `3a557f6` is the commit for it.
 
-4. We can how find the following essential commit information:  
+4. We now have the following essential commit information:  
    `radxa/kernel`: [`1932709cf`](https://github.com/radxa/kernel/commit/1932709cf)  
    `bsp`: [`3a557f6`](https://github.com/radxa-repo/bsp/commit/3a557f6)
 

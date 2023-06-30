@@ -7,4 +7,5 @@
   - [kconfig.conf](profile/kconfig.conf.md)
 - [Firmware management](firmware/management.md)
 - [Local development workflow](dev_flow.md)
+  - [Developer FAQ](dev/faq.md)
 - [Reproduce a previous release](reproduce.md)
