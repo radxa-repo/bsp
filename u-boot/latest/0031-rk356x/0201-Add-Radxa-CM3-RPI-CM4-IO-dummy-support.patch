@@ -32,7 +32,7 @@ index d75d1dfb8de..51a88eb0a03 100644
  dtb-$(CONFIG_ROCKCHIP_RK3568) += \
  	rk3566-radxa-cm3-io.dtb \
 +	rk3566-radxa-cm3-rpi-cm4-io.dtb \
- 	rk3566-radxa-cm3-sodimm-io.dtb \
+ 	rk3566-radxa-cm3s-io.dtb \
  	rk3568-evb.dtb \
  	rk3568-radxa-e25.dtb \
 diff --git a/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi

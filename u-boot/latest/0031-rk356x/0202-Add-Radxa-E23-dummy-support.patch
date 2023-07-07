@@ -21,7 +21,7 @@ index 8866f102da..2f0e036bef 100644
 @@ -173,6 +173,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3568) += \
  	rk3566-radxa-cm3-io.dtb \
  	rk3566-radxa-cm3-rpi-cm4-io.dtb \
- 	rk3566-radxa-cm3-sodimm-io.dtb \
+ 	rk3566-radxa-cm3s-io.dtb \
 +	rk3566-radxa-e23.dtb \
  	rk3568-evb.dtb \
  	rk3568-radxa-e25.dtb \

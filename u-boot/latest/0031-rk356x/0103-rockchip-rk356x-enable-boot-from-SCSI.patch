@@ -5,7 +5,7 @@ Subject: [PATCH] rockchip: rk356x: enable boot from SCSI
 
 ---
  configs/radxa-cm3-io-rk3566_defconfig        | 7 +++++++
- configs/radxa-cm3-sodimm-io-rk3566_defconfig | 7 +++++++
+ configs/radxa-cm3s-io-rk3566_defconfig | 7 +++++++
  configs/radxa-e25-rk3568_defconfig           | 7 +++++++
  configs/rock-3a-rk3568_defconfig             | 6 ++++++
  4 files changed, 27 insertions(+)
@@ -26,10 +26,10 @@ index 9584a155124..ddf41a7d6f7 100644
 +CONFIG_DM_SCSI=y
 +CONFIG_CMD_SF=y
 +CONFIG_SYS_SATA_MAX_DEVICE=2
-diff --git a/configs/radxa-cm3-sodimm-io-rk3566_defconfig b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+diff --git a/configs/radxa-cm3s-io-rk3566_defconfig b/configs/radxa-cm3s-io-rk3566_defconfig
 index 03461fc52c0..6c944c82ec9 100644
---- a/configs/radxa-cm3-sodimm-io-rk3566_defconfig
-+++ b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+--- a/configs/radxa-cm3s-io-rk3566_defconfig
++++ b/configs/radxa-cm3s-io-rk3566_defconfig
 @@ -83,3 +83,11 @@ CONFIG_SPI_FLASH_MACRONIX=y
  CONFIG_SPI_FLASH_XTX=y
  CONFIG_SF_DEFAULT_SPEED=24000000
