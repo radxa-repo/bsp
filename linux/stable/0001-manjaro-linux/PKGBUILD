@@ -42,7 +42,7 @@ source=("http://www.kernel.org/pub/linux/kernel/v6.x/${_srcname}.tar.xz"
         '3001-irqchip-gic-v3-add-hackaround-for-rk3568-its.patch'                  # RK356X and associated patches that are still being upstreamed: START
         #'3002-arm64-dts-rockchip-Lower-sd-speed-on-soquartz.patch'
         '3003-arm64-dts-rockchip-Add-hdmi-cec-assigned-clocks-to-r.patch'
-        '3004-arm64-dts-rockchip-rk356x-update-pcie-io-ranges.patch'               # From https://github.com/neggles/linux-quartz64/commit/2c1e3811e6d7430f7d46dbb01d3773192c51cdcf (by Neggles)
+        #'3004-arm64-dts-rockchip-rk356x-update-pcie-io-ranges.patch'               # From https://github.com/neggles/linux-quartz64/commit/2c1e3811e6d7430f7d46dbb01d3773192c51cdcf (by Neggles)
         '3005-arm64-dts-rockchip-Add-Quartz64-B-eeprom.patch'
         '3006-Misc-SOQuartz-Enablement.patch'                                      # From list: https://patchwork.kernel.org/project/linux-rockchip/cover/20221112160404.70868-1-frattaroli.nicolas@gmail.com/ (applied in linux-next)
         '3007-arm64-dts-rockchip-Enable-pcie2-and-audio-jack-on-rk3566-roc-pc.patch'  # Station M2; (by Furkan) (parts applied in linux-next)
