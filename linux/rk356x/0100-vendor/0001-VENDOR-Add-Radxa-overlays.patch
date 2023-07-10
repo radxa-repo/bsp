@@ -6,10 +6,10 @@ Subject: [PATCH] VENDOR: Add Radxa overlays
 Signed-off-by: Yuntian Zhang <yt@radxa.com>
 ---
  arch/arm64/boot/dts/amlogic/Makefile  |  5 +++++
- arch/arm64/boot/dts/rockchip/Makefile | 17 +++++++++++++++++
- scripts/Makefile.dtbinst 			   | 11 +++++++--
- scripts/Makefile.lib                  | 12 ++++++
- 4 files changed, 41 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/rockchip/Makefile | 18 +++++++++++++++--
+ scripts/Makefile.dtbinst 			   | 11 +++++++----
+ scripts/Makefile.lib                  |  6 ++++++
+ 4 files changed, 34 insertions(+), 6 deletions(-)
 
 diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/Makefile
 index f231280cd8..f9e467edff 100644
@@ -29,7 +29,7 @@ diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchi
 index 7cccbd7c6e..69399d2d41 100644
 --- a/arch/arm64/boot/dts/rockchip/Makefile
 +++ b/arch/arm64/boot/dts/rockchip/Makefile
-@@ -1,4 +1,21 @@
+@@ -1,4 +1,20 @@
 +DTC_FLAGS_rk3328-rock-pi-e := -@
 +DTC_FLAGS_rk3399-rock-4se := -@
 +DTC_FLAGS_rk3399-rock-pi-4a-plus := -@
@@ -39,7 +39,6 @@ index 7cccbd7c6e..69399d2d41 100644
 +DTC_FLAGS_rk3399-rock-pi-4b := -@
 +DTC_FLAGS_rk3399-rock-pi-4c := -@
 +DTC_FLAGS_rk3399pro-rock-pi-n10 := -@
-+DTC_FLAGS_rk3566-rock-3c := -@
 +DTC_FLAGS_rk3568-rock-3a := -@
 +DTC_FLAGS_rk3588-rock-5b := -@
 +DTC_FLAGS_rk3588-rock-5b-v11 := -@
@@ -51,53 +50,49 @@ index 7cccbd7c6e..69399d2d41 100644
  dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-evb.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-evb-ddr3-v10.dtb
  dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-evb-ddr3-v10-avb.dtb
+@@ -178,5 +178,3 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-rock-5a.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-rk806-single-v10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-v10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3588s-tablet-v11.dtb
+-
+-subdir-y := $(dts-dirs) overlay
+\ No newline at end of file
 diff --git a/scripts/Makefile.dtbinst b/scripts/Makefile.dtbinst
 index 7b68939815d0..46f4739a2458 100644
 --- a/scripts/Makefile.dtbinst
 +++ b/scripts/Makefile.dtbinst
-@@ -18,9 +18,11 @@ include scripts/Kbuild.include
+@@ -18,11 +18,11 @@ include scripts/Kbuild.include
  include $(src)/Makefile
  
  dtbs    := $(addprefix $(dst)/, $(dtb-y) $(if $(CONFIG_OF_ALL_DTBS),$(dtb-)))
+-dtbos   := $(addprefix $(dst)/, $(dtbo-y))
+-readmes := $(addprefix $(dst)/, $(dtbotxt-y))
 +scrs    := $(addprefix $(dst)/, $(scr-y))
 +dtbotxts:= $(addprefix $(dst)/, $(dtbotxt-y))
  subdirs := $(addprefix $(obj)/, $(subdir-y) $(subdir-m))
  
--__dtbs_install: $(dtbs) $(subdirs)
+-__dtbs_install: $(dtbs) $(dtbos) $(readmes) $(subdirs)
 +__dtbs_install: $(dtbs) $(scrs) $(dtbotxts) $(subdirs)
  	@:
  
  quiet_cmd_dtb_install = INSTALL $@
-@@ -34,6 +34,15 @@ $(dst)/%.dtb: $(obj)/%.dtb
- $(dst)/%.dtb: $(obj)/%.dtb
+@@ -34,7 +34,10 @@ $(dst)/%.dtb: $(obj)/%.dtb
+ $(dst)/%.dtbo: $(obj)/%.dtbo
  	$(call cmd,dtb_install)
  
-+$(dst)/%.dtbo: $(obj)/%.dtbo
-+	$(call cmd,dtb_install)
-+
+-$(dst)/README.rockchip-overlays: $(src)/README.rockchip-overlays
 +$(dst)/%.scr: $(obj)/%.scr
 +	$(call cmd,dtb_install)
 +
 +$(dst)/README.overlays: $(src)/README.overlays
-+	$(call cmd,dtb_install)
-+
+ 	$(call cmd,dtb_install)
+ 
  PHONY += $(subdirs)
- $(subdirs):
- 	$(Q)$(MAKE) $(dtbinst)=$@ dst=$(patsubst $(obj)/%,$(dst)/%,$@)
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
 index d142577866..f48d411b65 100644
 --- a/scripts/Makefile.lib
 +++ b/scripts/Makefile.lib
-@@ -400,7 +400,7 @@ quiet_cmd_dtc = DTC     $@
- 
- quiet_cmd_dtc = DTC     $@
- cmd_dtc = $(HOSTCC) -E $(dtc_cpp_flags) -x assembler-with-cpp -o $(dtc-tmp) $< ; \
--	$(DTC) -O $(patsubst .%,%,$(suffix $@)) -o $@ -b 0 \
-+	$(DTC) -o $@ -b 0 \
- 		$(addprefix -i,$(dir $<) $(DTC_INCLUDE)) $(DTC_FLAGS) \
- 		-d $(depfile).dtc.tmp $(dtc-tmp) ; \
- 	cat $(depfile).pre.tmp $(depfile).dtc.tmp > $(depfile)
-@@ -460,6 +460,18 @@ quiet_cmd_uimage = UIMAGE  $@
+@@ -460,6 +460,12 @@ quiet_cmd_uimage = UIMAGE  $@
  			-a $(UIMAGE_LOADADDR) -e $(UIMAGE_ENTRYADDR) \
  			-n $(UIMAGE_NAME) -d $< $@
  
@@ -106,12 +101,6 @@ index d142577866..f48d411b65 100644
 +
 +$(obj)/%.scr: $(src)/%.cmd FORCE
 +	$(call if_changed,scr)
-+
-+$(obj)/%.dtbo: $(src)/%.dts $(DTC) FORCE
-+	$(call if_changed_dep,dtc)
-+
-+$(obj)/%.dtbo.S: $(obj)/%.dtbo FORCE
-+	$(call if_changed,dt_S_dtb)
 +
  # XZ
  # ---------------------------------------------------------------------------
