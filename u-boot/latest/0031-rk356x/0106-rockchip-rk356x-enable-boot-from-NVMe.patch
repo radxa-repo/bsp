@@ -5,7 +5,7 @@ Subject: [PATCH] rockchip: rk356x: enable boot from NVMe
 
 ---
  configs/radxa-cm3-io-rk3566_defconfig        | 4 ++++
- configs/radxa-cm3-sodimm-io-rk3566_defconfig | 4 ++++
+ configs/radxa-cm3s-io-rk3566_defconfig | 4 ++++
  configs/radxa-e25-rk3568_defconfig           | 4 ++++
  3 files changed, 12 insertions(+)
 
@@ -21,10 +21,10 @@ index c9e78c54eaa..a2dc171c333 100644
 +CONFIG_CMD_PCI=y
 +CONFIG_NVME_PCI=y
 +CONFIG_PCIE_DW_ROCKCHIP=y
-diff --git a/configs/radxa-cm3-sodimm-io-rk3566_defconfig b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+diff --git a/configs/radxa-cm3s-io-rk3566_defconfig b/configs/radxa-cm3s-io-rk3566_defconfig
 index fadb032135e..318cbb52bd1 100644
---- a/configs/radxa-cm3-sodimm-io-rk3566_defconfig
-+++ b/configs/radxa-cm3-sodimm-io-rk3566_defconfig
+--- a/configs/radxa-cm3s-io-rk3566_defconfig
++++ b/configs/radxa-cm3s-io-rk3566_defconfig
 @@ -92,3 +92,7 @@ CONFIG_DM_SCSI=y
  CONFIG_CMD_SF=y
  CONFIG_SYS_SATA_MAX_DEVICE=2

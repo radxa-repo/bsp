@@ -4,13 +4,13 @@ Date: Wed, 31 May 2023 15:07:25 +0800
 Subject: [PATCH] Enable PCIe for Radxa CM3 SODIMM IO
 
 ---
- .../rk3566-radxa-cm3-sodimm-io-u-boot.dtsi    | 27 +++++++++++++++++++
+ .../rk3566-radxa-cm3s-io-u-boot.dtsi    | 27 +++++++++++++++++++
  1 file changed, 27 insertions(+)
 
-diff --git a/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi
+diff --git a/arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi
 index 2bacdc53bdf..bb3712634de 100644
---- a/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi
-+++ b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi
+--- a/arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi
++++ b/arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi
 @@ -9,6 +9,13 @@
  	chosen {
  		stdout-path = &uart2;

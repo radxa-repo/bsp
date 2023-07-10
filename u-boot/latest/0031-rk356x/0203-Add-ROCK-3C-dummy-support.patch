@@ -22,7 +22,7 @@ index 8798eb03c71..d77e4fb0d0d 100644
 +++ b/arch/arm/dts/Makefile
 @@ -174,6 +174,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3568) += \
  	rk3566-radxa-cm3-rpi-cm4-io.dtb \
- 	rk3566-radxa-cm3-sodimm-io.dtb \
+ 	rk3566-radxa-cm3s-io.dtb \
  	rk3566-radxa-e23.dtb \
 +	rk3566-rock-3c.dtb \
  	rk3568-evb.dtb \

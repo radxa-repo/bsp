@@ -6,11 +6,11 @@ Subject: [PATCH] [WIP] arm: dts: rk356x: add Radxa CM3 SODIMM IO
 Signed-off-by: FUKAUMI Naoki <naoki@radxa.com>
 ---
  arch/arm/dts/Makefile                         |   1 +
- .../rk3566-radxa-cm3-sodimm-io-u-boot.dtsi    |  22 +
- arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts   | 572 ++++++++++++++++++
+ .../rk3566-radxa-cm3s-io-u-boot.dtsi    |  22 +
+ arch/arm/dts/rk3566-radxa-cm3s-io.dts   | 572 ++++++++++++++++++
  3 files changed, 595 insertions(+)
- create mode 100644 arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi
- create mode 100644 arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts
+ create mode 100644 arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi
+ create mode 100644 arch/arm/dts/rk3566-radxa-cm3s-io.dts
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
 index bb55217c28..08932c851e 100644
@@ -20,15 +20,15 @@ index bb55217c28..08932c851e 100644
  
  dtb-$(CONFIG_ROCKCHIP_RK3568) += \
  	rk3566-radxa-cm3-io.dtb \
-+	rk3566-radxa-cm3-sodimm-io.dtb \
++	rk3566-radxa-cm3s-io.dtb \
  	rk3568-evb.dtb \
  	rk3568-radxa-e25.dtb \
  	rk3568-rock-3a.dtb
-diff --git a/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi
+diff --git a/arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi
 new file mode 100644
 index 0000000000..2bacdc53bd
 --- /dev/null
-+++ b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io-u-boot.dtsi
++++ b/arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi
 @@ -0,0 +1,22 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -52,11 +52,11 @@ index 0000000000..2bacdc53bd
 +&usb_host0_xhci {
 +	dr_mode ="host";
 +};
-diff --git a/arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts
+diff --git a/arch/arm/dts/rk3566-radxa-cm3s-io.dts b/arch/arm/dts/rk3566-radxa-cm3s-io.dts
 new file mode 100644
 index 0000000000..74af2954d0
 --- /dev/null
-+++ b/arch/arm/dts/rk3566-radxa-cm3-sodimm-io.dts
++++ b/arch/arm/dts/rk3566-radxa-cm3s-io.dts
 @@ -0,0 +1,572 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
@@ -72,7 +72,7 @@ index 0000000000..74af2954d0
 +
 +/ {
 +	model = "Radxa ROCK 3 Compute Module SODIMM IO Board";
-+	compatible = "radxa,cm3-sodimm-io", "rockchip,rk3566";
++	compatible = "radxa,cm3s-io", "rockchip,rk3566";
 +
 +	aliases {
 +		mmc0 = &sdhci;
