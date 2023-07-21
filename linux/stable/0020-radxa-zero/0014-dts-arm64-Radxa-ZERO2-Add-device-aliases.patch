@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: nascs <nascs@radxa.com>
+Date: Fri, 21 Jul 2023 16:59:31 +0800
+Subject: [PATCH] dts: arm64: Radxa ZERO2: Add device aliases
+
+Signed-off-by: Nascs Fang <nascs@radxa.com>
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
+---
+ arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts | 11 +++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts b/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
+index 259791f99e93..86b21d672d33 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
++++ b/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
+@@ -22,6 +22,17 @@
+ 	aliases {
+ 		serial0 = &uart_AO;
++		serial1 = &uart_AO_B;
+ 		serial2 = &uart_A;
++		serial3 = &uart_B;
++		serial4 = &uart_C;
++		i2c0 = &i2c0;
++		i2c1 = &i2c1;
++		i2c2 = &i2c2;
++		i2c3 = &i2c3;
++		i2c4 = &i2c_AO;
++		spi0 = &spicc0;
++		spi1 = &spicc1;
++		spi2 = &spifc;
+ 	};
+ 
+ 	chosen {
+-- 
+2.20.1
+
