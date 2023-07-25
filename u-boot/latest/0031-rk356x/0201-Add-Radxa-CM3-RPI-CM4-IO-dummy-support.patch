@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Tue, 30 May 2023 16:30:51 +0800
 Subject: [PATCH] Add Radxa CM3 RPI CM4 IO dummy support
 
@@ -27,14 +27,14 @@ diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
 index d75d1dfb8de..51a88eb0a03 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
-@@ -171,6 +171,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
- 
- dtb-$(CONFIG_ROCKCHIP_RK3568) += \
+@@ -171,6 +171,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3568) += \
+ 	rk3566-quartz64-a.dtb \
+ 	rk3566-quartz64-b.dtb \
  	rk3566-radxa-cm3-io.dtb \
 +	rk3566-radxa-cm3-rpi-cm4-io.dtb \
- 	rk3566-radxa-cm3s-io.dtb \
- 	rk3568-evb.dtb \
- 	rk3568-radxa-e25.dtb \
+ 	rk3566-soquartz-blade.dtb \
+ 	rk3566-soquartz-cm4.dtb \
+ 	rk3566-soquartz-model-a.dtb \
 diff --git a/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3-rpi-cm4-io-u-boot.dtsi
 new file mode 100644
 index 00000000000..01a6e4f59b5
@@ -63,7 +63,7 @@ index 00000000000..01a6e4f59b5
 +
 +&uart2 {
 +	clock-frequency = <24000000>;
-+	u-boot,dm-pre-reloc;
++	bootph-all;
 +	status = "okay";
 +};
 +

@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Thu, 25 May 2023 15:22:34 +0800
 Subject: [PATCH] rockchip: rk356x: enable boot from SPI NOR flash
 
@@ -15,29 +15,29 @@ diff --git a/arch/arm/dts/rk356x-u-boot.dtsi b/arch/arm/dts/rk356x-u-boot.dtsi
 index 6eef99e6f75..3bb3ec321bc 100644
 --- a/arch/arm/dts/rk356x-u-boot.dtsi
 +++ b/arch/arm/dts/rk356x-u-boot.dtsi
-@@ -9,12 +9,17 @@
+@@ -9,13 +9,17 @@
  	aliases {
  		mmc0 = &sdhci;
  		mmc1 = &sdmmc0;
-+		spi0 = &sfc;
+ 		spi4 = &sfc;
  	};
  
  	chosen {
--		u-boot,spl-boot-order = "same-as-spl", &sdhci, &sdmmc0;
-+		u-boot,spl-boot-order = "same-as-spl", &spiflash, &sdhci, &sdmmc0;
+-		u-boot,spl-boot-order = "same-as-spl", &sdmmc0, &sdhci;
++		u-boot,spl-boot-order = "same-as-spl", &spiflash, &sdmmc0, &sdhci;
  	};
  
 +	config {
 +		u-boot,spl-payload-offset = <0x800000>; /* @ 8MB */
-+ 	};
++	};
 +
  	dmc: dmc {
  		compatible = "rockchip,rk3568-dmc";
- 		u-boot,dm-pre-reloc;
+ 		bootph-all;
 @@ -63,3 +68,16 @@
- 	u-boot,dm-spl;
- 	status = "okay";
  };
+ #endif
+ 
 +
 +&sfc {
 +	u-boot,dm-spl;
@@ -56,8 +56,8 @@ index 1df9cab79d5..9584a155124 100644
 --- a/configs/radxa-cm3-io-rk3566_defconfig
 +++ b/configs/radxa-cm3-io-rk3566_defconfig
 @@ -78,3 +78,9 @@ CONFIG_USB_EHCI_HCD=y
- CONFIG_USB_EHCI_GENERIC=y
  CONFIG_USB_DWC3=y
+ CONFIG_USB_DWC3_GENERIC=y
  CONFIG_ERRNO_STR=y
 +CONFIG_ROCKCHIP_SFC=y
 +CONFIG_SPI_FLASH_GIGADEVICE=y
@@ -69,7 +69,7 @@ diff --git a/configs/radxa-cm3s-io-rk3566_defconfig b/configs/radxa-cm3s-io-rk35
 index 2f5485c5798..d72741007a6 100644
 --- a/configs/radxa-cm3s-io-rk3566_defconfig
 +++ b/configs/radxa-cm3s-io-rk3566_defconfig
-@@ -77,3 +77,10 @@ CONFIG_USB_XHCI_DWC3=y
+@@ -77,3 +77,9 @@ CONFIG_USB_XHCI_DWC3=y
  CONFIG_USB_DWC3=y
  CONFIG_USB_DWC3_GENERIC=y
  CONFIG_ERRNO_STR=y
@@ -79,12 +79,11 @@ index 2f5485c5798..d72741007a6 100644
 +CONFIG_SPI_FLASH_XTX=y
 +CONFIG_SF_DEFAULT_SPEED=24000000
 +CONFIG_SF_DEFAULT_MODE=0x2000
-+
 diff --git a/configs/radxa-e25-rk3568_defconfig b/configs/radxa-e25-rk3568_defconfig
 index d7592accd7c..1f0b3036e63 100644
 --- a/configs/radxa-e25-rk3568_defconfig
 +++ b/configs/radxa-e25-rk3568_defconfig
-@@ -76,3 +76,10 @@ CONFIG_USB_XHCI_DWC3=y
+@@ -76,3 +76,9 @@ CONFIG_USB_XHCI_DWC3=y
  CONFIG_USB_DWC3=y
  CONFIG_USB_DWC3_GENERIC=y
  CONFIG_ERRNO_STR=y
@@ -94,14 +93,13 @@ index d7592accd7c..1f0b3036e63 100644
 +CONFIG_SPI_FLASH_XTX=y
 +CONFIG_SF_DEFAULT_SPEED=24000000
 +CONFIG_SF_DEFAULT_MODE=0x2000
-+
 diff --git a/configs/rock-3a-rk3568_defconfig b/configs/rock-3a-rk3568_defconfig
 index 969844c805a..408e70fd574 100644
 --- a/configs/rock-3a-rk3568_defconfig
 +++ b/configs/rock-3a-rk3568_defconfig
 @@ -86,3 +86,9 @@ CONFIG_USB_OHCI_HCD=y
- CONFIG_USB_OHCI_GENERIC=y
  CONFIG_USB_DWC3=y
+ CONFIG_USB_DWC3_GENERIC=y
  CONFIG_ERRNO_STR=y
 +CONFIG_ROCKCHIP_SFC=y
 +CONFIG_SPI_FLASH_GIGADEVICE=y

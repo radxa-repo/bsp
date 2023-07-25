@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Mon, 29 May 2023 17:33:16 +0800
 Subject: [PATCH] rockchip: rk356x: enable USB OTG
 
@@ -16,8 +16,8 @@ index 04c493e5f66..92432fbe9de 100644
 --- a/arch/arm/dts/rk3566-radxa-cm3-io-u-boot.dtsi
 +++ b/arch/arm/dts/rk3566-radxa-cm3-io-u-boot.dtsi
 @@ -20,3 +20,11 @@
- &vcc5v0_usb30 {
- 	regulator-boot-on;
+ 	bootph-all;
+ 	status = "okay";
  };
 +
 +&usb2phy0_otg {

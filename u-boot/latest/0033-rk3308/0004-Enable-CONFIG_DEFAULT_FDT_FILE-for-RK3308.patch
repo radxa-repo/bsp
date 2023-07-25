@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Wed, 26 Apr 2023 12:05:50 +0800
 Subject: [PATCH] Enable CONFIG_DEFAULT_FDT_FILE for RK3308
 
@@ -12,13 +12,13 @@ index ba9ee112e2..aaef402d54 100644
 --- a/include/configs/rk3308_common.h
 +++ b/include/configs/rk3308_common.h
 @@ -23,6 +23,7 @@
- #include <config_distro_bootcmd.h>
+ 
  #define CFG_EXTRA_ENV_SETTINGS \
  	ENV_MEM_LAYOUT_SETTINGS \
 +	"fdtfile=" CONFIG_DEFAULT_FDT_FILE "\0" \
  	"partitions=" PARTS_DEFAULT \
  	ROCKCHIP_DEVICE_SETTINGS \
- 	BOOTENV
+ 	"boot_targets=" BOOT_TARGETS "\0"
 -- 
 2.40.0
 

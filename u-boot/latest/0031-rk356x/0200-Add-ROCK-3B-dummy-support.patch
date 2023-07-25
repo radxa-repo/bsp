@@ -19,8 +19,8 @@ index a29a20c090..ff9357c6a6 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -170,7 +170,8 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
- 	rk3566-radxa-cm3s-io.dtb \
- 	rk3568-evb.dtb \
+ 	rk3568-nanopi-r5s.dtb \
+ 	rk3568-odroid-m1.dtb \
  	rk3568-radxa-e25.dtb \
 -	rk3568-rock-3a.dtb
 +	rk3568-rock-3a.dtb \
@@ -58,7 +58,7 @@ index 0000000000..04bbb01b5d
 +
 +&uart2 {
 +	clock-frequency = <24000000>;
-+	u-boot,dm-pre-reloc;
++	bootph-all;
 +	status = "okay";
 +};
 diff --git a/arch/arm/dts/rk3568-rock-3b.dts b/arch/arm/dts/rk3568-rock-3b.dts

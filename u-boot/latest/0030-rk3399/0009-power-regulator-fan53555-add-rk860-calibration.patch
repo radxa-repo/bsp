@@ -1,9 +1,9 @@
 From a09004ca08589f3daa0ffc9d87a4b03205505104 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: Stephen <stephen@vamrs.com>
 Date: Fri, 23 Dec 2022 05:57:48 +0800
 Subject: [PATCH 1/2] power: regulator: fan53555: add rk860 calibration
 
-Signed-off-by: bsp <bsp@radxa.com>
+Signed-off-by: Stephen <stephen@vamrs.com>
 
 diff --git a/drivers/i2c/i2c-uclass.c b/drivers/i2c/i2c-uclass.c
 index 8d9a89ed89..8919ef0631 100644

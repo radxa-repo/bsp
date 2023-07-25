@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Mon, 17 Apr 2023 21:53:30 +0800
 Subject: [PATCH] arm: dts: rk3588: define common boot order
 
@@ -57,7 +57,7 @@ index 65d0ba9c68..c8e2efbfcd 100644
 +
  	dmc {
  		compatible = "rockchip,rk3588-dmc";
- 		u-boot,dm-pre-reloc;
+ 		bootph-all;
 @@ -55,11 +64,18 @@
  };
  

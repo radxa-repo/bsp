@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Thu, 25 May 2023 15:37:53 +0800
 Subject: [PATCH] rockchip: rk356x: enable boot from SCSI
 

@@ -19,13 +19,13 @@ index 8866f102da..2f0e036bef 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -173,6 +173,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3568) += \
+ 	rk3566-quartz64-b.dtb \
  	rk3566-radxa-cm3-io.dtb \
  	rk3566-radxa-cm3-rpi-cm4-io.dtb \
- 	rk3566-radxa-cm3s-io.dtb \
 +	rk3566-radxa-e23.dtb \
- 	rk3568-evb.dtb \
- 	rk3568-radxa-e25.dtb \
- 	rk3568-rock-3a.dtb \
+ 	rk3566-soquartz-blade.dtb \
+ 	rk3566-soquartz-cm4.dtb \
+ 	rk3566-soquartz-model-a.dtb \
 diff --git a/arch/arm/dts/rk3566-radxa-e23-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-e23-u-boot.dtsi
 new file mode 100644
 index 0000000000..589332503e
@@ -47,7 +47,7 @@ index 0000000000..589332503e
 +
 +&uart2 {
 +	clock-frequency = <24000000>;
-+	u-boot,dm-pre-reloc;
++	bootph-all;
 +	status = "okay";
 +};
 diff --git a/arch/arm/dts/rk3566-radxa-e23.dts b/arch/arm/dts/rk3566-radxa-e23.dts

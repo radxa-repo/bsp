@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Tue, 30 May 2023 16:07:16 +0800
 Subject: [PATCH] Enable PCIe for Radxa CM3 IO
 
@@ -27,7 +27,7 @@ index 92432fbe9de..26794f3a9fa 100644
 +	};
  };
  
- &uart2 {
+ &sdhci {
 @@ -28,3 +39,27 @@
  &usb_host0_xhci {
  	status = "okay";

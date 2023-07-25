@@ -19,11 +19,11 @@ index bb55217c28..08932c851e 100644
 @@ -166,6 +166,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3399) += \
  
  dtb-$(CONFIG_ROCKCHIP_RK3568) += \
- 	rk3566-radxa-cm3-io.dtb \
+ 	rk3566-anbernic-rgxx3.dtb \
 +	rk3566-radxa-cm3s-io.dtb \
- 	rk3568-evb.dtb \
- 	rk3568-radxa-e25.dtb \
- 	rk3568-rock-3a.dtb
+ 	rk3566-pinenote-v1.1.dts \
+ 	rk3566-pinenote-v1.2.dts \
+ 	rk3566-pinetab2-v0.1.dtb \
 diff --git a/arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-cm3s-io-u-boot.dtsi
 new file mode 100644
 index 0000000000..2bacdc53bd
@@ -45,7 +45,7 @@ index 0000000000..2bacdc53bd
 +
 +&uart2 {
 +	clock-frequency = <24000000>;
-+	u-boot,dm-pre-reloc;
++	bootph-all;
 +	status = "okay";
 +};
 +

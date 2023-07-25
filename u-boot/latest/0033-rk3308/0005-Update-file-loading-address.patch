@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Wed, 26 Apr 2023 14:51:21 +0800
 Subject: [PATCH] Update file loading address
 
@@ -30,8 +30,8 @@ index 9e5de8e1a0..79cd116580 100644
 +	"kernel_comp_addr_r=0x10000000\0" \
 +	"kernel_comp_size=0x2000000\0"
  
- #include <config_distro_bootcmd.h>
  #define CFG_EXTRA_ENV_SETTINGS \
+ 	ENV_MEM_LAYOUT_SETTINGS \
 -- 
 2.40.0
 

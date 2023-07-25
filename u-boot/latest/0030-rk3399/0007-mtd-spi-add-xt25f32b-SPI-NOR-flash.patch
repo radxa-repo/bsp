@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Thu, 11 May 2023 18:21:51 +0800
 Subject: [PATCH] mtd: spi: add xt25f32b SPI NOR flash
 

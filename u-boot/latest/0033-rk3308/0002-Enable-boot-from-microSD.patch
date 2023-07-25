@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Tue, 25 Apr 2023 20:56:37 +0800
 Subject: [PATCH] Enable boot from microSD
 
@@ -26,17 +26,17 @@ index ab5bfc2ce9..a62a75abfe 100644
 --- a/arch/arm/dts/rk3308-u-boot.dtsi
 +++ b/arch/arm/dts/rk3308-u-boot.dtsi
 @@ -26,6 +26,12 @@
- 	u-boot,dm-pre-reloc;
+ 	bootph-all;
  };
  
 +&sdmmc {
 +	/* mmc to sram can't do dma, prevent aborts transferring TF-A parts */
 +	u-boot,spl-fifo-mode;
-+	u-boot,dm-pre-reloc;
++	bootph-all;
 +};
 +
  &grf {
- 	u-boot,dm-pre-reloc;
+ 	bootph-all;
  };
 -- 
 2.40.0

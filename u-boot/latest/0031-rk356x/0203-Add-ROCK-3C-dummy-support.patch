@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Wed, 31 May 2023 16:09:19 +0800
 Subject: [PATCH] Add ROCK 3C dummy support
 
@@ -21,13 +21,13 @@ index 8798eb03c71..d77e4fb0d0d 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -174,6 +174,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3568) += \
+ 	rk3566-radxa-cm3-io.dtb \
  	rk3566-radxa-cm3-rpi-cm4-io.dtb \
- 	rk3566-radxa-cm3s-io.dtb \
  	rk3566-radxa-e23.dtb \
 +	rk3566-rock-3c.dtb \
- 	rk3568-evb.dtb \
- 	rk3568-radxa-e25.dtb \
- 	rk3568-rock-3a.dtb \
+ 	rk3566-soquartz-blade.dtb \
+ 	rk3566-soquartz-cm4.dtb \
+ 	rk3566-soquartz-model-a.dtb \
 diff --git a/arch/arm/dts/rk3566-rock-3c-u-boot.dtsi b/arch/arm/dts/rk3566-rock-3c-u-boot.dtsi
 new file mode 100644
 index 00000000000..eac3319f090
@@ -60,7 +60,7 @@ index 00000000000..eac3319f090
 +
 +&uart2 {
 +	clock-frequency = <24000000>;
-+	u-boot,dm-pre-reloc;
++	bootph-all;
 +	status = "okay";
 +};
 +

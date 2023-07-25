@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Thu, 11 May 2023 18:22:17 +0800
 Subject: [PATCH] arm: dts: enable SPI boot for ROCK 4
 
@@ -47,14 +47,14 @@ index c17e769f649..92338898470 100644
 +		u-boot,spl-payload-offset = <0x60000>; /* @ 384KB */
  	};
  };
- 
- &vdd_log {
- 	regulator-init-microvolt = <950000>;
- };
 +
 +&spiflash {
-+	u-boot,dm-pre-reloc;
++	bootph-all;
 +};
+ 
+ &sdhci {
+ 	cap-mmc-highspeed;
+ 	mmc-ddr-1_8v;
 diff --git a/arch/arm/dts/rk3399-rock-pi-4.dtsi b/arch/arm/dts/rk3399-rock-pi-4.dtsi
 index 907071d4fe8..dbf49fd109f 100644
 --- a/arch/arm/dts/rk3399-rock-pi-4.dtsi

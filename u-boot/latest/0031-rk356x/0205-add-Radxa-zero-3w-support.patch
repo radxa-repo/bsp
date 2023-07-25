@@ -1,5 +1,5 @@
 From da58038aeb03c376e64ac8833cf686c49783729e Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Thu, 20 Jul 2023 17:26:54 +0800
 Subject: [PATCH] add Radxa zero 3w support
 
@@ -18,13 +18,13 @@ index db4c3f8f..1d0b68af 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -174,6 +174,7 @@ dtb-$(CONFIG_ROCKCHIP_RK3568) += \
+ 	rk3566-radxa-cm3-io.dtb \
  	rk3566-radxa-cm3-rpi-cm4-io.dtb \
- 	rk3566-radxa-cm3s-io.dtb \
  	rk3566-radxa-e23.dtb \
 +	rk3566-radxa-zero-3w.dtb \
  	rk3566-rock-3c.dtb \
- 	rk3568-evb.dtb \
- 	rk3568-radxa-e25.dtb \
+ 	rk3566-soquartz-blade.dtb \
+ 	rk3566-soquartz-cm4.dtb \
 diff --git a/arch/arm/dts/rk3566-radxa-zero-3w-u-boot.dtsi b/arch/arm/dts/rk3566-radxa-zero-3w-u-boot.dtsi
 new file mode 100644
 index 00000000..cafc6aef
@@ -46,7 +46,7 @@ index 00000000..cafc6aef
 +
 +&uart2 {
 +	clock-frequency = <24000000>;
-+	u-boot,dm-pre-reloc;
++	bootph-all;
 +	status = "okay";
 +};
 +
