@@ -3,6 +3,7 @@ FROM debian:bullseye
 RUN dpkg --add-architecture arm64 && \
     apt-get update && \
     apt-get full-upgrade --no-install-recommends -y \
+        binfmt-support qemu-user-static \
         build-essential crossbuild-essential-arm64 gcc-arm-none-eabi git ruby sudo apt-utils \
         python3 python2 python-is-python2 curl debhelper \
         python3-distutils python3-pkg-resources python3-setuptools python3-pyelftools python3-ply python3-git \
