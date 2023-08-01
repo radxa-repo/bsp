@@ -334,7 +334,7 @@ main() {
 
     if ! $NATIVE_BUILD
     then
-        if [[ "$(basename "$CONTAINER_BACKEND")" == "docker" ]] && "$CONTAINER_BACKEND" -v | grep -q podman
+        if [[ "$(basename "$CONTAINER_BACKEND")" == "docker" ]] && "$CONTAINER_BACKEND" --help | grep -q podman
         then
             echo "'$CONTAINER_BACKEND' backend is selected, but the functionality is actually provided by 'podman' backend. Updating accordingly..."
             CONTAINER_BACKEND="$(command -v podman)"
