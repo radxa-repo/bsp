@@ -37,8 +37,9 @@ Alternative commands
                             Available catagories: $(get_supported_infos)
     export <profile>        Export profile
     import <profile>        Import profile
-    install <deb> <disk>    Install built package to specified disk
+    install <file> <disk>   Install built artifact to specified disk
                             Root partition will be determined based on the layout
+                            Supported file types: deb, dtbo
 
 Supported Linux profile:
 $(printf_array "    %s\n" "$(get_supported_edition linux)")
@@ -149,11 +150,17 @@ _import() {
 }
 
 _install() {
-    local deb="$1" disk="$2" i
+    local file="$1" disk="$2" i
+    local ext="${file##*.}"
 
     if [[ ! -b "$disk" ]]
     then
         error $EXIT_BAD_BLOCK_DEVICE "$disk"
+    fi
+
+    if [[ ! -f "$file" ]]
+    then
+        error $EXIT_BAD_FILE "$file"
     fi
 
     sudo umount -R /mnt || true
@@ -177,8 +184,20 @@ _install() {
         error $EXIT_BAD_BLOCK_DEVICE "$disk"2
     fi
 
-    sudo cp "$deb" /mnt
-    sudo systemd-nspawn -D /mnt dpkg -i "/$(basename "$deb")"
+    case "$ext" in
+        deb)
+            sudo cp "$file" /mnt
+            sudo systemd-nspawn -D /mnt dpkg -i "/$(basename "$file")"
+            ;;
+        dtbo)
+            sudo cp "$file" /mnt/boot/dtbo
+            sudo systemd-nspawn -D /mnt u-boot-update
+            ;;
+        *)
+            error $EXIT_UNSUPPORTED_OPTION "$file"
+            ;;
+    esac
+            
     
     sudo umount -R /mnt
 

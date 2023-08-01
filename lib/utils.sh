@@ -13,6 +13,7 @@ EXIT_TOO_FEW_ARGUMENTS=2
 EXIT_UNSUPPORTED_OPTION=3
 EXIT_NO_SUBMODULE=4
 EXIT_BAD_BLOCK_DEVICE=5
+EXIT_BAD_FILE=6
 
 error() {
     case "$1" in
@@ -36,6 +37,9 @@ EOF
             ;;
         $EXIT_BAD_BLOCK_DEVICE)
             echo "${FUNCNAME[1]}->${FUNCNAME[0]}: '$2' is not a block device." >&2
+            ;;
+        $EXIT_BAD_FILE)
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: '$2' is not a valid file." >&2
             ;;
         *)
             echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Unknown exit code." >&2
