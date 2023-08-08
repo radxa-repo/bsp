@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntan <yt@radxa.com>
+Date: Tue, 8 Aug 2023 17:25:25 +0800
+Subject: [PATCH] Update pwm-gpio for Linux 6.1
+
+---
+ drivers/pwm/pwm-gpio.c | 37 +++++++++++++++++++++++++++++++------
+ 1 file changed, 31 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/pwm/pwm-gpio.c b/drivers/pwm/pwm-gpio.c
+index 92963771d080..7f062262dc9c 100644
+--- a/drivers/pwm/pwm-gpio.c
++++ b/drivers/pwm/pwm-gpio.c
+@@ -134,11 +134,36 @@ static void gpio_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
+ 		gpio_pwm_off(pc);
+ }
+ 
++static int gpio_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
++			    const struct pwm_state *state)
++{
++	gpio_pwm_config(chip, pwm, state->duty_cycle, state->period);
++	gpio_pwm_set_polarity(chip, pwm, state->polarity);
++	if (state->enabled)
++		gpio_pwm_enable(chip, pwm);
++	else
++		gpio_pwm_disable(chip, pwm);
++
++	return 0;
++}
++
++static int gpio_pwm_get_state(struct pwm_chip *chip, struct pwm_device *pwm,
++			    struct pwm_state *state)
++{
++	struct gpio_pwm_chip *pc = to_gpio_pwm_chip(chip);
++
++	state->duty_cycle = pc->on_time;
++	state->period = pc->on_time + pc->off_time;
++	state->polarity = PWM_POLARITY_NORMAL;
++	state->enabled = pwm_is_enabled(pc->chip.pwms);
++	state->usage_power = false;
++
++	return 0;
++}
++
+ static const struct pwm_ops gpio_pwm_ops = {
+-	.config = gpio_pwm_config,
+-	.set_polarity = gpio_pwm_set_polarity,
+-	.enable = gpio_pwm_enable,
+-	.disable = gpio_pwm_disable,
++	.apply = gpio_pwm_apply,
++	.get_state = gpio_pwm_get_state,
+ 	.owner = THIS_MODULE,
+ };
+ 
+@@ -157,7 +182,6 @@ static int gpio_pwm_probe(struct platform_device *pdev)
+ 	pc->chip.npwm = 1;
+ 	pc->chip.of_xlate = of_pwm_xlate_with_flags;
+ 	pc->chip.of_pwm_n_cells = 3;
+-	pc->chip.can_sleep = true;
+ 
+ 	pc->gpiod = devm_gpiod_get(&pdev->dev, "pwm", GPIOD_OUT_LOW);
+ 
+@@ -187,7 +211,8 @@ static int gpio_pwm_remove(struct platform_device *pdev)
+ 	struct gpio_pwm_chip *pc = platform_get_drvdata(pdev);
+ 
+ 	hrtimer_cancel(&pc->timer);
+-	return pwmchip_remove(&pc->chip);
++	pwmchip_remove(&pc->chip);
++	return 0;
+ }
+ 
+ #ifdef CONFIG_OF
+-- 
+2.41.0
+

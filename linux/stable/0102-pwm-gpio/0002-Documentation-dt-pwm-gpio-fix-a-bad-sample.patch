@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Ziyuan Xu <xzy.xu@rock-chips.com>
+Date: Thu, 17 May 2018 11:57:50 +0800
+Subject: [PATCH] Documentation: dt: pwm-gpio: fix a bad sample
+
+Refer to the proposal of https://patchwork.kernel.org/patch/7492201/ to
+fixup the sample.
+
+Change-Id: Ia81c631fcdb2893cbec3f12b828162bc090b99cd
+Signed-off-by: Ziyuan Xu <xzy.xu@rock-chips.com>
+---
+ Documentation/devicetree/bindings/pwm/pwm-gpio.txt | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/pwm/pwm-gpio.txt b/Documentation/devicetree/bindings/pwm/pwm-gpio.txt
+index 336f61faa446..b7c68445a0fa 100644
+--- a/Documentation/devicetree/bindings/pwm/pwm-gpio.txt
++++ b/Documentation/devicetree/bindings/pwm/pwm-gpio.txt
+@@ -4,15 +4,13 @@ Required properties:
+   - compatible: should be "pwm-gpio"
+   - #pwm-cells: should be 3, see pwm.txt in this directory for a general
+     description of the cells format.
+-  - pwm-gpios: one or more gpios describing the used gpio, see the gpio
+-    bindings for the used gpio driver.
++  - pwm-gpio: one gpio describing the used gpio, see the gpio bindings for the used gpio driver.
+ 
+ Example:
+ #include <dt-bindings/gpio/gpio.h>
+ 
+-	pwm: pwm@0 {
++	pwm-gpio {
+ 		compatible = "pwm-gpio";
+-		#pwm-cells = 3;
+-		pwm-gpios = <&pio 7 1 GPIO_ACTIVE_LOW>;
+-		pwm-gpios = <&pio 7 2 GPIO_ACTIVE_LOW>;
++		#pwm-cells = <3>;
++		pwm-gpio = <&pio 7 1 GPIO_ACTIVE_HIGH>;
+ 	};
+-- 
+2.41.0
+
