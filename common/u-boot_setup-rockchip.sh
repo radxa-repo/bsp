@@ -148,7 +148,9 @@ update_spinor() {
 
     build_spinor
     flash_erase "$DEVICE" 0 0
-    nandwrite -p "$DEVICE" /tmp/spi.img
+    #nandwrite -p "$DEVICE" /tmp/spi.img
+    echo "Writting to $DEVICE..."
+    flashcp /tmp/spi.img "$DEVICE"
     rm /tmp/spi.img
     sync
 }
