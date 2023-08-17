@@ -134,7 +134,7 @@ update_bootloader() {
         echo "Missing U-Boot binary!" >&2
         return 2
     fi
-    sync
+    sync "$DEVICE"
 }
 
 update_spinor() {
@@ -152,7 +152,7 @@ update_spinor() {
     echo "Writting to $DEVICE..."
     flashcp /tmp/spi.img "$DEVICE"
     rm /tmp/spi.img
-    sync
+    sync "$DEVICE"
 }
 
 # https://stackoverflow.com/a/28776166

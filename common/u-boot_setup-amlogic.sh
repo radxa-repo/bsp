@@ -9,7 +9,7 @@ update_bootloader() {
 
     dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.bin.sd.bin" of=$DEVICE bs=1 count=444
     dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.bin.sd.bin" of=$DEVICE bs=512 skip=1 seek=1
-    sync
+    sync "$DEVICE"
 }
 
 update_emmc_boot() {
