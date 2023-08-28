@@ -152,7 +152,7 @@ update_spinor() {
     echo "Writting to $DEVICE..."
     flashcp /tmp/spi.img "$DEVICE"
     rm /tmp/spi.img
-    sync "$DEVICE"
+    sync
 }
 
 # https://stackoverflow.com/a/28776166
