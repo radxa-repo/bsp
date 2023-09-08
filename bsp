@@ -37,9 +37,10 @@ Alternative commands
                             Available catagories: $(get_supported_infos)
     export <profile>        Export profile
     import <profile>        Import profile
-    install <file> <disk>   Install built artifact to specified disk
+    install <disk> [file]   Install built artifact to specified disk
                             Root partition will be determined based on the layout
-                            Supported file types: deb, dtbo
+                            When file is 
+                            Supported file types: deb, dtb, dtbo
 
 Supported Linux profile:
 $(printf_array "    %s\n" "$(get_supported_edition linux)")
@@ -150,7 +151,7 @@ _import() {
 }
 
 _install() {
-    local file="$1" disk="$2" i
+    local disk="$1" file="${2:-}" i
     local ext="${file##*.}"
 
     if [[ ! -b "$disk" ]]
@@ -158,7 +159,7 @@ _install() {
         error $EXIT_BAD_BLOCK_DEVICE "$disk"
     fi
 
-    if [[ ! -f "$file" ]]
+    if [[ -n "$file" ]] && [[ ! -f "$file" ]]
     then
         error $EXIT_BAD_FILE "$file"
     fi
@@ -193,12 +194,22 @@ _install() {
             sudo cp "$file" /mnt/boot/dtbo
             sudo systemd-nspawn -D /mnt u-boot-update
             ;;
+        dtb)
+            sudo find /mnt/usr/lib/linux-image-*/ -name "$(basename "$file")" -exec mv "{}" "{}.bak" \; -exec cp "$file" "{}" \;
+            ;;
+        "")
+            if [[ -z "$file" ]]
+            then
+                sudo systemd-nspawn -D /mnt
+            else
+                error $EXIT_UNSUPPORTED_OPTION "$file"
+            fi
+            ;;
         *)
             error $EXIT_UNSUPPORTED_OPTION "$file"
             ;;
     esac
-            
-    
+
     sudo umount -R /mnt
 
     sync
