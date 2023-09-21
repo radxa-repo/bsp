@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - container/Dockerfile
-      - .github/workflows/deploy-image.yaml
+      - .github/workflows/deploy-image.yml
 
 env:
   REGISTRY: ghcr.io
@@ -24,11 +24,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: radxa-repo/bsp
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx

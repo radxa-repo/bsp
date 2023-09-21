@@ -14,7 +14,7 @@ on:
       - book.toml
       - .github/workflows/docs.yaml
       - container/Dockerfile
-      - .github/workflows/deploy-image.yaml
+      - .github/workflows/deploy-image.yml
   pull_request:
     paths-ignore:
       - '**.md'
@@ -24,7 +24,7 @@ on:
       - book.toml
       - .github/workflows/docs.yaml
       - container/Dockerfile
-      - .github/workflows/deploy-image.yaml
+      - .github/workflows/deploy-image.yml
 
 jobs:
   query:
