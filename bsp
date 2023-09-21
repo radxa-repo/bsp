@@ -56,9 +56,9 @@ get_supported_edition() {
         shift
     done
 
-    if [[ ! -d "$SCRIPT_DIR/$1" ]] || [[ -z "$1" ]]
+    if [[ -z "${1:-}" ]] || [[ ! -d "$SCRIPT_DIR/$1" ]]
     then
-        error $EXIT_UNSUPPORTED_OPTION "$1"
+        error $EXIT_UNSUPPORTED_OPTION "${1:-}"
     fi
 
     local editions=()
@@ -83,7 +83,7 @@ _json() {
     local array=( "$(get_supported_infos)" )
     if ! in_array "$@" "${array[@]}"
     then
-        error $EXIT_UNKNOWN_OPTION "$1"
+        error $EXIT_UNKNOWN_OPTION "${1:-}"
     fi
 
     local output

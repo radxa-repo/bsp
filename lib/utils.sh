@@ -20,13 +20,13 @@ error() {
         $EXIT_SUCCESS)
             ;;
         $EXIT_UNKNOWN_OPTION)
-            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Unknown option: '$2'." >&2
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Unknown option: '${2:-}'." >&2
             ;;
         $EXIT_TOO_FEW_ARGUMENTS)
             echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Too few arguments." >&2
             ;;
         $EXIT_UNSUPPORTED_OPTION)
-            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Option '$2' is not supported." >&2
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Option '${2:-}' is not supported." >&2
             ;;
         $EXIT_NO_SUBMODULE)
             cat >&2 << EOF
@@ -36,10 +36,10 @@ Please run "git submodule init && git submodule update" to fix this issue.
 EOF
             ;;
         $EXIT_BAD_BLOCK_DEVICE)
-            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: '$2' is not a block device." >&2
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: '${2:-}' is not a block device." >&2
             ;;
         $EXIT_BAD_FILE)
-            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: '$2' is not a valid file." >&2
+            echo "${FUNCNAME[1]}->${FUNCNAME[0]}: '${2:-}' is not a valid file." >&2
             ;;
         *)
             echo "${FUNCNAME[1]}->${FUNCNAME[0]}: Unknown exit code." >&2
