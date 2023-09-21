@@ -73,7 +73,7 @@ get_supported_product() {
     done
 
     local editions=( "$(get_supported_edition "${1:-}")" )
-    if ! in_array "${2:-}" "${editions[@]}" || [[ ! -f "$SCRIPT_DIR/$1/$2/fork.conf" ]]
+    if ! in_array "${2:-}" "${editions[@]}"
     then
         error $EXIT_UNKNOWN_OPTION "${2:-}"
     fi
@@ -99,7 +99,10 @@ get_supported_edition() {
     local editions=()
     for f in $(ls $SCRIPT_DIR/$1)
     do
-        editions+="$f "
+        if [[ -f "$SCRIPT_DIR/$1/$f/fork.conf" ]]
+        then
+            editions+="$f "
+        fi
     done
     echo "${editions[@]}"
 }
