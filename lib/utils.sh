@@ -306,3 +306,40 @@ load_edition() {
     fi
     FORK=$2
 }
+
+build() {
+    prepare_source "$TARGET"
+
+    bsp_prepare
+
+    if [[ -n "$CLEAN_LEVEL" ]]
+    then
+        bsp_make "${BSP_MAKE_DEFINES[@]}" $CLEAN_LEVEL 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    fi
+    
+    if ! $NO_CONFIG
+    then
+        bsp_make "${BSP_MAKE_DEFINES[@]}" $BSP_DEFCONFIG 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        for d in $(find -L "$SCRIPT_DIR/$TARGET/$FORK" -mindepth 1 -type d | sort)
+        do
+            apply_kconfig "$d/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        done
+        apply_kconfig "$SCRIPT_DIR/$TARGET/$FORK/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        if $DEBUG_BUILD
+        then
+            apply_kconfig "$SCRIPT_DIR/$TARGET/.debug/kconfig.conf" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        fi
+        # Cannot run `bsp_make olddefconfig` seperately here
+        # as it will break the build in the next step
+        BSP_MAKE_TARGETS=("olddefconfig" "${BSP_MAKE_TARGETS[@]}")
+    fi
+
+    if $NO_BUILD
+    then
+        bsp_make "${BSP_MAKE_DEFINES[@]}" ""olddefconfig"" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+        echo "--no-build option was given. Exiting..."
+        exit
+    else
+        bsp_make "${BSP_MAKE_DEFINES[@]}" "${BSP_MAKE_TARGETS[@]}" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
+    fi
+}
