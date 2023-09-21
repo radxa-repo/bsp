@@ -307,7 +307,7 @@ load_edition() {
     FORK=$2
 }
 
-build() {
+bsp_build() {
     prepare_source "$TARGET"
 
     bsp_prepare
@@ -342,4 +342,11 @@ build() {
     else
         bsp_make "${BSP_MAKE_DEFINES[@]}" "${BSP_MAKE_TARGETS[@]}" 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
     fi
+}
+
+build() {
+    local component="${1:-}" profile="${2:-}" product="${3:-}"
+
+    load_edition "$component" "$profile"
+    component_build "$profile" "$product"
 }

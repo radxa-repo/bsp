@@ -64,3 +64,14 @@ bsp_makedeb() {
         done
     done
 }
+
+component_build() {
+    if $DTB_ONLY
+    then
+        BSP_MAKE_TARGETS=("dtbs")
+        bsp_build
+    else
+        bsp_build
+        bsp_makedeb
+    fi
+}

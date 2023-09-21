@@ -259,3 +259,51 @@ bsp_makedeb() {
             --force
     done
 }
+
+component_build() {
+    if (( $# > 1 )) && [[ -n "$2" ]]
+    then
+        if ! in_array "$2" "${SUPPORTED_BOARDS[@]}"
+        then
+            error $EXIT_UNKNOWN_OPTION "$2"
+        fi
+        local products=("$2")
+    else
+        local products=("${SUPPORTED_BOARDS[@]}")
+    fi
+
+    rm -rf "$SCRIPT_DIR/.root"
+
+    for BOARD in "${products[@]}"
+    do
+        load_edition u-boot "$1"
+
+        if [[ $(type -t bsp_profile_base) == function ]]
+        then
+            bsp_profile_base
+        fi
+        if [[ $(type -t bsp_$BOARD) == function ]]
+        then
+            bsp_$BOARD
+        fi
+        if [[ $(type -t bsp_profile_override) == function ]]
+        then
+            bsp_profile_override
+        fi
+
+        echo "Start building for $BOARD..."
+        bsp_build
+        bsp_preparedeb
+        if $LONG_VERSION
+        then
+            SOURCE_GITREV_OVERRIDE="${SOURCE_GITREV_OVERRIDE:-$SOURCE_GITREV}"
+        fi
+    done
+
+    SUPPORTED_BOARDS=("${products[@]}")
+    if $LONG_VERSION
+    then
+        SOURCE_GITREV="$SOURCE_GITREV_OVERRIDE"
+    fi
+    bsp_makedeb
+}
