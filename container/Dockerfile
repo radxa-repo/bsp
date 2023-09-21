@@ -1,7 +1,5 @@
 # syntax=docker/dockerfile:1
 
-ARG TARGETARCH
-
 FROM debian:bullseye as base-arm64
 RUN apt-get update && \
     apt-get full-upgrade --no-install-recommends -y \
