@@ -50,15 +50,52 @@ $(printf_array "    %s\n" "$(get_supported_edition u-boot)")
 EOF
 }
 
+get_supported_product() {
+    while (( $# > 0 )) && [[ "$1" == "--" ]]
+    do
+        shift
+    done
+
+    local editions=( "$(get_supported_edition "${1:-}")" )
+    if ! in_array "${2:-}" "${editions[@]}" || [[ ! -f "$SCRIPT_DIR/$1/$2/fork.conf" ]]
+    then
+        error $EXIT_UNKNOWN_OPTION "${2:-}"
+    fi
+
+    (
+        source "$SCRIPT_DIR/$1/$2/fork.conf"
+        echo "${SUPPORTED_BOARDS[@]}"
+    )
+}
+
+get_supported_product() {
+    while (( $# > 0 )) && [[ "$1" == "--" ]]
+    do
+        shift
+    done
+
+    local editions=( "$(get_supported_edition "${1:-}")" )
+    if ! in_array "${2:-}" "${editions[@]}" || [[ ! -f "$SCRIPT_DIR/$1/$2/fork.conf" ]]
+    then
+        error $EXIT_UNKNOWN_OPTION "${2:-}"
+    fi
+
+    (
+        source "$SCRIPT_DIR/$1/$2/fork.conf"
+        echo "${SUPPORTED_BOARDS[@]}"
+    )
+}
+
 get_supported_edition() {
     while (( $# > 0 )) && [[ "$1" == "--" ]]
     do
         shift
     done
 
-    if [[ -z "${1:-}" ]] || [[ ! -d "$SCRIPT_DIR/$1" ]]
+    local components=( "$(get_supported_component)" )
+    if ! in_array "${1:-}" "${components[@]}"
     then
-        error $EXIT_UNSUPPORTED_OPTION "${1:-}"
+        error $EXIT_UNKNOWN_OPTION "${1:-}"
     fi
 
     local editions=()
@@ -69,13 +106,18 @@ get_supported_edition() {
     echo "${editions[@]}"
 }
 
+get_supported_component() {
+    local components=("linux" "u-boot")
+    echo "${components[@]}"
+}
+
 get_supported_infos() {
     while (( $# > 0 )) && [[ "$1" == "--" ]]
     do
         shift
     done
 
-    local infos=("edition linux" "edition u-boot")
+    local infos=("edition" "component" "product")
     echo "${infos[@]}"
 }
 
@@ -424,6 +466,7 @@ main() {
         return $CONTAINER_EXIT_CODE
     fi
 
+    local TARGET_COMPONENTS=() TARGET_EDITIONS=() TARGET_PRODUCTS=()
     TEMP="$1"
     shift
     case "$TEMP" in
