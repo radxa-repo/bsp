@@ -32,7 +32,7 @@ Supported package generation options:
 
 Alternative commands
     json <catagory>         Print supported options in json format
-                            Available catagories: $(get_supported_infos)
+                            Available catagories: $(get_supported_info)
     export <profile>        Export profile
     import <profile>        Import profile
     install <disk> [file]   Install built artifact to specified disk
@@ -112,7 +112,7 @@ get_supported_component() {
     echo "${components[@]}"
 }
 
-get_supported_infos() {
+get_supported_info() {
     while (( $# > 0 )) && [[ "$1" == "--" ]]
     do
         shift
@@ -123,7 +123,7 @@ get_supported_infos() {
 }
 
 _json() {
-    local array=( "$(get_supported_infos)" )
+    local array=( "$(get_supported_info)" )
     if ! in_array "$@" "${array[@]}"
     then
         error $EXIT_UNKNOWN_OPTION "${1:-}"
