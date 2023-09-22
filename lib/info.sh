@@ -41,10 +41,10 @@ Alternative commands
                             Supported file types: deb, dtb, dtbo
 
 Supported Linux profile:
-$(printf_array "    %s\n" "$(get_supported_edition linux)")
+$(printf_array "    %s\n" "$(get_supported_profile linux)")
 
 Supported U-Boot profile:
-$(printf_array "    %s\n" "$(get_supported_edition u-boot)")
+$(printf_array "    %s\n" "$(get_supported_profile u-boot)")
 EOF
 }
 
@@ -54,8 +54,8 @@ get_supported_product() {
         shift
     done
 
-    local editions=( "$(get_supported_edition "${1:-}")" )
-    if ! in_array "${2:-}" "${editions[@]}" || [[ ! -f "$SCRIPT_DIR/$1/$2/fork.conf" ]]
+    local profiles=( "$(get_supported_profile "${1:-}")" )
+    if ! in_array "${2:-}" "${profiles[@]}" || [[ ! -f "$SCRIPT_DIR/$1/$2/fork.conf" ]]
     then
         error $EXIT_UNKNOWN_OPTION "${2:-}"
     fi
@@ -72,8 +72,8 @@ get_supported_product() {
         shift
     done
 
-    local editions=( "$(get_supported_edition "${1:-}")" )
-    if ! in_array "${2:-}" "${editions[@]}"
+    local profiles=( "$(get_supported_profile "${1:-}")" )
+    if ! in_array "${2:-}" "${profiles[@]}"
     then
         error $EXIT_UNKNOWN_OPTION "${2:-}"
     fi
@@ -84,7 +84,7 @@ get_supported_product() {
     )
 }
 
-get_supported_edition() {
+get_supported_profile() {
     while (( $# > 0 )) && [[ "$1" == "--" ]]
     do
         shift
@@ -96,15 +96,15 @@ get_supported_edition() {
         error $EXIT_UNKNOWN_OPTION "${1:-}"
     fi
 
-    local editions=()
+    local profiles=()
     for f in $(ls $SCRIPT_DIR/$1)
     do
         if [[ -f "$SCRIPT_DIR/$1/$f/fork.conf" ]]
         then
-            editions+="$f "
+            profiles+="$f "
         fi
     done
-    echo "${editions[@]}"
+    echo "${profiles[@]}"
 }
 
 get_supported_component() {
@@ -118,7 +118,7 @@ get_supported_infos() {
         shift
     done
 
-    local infos=("edition" "component" "product")
+    local infos=( "component" "profile" "product")
     echo "${infos[@]}"
 }
 

@@ -276,7 +276,7 @@ component_build() {
 
     for BOARD in "${products[@]}"
     do
-        load_edition u-boot "$1"
+        load_profile u-boot "$1"
 
         if [[ $(type -t bsp_profile_base) == function ]]
         then

@@ -292,7 +292,7 @@ get_soc_family() {
     esac
 }
 
-load_edition() {
+load_profile() {
     if ! source "$SCRIPT_DIR/lib/$1.sh" 2>/dev/null
     then
         error $EXIT_UNKNOWN_OPTION "$1"
@@ -347,6 +347,6 @@ bsp_build() {
 build() {
     local component="${1:-}" profile="${2:-}" product="${3:-}"
 
-    load_edition "$component" "$profile"
+    load_profile "$component" "$profile"
     component_build "$profile" "$product"
 }
