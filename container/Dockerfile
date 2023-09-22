@@ -7,6 +7,7 @@
 FROM debian:bullseye as base-arm64
 RUN apt-get update && \
     apt-get full-upgrade --no-install-recommends -y \
+        less \
         binfmt-support qemu-user-static \
         build-essential gcc-arm-none-eabi git ruby sudo apt-utils \
         python3 python2 python-is-python2 curl debhelper \

@@ -1,5 +1,5 @@
 usage() {
-    cat >&2 << EOF
+    less >&2 << EOF
 Radxa BSP Build Tool
 
 Usage:
