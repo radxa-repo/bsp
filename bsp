@@ -110,21 +110,6 @@ main() {
         esac
     done
 
-    if (( $# == 0))
-    then
-        usage
-        return
-    fi
-
-    TEMP="$1"
-    case "$TEMP" in
-        install|export|import|json)
-            shift
-            "_$TEMP" "$@"
-            return
-            ;;
-    esac
-
     if ! $NO_SUBMODULE_CHECK && [[ -z "$(git submodule status)" ]]
     then
         error $EXIT_NO_SUBMODULE
@@ -135,16 +120,53 @@ main() {
         container_exec; return $?
     fi
 
-    local TARGET_COMPONENTS=() TARGET_EDITIONS=() TARGET_PRODUCTS=()
-    TEMP="$1"
-    shift
+    TEMP="${1:-}"
+    shift || true
     case "$TEMP" in
+        install|export|import|json)
+            shift
+            "_$TEMP" "$@"
+            return
+            ;;
         linux|u-boot)
             build "$TEMP" "$@"
             ;;
-        *)
+        "")
             usage
-            return 1
+            return
+            ;;
+        *)
+            local components=( $(get_supported_component) )
+            echo "'$TEMP' is not part of the supported components: ${components[*]}"
+            echo "Assume it is a product."
+
+            for c in "${components[@]}"
+            do
+                local profiles=( $(query_supported_profiles "$c" "$TEMP") )
+                if (( ${#profiles[@]} ))
+                then
+                    echo "'$TEMP' is supported by the following $c profiles: ${profiles[*]}"
+                else
+                    echo "'$TEMP' is not supported by $c."
+                fi
+            done
+
+            read -p "Do you want to build supported components with the first profile listed? [Y/n] "
+            case "$(awk '{print tolower($0)}' <<< "$REPLY")" in
+                ""|y|ye|yes)
+                    for c in "${components[@]}"
+                    do
+                        local profiles=( $(query_supported_profiles "$c" "$TEMP") )
+                        if (( ${#profiles[@]} ))
+                        then
+                            build "$c" "${profiles[0]}" "$TEMP"
+                        fi
+                    done
+                    ;;
+                *)
+                    echo "Operation cancelled."
+                    ;;
+            esac
             ;;
     esac
 }

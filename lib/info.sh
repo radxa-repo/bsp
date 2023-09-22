@@ -1,10 +1,23 @@
 usage() {
     cat >&2 << EOF
 Radxa BSP Build Tool
-usage: $(basename "$0") [options] <linux|u-boot> <profile> [product]
 
-When building u-boot, you can also provide 'product' argument,
-which will only build for that specific image.
+Usage:
+
+Automatic mode:
+    $(basename "$0") [options] <product>
+
+    Automatic mode will search for all supported profiles of a given product,
+    and will ask if you want to build the package for the first profiles listed.
+
+    If you want to build an alternative profile, please use the manual mode.
+
+Manual mode:
+    $(basename "$0") [options] <linux|u-boot> <profile> [product]
+
+    When building u-boot, you can also provide the 'product' argument,
+    which will only build for that specific product, instead of for all products
+    supported by the specified profile.
 
 Supported package generation options:
     -r, --revision [num]    Specify custom revision number, default=1
@@ -30,7 +43,7 @@ Supported package generation options:
     --no-submodule-check    Do not check for submodules
     -h, --help              Show this help message
 
-Alternative commands
+Alternative sub-commands:
     json <catagory>         Print supported options in json format
                             Available catagories: $(get_supported_info)
     export <profile>        Export profile
@@ -136,4 +149,20 @@ _json() {
         return 1
     fi
     printf_array "json" "${output[@]}"
+}
+
+query_supported_profiles() {
+    local component="$1" product="$2"
+    local available_profiles=( $(get_supported_profile "$component") )
+    local result=() p
+
+    for p in "${available_profiles[@]}"
+    do
+        if ( source "$SCRIPT_DIR/$component/$p/fork.conf" && in_array "$product" "${SUPPORTED_BOARDS[@]}" )
+        then
+            result+=("$p")
+        fi
+    done
+
+    echo "${result[@]}"
 }
