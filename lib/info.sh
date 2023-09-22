@@ -19,10 +19,11 @@ Manual mode:
     which will only build for that specific product, instead of for all products
     supported by the specified profile.
 
-Supported package generation options:
-    -r, --revision [num]    Specify custom revision number, default=1
-    -c, --clean             Run 'make clean' before building
-    -C, --distclean         Run 'make distclean' before building
+Supported options:
+    -h, --help              Show this help message
+
+    Disable safety features:
+    --no-submodule-check    Do not check for submodules
     --no-prepare-source     Allow building against locally modified repos
     --no-config             Do not load defconfig or apply kconfig
     --no-container-update   Do not update the container image
@@ -31,17 +32,28 @@ Supported package generation options:
                             Equals --no-prepare-source --no-config --no-container-update
     --no-build              Prepare the source tree but do not build.
                             Inverse of --dirty
+
+    Release preparation:
+    -r, --revision [num]    Specify custom revision number, default=1
+    --long-version          Add Git commit hash to the end of the version number
+
+    Developer options:
+    -c, --clean             Run 'make clean' before building
+    -C, --distclean         Run 'make distclean' before building
     -p                      Pause after applying patches from each folder
+                            Useful when developing for a patch
+    -d, --debug             [linux only] Build debug package as well
+    --dtb                   [linux only] Build dtb instead of full kernel
+                            Useful when developing device trees
+
+    Container behaviors:
     -n, --native-build      Build without using container
     -l, --local-container   Using locally built container image
-    -s, --container-shell   Start a shell inside the container instead of the build
-    -d, --debug             Build debug package as well
-    --long-version          Add Git commit hash to the end of the version number
-    --dtb                   Build dtb only <only valid for linux build>
+                            This option will build the container with 'container/Dockerfile'
+    -s, --container-shell   Start a shell inside the container instead runnning bsp
+                            Intended for examining the build environment
     -b, --backend [backend] Manually specify container backend. supported values are:
                             docker, podman
-    --no-submodule-check    Do not check for submodules
-    -h, --help              Show this help message
 
 Alternative sub-commands:
     json <catagory>         Print supported options in json format
