@@ -12,7 +12,8 @@ container_exec() {
     then
         if [[ -z $CONTAINER_REGISTRY ]]
         then
-            $CONTAINER_BACKEND build --force-rm -t "${CONTAINER_REGISTRY}bsp:main" "$SCRIPT_DIR/container"
+            $CONTAINER_BACKEND image rm "${CONTAINER_REGISTRY}bsp:main" &>/dev/null || true
+            $CONTAINER_BACKEND build -t "${CONTAINER_REGISTRY}bsp:main" "$SCRIPT_DIR/container"
         else
             $CONTAINER_BACKEND pull "${CONTAINER_REGISTRY}bsp:main"
         fi
