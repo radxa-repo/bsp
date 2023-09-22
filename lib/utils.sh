@@ -228,18 +228,16 @@ prepare_source() {
             if [[ -f $d/PKGBUILD ]]
             then
                 echo "Found PKGBUILD"
-                local source
-                source $d/PKGBUILD
-                if (( ${#source[@]} ))
-                then
+                patches=( $(
+                    source $d/PKGBUILD
                     for p in "${source[@]}"
                     do
                         if [[ "$p" == *.patch ]]
                         then
-                            patches+=("$d/$p")
+                            echo "$d/$p"
                         fi
                     done
-                fi
+                ) )
             else
                 patches=( $d/*.patch )
             fi
