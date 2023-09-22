@@ -1,5 +1,9 @@
 # syntax=docker/dockerfile:1
 
+# This appears to be required for local Podman image
+# But breaks GitHub CI for image building
+# ARG TARGETARCH
+
 FROM debian:bullseye as base-arm64
 RUN apt-get update && \
     apt-get full-upgrade --no-install-recommends -y \
@@ -19,6 +23,6 @@ RUN dpkg --add-architecture arm64 && \
 FROM base-${TARGETARCH} as output
 RUN gem install fpm && \
     curl https://bootstrap.pypa.io/pip/2.7/get-pip.py | python2 && \
-    python2 -m pip install pyelftools && \
+    python2 -m pip install pyelftools==0.29 && \
     adduser --gecos runner --disabled-password runner && \
     rm -rf /var/lib/apt/lists/*
