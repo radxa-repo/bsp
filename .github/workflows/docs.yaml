@@ -30,6 +30,10 @@ jobs:
         uses: peaceiris/actions-mdbook@v1
         with:
           mdbook-version: 'latest'
+      - name: Install mdbook-admonish
+        shell: bash
+        run: |
+          cargo install mdbook-admonish
       - name: Build
         run: mdbook build
       - name: Setup Pages

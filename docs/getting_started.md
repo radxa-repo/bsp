@@ -26,22 +26,37 @@ sudo apt install -y systemd-container
 git clone --recurse-submodules https://github.com/radxa-repo/bsp.git
 ```
 
-## Build your first package
+## Understand `bsp`'s usage
 
-Once the repo is cloned on your machine, you can run `bsp` without any arguments to check the help message:
+Once the repo is cloned on your machine, you can run `bsp` to check the built-in help:
+
+```admonish tip
+The built-in help is intended as the first step to troubleshoot for `bsp` usage,
+while the documentation site covers more about high level applications and low level
+implementation details. As such, you are more likely to find your questions solved
+by an option listed in the built-in help.
+
+It is **strongly recommended** to read the built-in help at once, if you want to
+do anything beyond the trival package rebuild.
+```
 
 ```bash
 cd bsp
 ./bsp
 ```
 
-Most options listed in the help messages are targetting at developers. If you only want to build a package locally, you can run `bsp` with only the required arguments:
+## Build your first packages
+
+`bsp` now supports building kernel and U-Boot in a single step, and specify them
+by product name instead of specific profiles. This should help new users to test
+their setup without much `bsp` knowledge:
 
 ```bash
-# Build Linux rockchip
-./bsp linux rockchip
-# Build U-Boot latest
-./bsp u-boot latest
+# The following command will build linux-stable
+# and u-boot-latest for radxa-zero
+./bsp radxa-zero
 ```
 
-Supported Linux and U-Boot profiles are listed at the end of the help message.
+Custom kernel/firmware developer should at least read the [Development reference](dev_flow.md)
+section to better understand the development workflow and the internal data
+sctructure for `bsp`.

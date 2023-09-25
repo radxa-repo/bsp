@@ -1,11 +1,17 @@
 # Summary
 
 - [Getting Started](getting_started.md)
-- [Running from GitHub Workflows](gh_workflows.md)
+---
+# Development reference
+- [Local development workflow](dev_flow.md)
+  - [Developer FAQ](dev/faq.md)\
 - [Understand profile](profile/index.md)
   - [fork.conf](profile/fork.conf.md)
   - [kconfig.conf](profile/kconfig.conf.md)
+---
+# Low-level troubleshooting
 - [Firmware management](firmware/management.md)
-- [Local development workflow](dev_flow.md)
-  - [Developer FAQ](dev/faq.md)
+---
+# Common use cases
+- [Running from GitHub Workflows](gh_workflows.md)
 - [Reproduce a previous release](reproduce.md)

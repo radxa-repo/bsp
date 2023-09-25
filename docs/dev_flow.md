@@ -4,7 +4,8 @@ In this article, we will demonstrate how to develop and create patches for `bsp`
 
 ## Prepare working tree
 
-Use `--no-build` and `-C|--distclean` to set up the source tree according to `bsp` predefined profiles:
+Use `--no-build` and `-C|--distclean` to set up the source tree with `bsp`
+predefined profiles:
 
 ```bash
 ./bsp -C --no-build linux latest
@@ -12,7 +13,9 @@ Use `--no-build` and `-C|--distclean` to set up the source tree according to `bs
 
 ## Retrive additional commit history
 
-`bsp` uses shallow clone by default to save bandwidth and speed up build process. However, you might want to access additional git history for `rebase` or `cherry-pick`. You can use either of the following 2 options to fetch more commits:
+`bsp` uses shallow clone by default to save bandwidth and speed up build process.
+However, you might want to access additional git history for `rebase` or `cherry-pick`.
+You can use either of the following 2 options to fetch more commits:
 
 ```bash
 cd .src/linux
@@ -30,6 +33,17 @@ You can use `--dirty` to build without resetting the source tree. This will allo
 ```bash
 ./bsp --dirty linux latest
 ```
+
+~~~admonish note
+
+Currently `--dirty` is broken for `linux`. You can use following arguments to
+allow `bsp` to rebuild `.config` to workaround this issue:
+
+```bash
+./bsp --no-prepare-source --no-container-update linux latest
+```
+
+~~~
 
 ## Install build artifacts
 
