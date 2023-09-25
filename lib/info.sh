@@ -149,7 +149,7 @@ get_supported_info() {
 
 _json() {
     local array=( "$(get_supported_info)" )
-    if ! in_array "$@" "${array[@]}"
+    if ! in_array "${1:-}" "${array[@]}"
     then
         error $EXIT_UNKNOWN_OPTION "${1:-}"
     fi
