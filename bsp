@@ -115,24 +115,29 @@ main() {
         error $EXIT_NO_SUBMODULE
     fi
 
-    if ! $NATIVE_BUILD
-    then
-        container_exec; return $?
-    fi
-
     TEMP="${1:-}"
     shift || true
+
     case "$TEMP" in
         install|export|import|json)
             "_$TEMP" "$@"
             return
             ;;
-        linux|u-boot)
-            build "$TEMP" "$@"
-            ;;
         "")
             usage
             return
+            ;;
+        *)
+            if ! $NATIVE_BUILD
+            then
+                container_exec; return $?
+            fi
+            ;;
+    esac
+
+    case "$TEMP" in
+        linux|u-boot)
+            build "$TEMP" "$@"
             ;;
         *)
             local components=( $(get_supported_component) )
