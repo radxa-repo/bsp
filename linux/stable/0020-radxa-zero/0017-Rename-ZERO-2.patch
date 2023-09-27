@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Wed, 27 Sep 2023 19:15:30 +0800
+Subject: [PATCH 1/1] Rename ZERO 2
+
+---
+ arch/arm64/boot/dts/amlogic/Makefile                          | 2 +-
+ ...on-g12b-radxa-zero2.dts => meson-g12b-radxa-zero-2pro.dts} | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+ rename arch/arm64/boot/dts/amlogic/{meson-g12b-radxa-zero2.dts => meson-g12b-radxa-zero-2pro.dts} (99%)
+
+diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/Makefile
+index a1da8c46c08e..ba6a3dfaa847 100644
+--- a/arch/arm64/boot/dts/amlogic/Makefile
++++ b/arch/arm64/boot/dts/amlogic/Makefile
+@@ -20,7 +20,7 @@ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-gtking-pro.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-gtking.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-odroid-n2-plus.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-odroid-n2.dtb
+-dtb-$(CONFIG_ARCH_MESON) += meson-g12b-radxa-zero2.dtb
++dtb-$(CONFIG_ARCH_MESON) += meson-g12b-radxa-zero-2pro.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-s922x-bananapi-m2s.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-s922x-khadas-vim3.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-ugoos-am6.dtb
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts b/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero-2pro.dts
+similarity index 99%
+rename from arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
+rename to arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero-2pro.dts
+index f62e54938ec5..1a5421109c59 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero2.dts
++++ b/arch/arm64/boot/dts/amlogic/meson-g12b-radxa-zero-2pro.dts
+@@ -16,8 +16,8 @@
+ #include <dt-bindings/sound/meson-g12a-tohdmitx.h>
+ 
+ / {
+-	compatible = "radxa,zero2", "amlogic,a311d", "amlogic,g12b";
+-	model = "Radxa Zero2";
++	compatible = "radxa,zero-2pro", "radxa,zero2", "amlogic,a311d", "amlogic,g12b";
++	model = "Radxa ZERO 2 PRO";
+ 
+ 	aliases {
+ 		serial0 = &uart_AO;
+-- 
+2.42.0
+
