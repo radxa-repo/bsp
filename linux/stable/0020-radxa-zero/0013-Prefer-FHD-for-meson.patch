@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: bsp <bsp@radxa.com>
+From: ZHANG Yuntian <yt@radxa.com>
 Date: Wed, 12 Jul 2023 16:34:21 +0800
 Subject: [PATCH] Prefer FHD for meson
 
@@ -21,7 +21,7 @@ index 739e0d40cca6..d74e002bf7e8 100644
  
  struct detailed_mode_closure {
 @@ -233,6 +235,12 @@ static const struct edid_quirk {
- 	EDID_QUIRK('S', 'V', 'R', 0x1019, EDID_QUIRK_NON_DESKTOP),
+ 	EDID_QUIRK('A', 'U', 'O', 0x1111, EDID_QUIRK_NON_DESKTOP),
  };
  
 +static const struct connector_quirk {

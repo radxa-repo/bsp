@@ -22,8 +22,8 @@ index f231280cd..3b5a15e47 100644
 +subdir-y += overlays
 +
  # SPDX-License-Identifier: GPL-2.0
+ dtb-$(CONFIG_ARCH_MESON) += amlogic-c3-c302x-aw409.dtb
  dtb-$(CONFIG_ARCH_MESON) += meson-a1-ad401.dtb
- dtb-$(CONFIG_ARCH_MESON) += meson-axg-jethome-jethub-j100.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
 index 971b1f0ae..66aba816d 100644
 --- a/arch/arm64/boot/dts/rockchip/Makefile
@@ -79,7 +79,7 @@ index 190d781e8..8744bb077 100644
 +
  PHONY += $(subdirs)
  $(subdirs):
- 	$(Q)$(MAKE) $(dtbinst)=$@ dst=$(patsubst $(obj)/%,$(dst)/%,$@)
+ 	$(Q)$(MAKE) $(dtbinst)=$@ dst=$(if $(CONFIG_ARCH_WANT_FLAT_DTB_INSTALL),$(dst),$(patsubst $(obj)/%,$(dst)/%,$@))
 diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
 index 3fb6a99e7..a1a073d1d 100644
 --- a/scripts/Makefile.lib
