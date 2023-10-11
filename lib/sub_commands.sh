@@ -54,7 +54,7 @@ _install() {
     case "$ext" in
         deb)
             sudo cp "$file" /mnt
-            sudo systemd-nspawn -D /mnt dpkg -i "/$(basename "$file")"
+            sudo systemd-nspawn -D /mnt apt-get install -y --allow-downgrades --reinstall "/$(basename "$file")"
             ;;
         dtbo)
             sudo cp "$file" /mnt/boot/dtbo
