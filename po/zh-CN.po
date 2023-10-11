@@ -1,0 +1,513 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: bsp\n"
+"POT-Creation-Date: 2023-10-11T19:44:23+08:00\n"
+"PO-Revision-Date: 2023-10-11 19:46+0800\n"
+"Last-Translator:  <yt@radxa.com>\n"
+"Language-Team: Language zh-CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: zh-CN\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: docs/SUMMARY.md:3 docs/getting_started.md:1
+msgid "Getting Started"
+msgstr "新手入门"
+
+#: docs/SUMMARY.md:5
+msgid "Development reference"
+msgstr ""
+
+#: docs/SUMMARY.md:6 docs/dev_flow.md:1
+msgid "Local development workflow"
+msgstr ""
+
+#: docs/SUMMARY.md:7 docs/dev/faq.md:1
+msgid "Developer FAQ"
+msgstr ""
+
+#: docs/SUMMARY.md:8 docs/profile/index.md:1
+msgid "Understand profile"
+msgstr ""
+
+#: docs/SUMMARY.md:9 docs/profile/fork.conf.md:1
+msgid "fork.conf"
+msgstr ""
+
+#: docs/SUMMARY.md:10 docs/profile/kconfig.conf.md:1
+msgid "kconfig.conf"
+msgstr ""
+
+#: docs/SUMMARY.md:12
+msgid "Low-level troubleshooting"
+msgstr ""
+
+#: docs/SUMMARY.md:13 docs/firmware/management.md:1
+msgid "Firmware management"
+msgstr ""
+
+#: docs/SUMMARY.md:14
+msgid "setup.sh usage"
+msgstr ""
+
+#: docs/SUMMARY.md:16
+msgid "Common use cases"
+msgstr ""
+
+#: docs/SUMMARY.md:17 docs/gh_workflows.md:1
+msgid "Running from GitHub Workflows"
+msgstr ""
+
+#: docs/SUMMARY.md:18 docs/reproduce.md:1
+msgid "Reproduce a previous release"
+msgstr ""
+
+#: docs/getting_started.md:3
+msgid "Install dependencies"
+msgstr ""
+
+#: docs/getting_started.md:5
+msgid "Debian 12 / Ubuntu 22.04"
+msgstr ""
+
+#: docs/getting_started.md:21
+msgid "Check out the code"
+msgstr ""
+
+#: docs/getting_started.md:23
+msgid ""
+"`bsp` uses git submodules. As such, please check out the code with the "
+"following command:"
+msgstr ""
+
+#: docs/getting_started.md:25
+msgid ""
+"```bash\n"
+"git clone --recurse-submodules https://github.com/radxa-repo/bsp.git\n"
+"```"
+msgstr ""
+
+#: docs/getting_started.md:29
+msgid "Understand `bsp`'s usage"
+msgstr ""
+
+#: docs/getting_started.md:31
+msgid ""
+"Once the repo is cloned on your machine, you can run `bsp` to check the "
+"built-in help:"
+msgstr ""
+
+#: docs/getting_started.md:48
+msgid "Build your first packages"
+msgstr ""
+
+#: docs/getting_started.md:50
+msgid ""
+"`bsp` now supports building kernel and U-Boot in a single step, and specify "
+"them by product name instead of specific profiles. This should help new "
+"users to test their setup without much `bsp` knowledge:"
+msgstr ""
+
+#: docs/getting_started.md:60
+msgid ""
+"Custom kernel/firmware developer should at least read the [Development "
+"reference](dev_flow.md) section to better understand the development "
+"workflow and the internal data sctructure for `bsp`."
+msgstr ""
+
+#: docs/dev_flow.md:3
+msgid ""
+"In this article, we will demonstrate how to develop and create patches for "
+"`bsp`."
+msgstr ""
+
+#: docs/dev_flow.md:5
+msgid "Prepare working tree"
+msgstr ""
+
+#: docs/dev_flow.md:7
+msgid ""
+"Use `--no-build` and `-C|--distclean` to set up the source tree with `bsp` "
+"predefined profiles:"
+msgstr ""
+
+#: docs/dev_flow.md:14
+msgid "Retrive additional commit history"
+msgstr ""
+
+#: docs/dev_flow.md:16
+msgid ""
+"`bsp` uses shallow clone by default to save bandwidth and speed up build "
+"process. However, you might want to access additional git history for "
+"`rebase` or `cherry-pick`. You can use either of the following 2 options to "
+"fetch more commits:"
+msgstr ""
+
+#: docs/dev_flow.md:29
+msgid "Build packages"
+msgstr ""
+
+#: docs/dev_flow.md:31
+msgid ""
+"You can use `--dirty` to build without resetting the source tree. This will "
+"allow the build process to reuse previously built objects:"
+msgstr ""
+
+#: docs/dev_flow.md:48
+msgid "Install build artifacts"
+msgstr ""
+
+#: docs/dev_flow.md:50
+msgid ""
+"You can use `./bsp install` to install the built package to a root partition "
+"(like a microSD card):"
+msgstr ""
+
+#: docs/dev_flow.md:56
+msgid "Create patch set"
+msgstr ""
+
+#: docs/dev_flow.md:58
+msgid ""
+"After you are happy with the changes, you can export your commits with `git "
+"format-patch`:"
+msgstr ""
+
+#: docs/dev_flow.md:68
+msgid ""
+"Move the outputted patch files to the corresponding subfolder, and you are "
+"ready to submit your first PR!"
+msgstr ""
+
+#: docs/dev/faq.md:3
+msgid "`bsp` takes a lot of time applying patches"
+msgstr ""
+
+#: docs/dev/faq.md:5
+msgid "There are 2 possible causes:"
+msgstr ""
+
+#: docs/dev/faq.md:7
+msgid ""
+"Your `bsp` project is stored on mechinical hard drives.  \n"
+"As patching is random 4K intensive, we suggest you put `bsp` on solid state "
+"drives."
+msgstr ""
+
+#: docs/dev/faq.md:9
+msgid ""
+"Your source tree has too many dangling commits.  \n"
+"This happens naturally as you use the project. You can go to the source tree "
+"under `.src` and run `git gc --prune` to restore the performance."
+msgstr ""
+
+#: docs/profile/index.md:3
+msgid ""
+"Profiles are subfolders under `linux` and `u-boot` folder. Each of them "
+"describes a specific flavor of their targeted software."
+msgstr ""
+
+#: docs/profile/index.md:5
+msgid "Special files"
+msgstr ""
+
+#: docs/profile/index.md:7
+msgid "[fork.conf](fork.conf.md): Profile config file"
+msgstr ""
+
+#: docs/profile/index.md:8
+msgid "[kconfig.conf](kconfig.conf.md): kconfig overriding file"
+msgstr ""
+
+#: docs/profile/index.md:10
+msgid "Tree structure and mode of operation"
+msgstr ""
+
+#: docs/profile/fork.conf.md:3
+msgid ""
+"`fork.conf` is the profile configuration file. This file is mandatory and is "
+"sourced early by `bsp`."
+msgstr ""
+
+#: docs/profile/fork.conf.md:5
+msgid "`BSP_GIT` defines upstream source repo."
+msgstr ""
+
+#: docs/profile/fork.conf.md:7
+msgid ""
+"`BSP_COMMIT` or `BSP_BRANCH` or `BSP_TAG` defines the exact source code. The "
+"first defined option in the listed order will be used."
+msgstr ""
+
+#: docs/profile/fork.conf.md:9
+msgid ""
+"`BSP_DEFCONFIG` defines the defconfig used for building. Default to "
+"`defconfig`."
+msgstr ""
+
+#: docs/profile/fork.conf.md:11
+msgid ""
+"`SUPPORTED_BOARDS` defines the supported product list, which is a [Bash "
+"array](https://www.gnu.org/software/bash/manual/html_node/Arrays.html). "
+"`bsp` will use this list to create virtual packages that reference the "
+"binary package. Suffixes are commonly used to denote kernel/firmware "
+"variants that also support the same board. However, the default package is "
+"the one that matches exactly to the product name."
+msgstr ""
+
+#: docs/profile/kconfig.conf.md:3
+msgid ""
+"`kconfig.conf` is a kernel configuration file. This file mirrors `defconfig` "
+"format."
+msgstr ""
+
+#: docs/firmware/management.md:3
+msgid "Firmware, or do you mean U-Boot?"
+msgstr ""
+
+#: docs/firmware/management.md:5
+msgid ""
+"`bsp` is intended to be a general _Board Support Package_ builder. In this "
+"sense, there are _firmwares_ which perform low level initialization, and "
+"_kernel_ which runs the operating system. Currently the only kernel `bsp` "
+"supports is Linux, and the only supported firmware is U-Boot. However, we "
+"plan to support EDK2 in the future, thus this section is titled _firmware "
+"management_."
+msgstr ""
+
+#: docs/firmware/management.md:11
+msgid "U-Boot installation location"
+msgstr ""
+
+#: docs/firmware/management.md:13
+msgid ""
+"Following Debian convention, we install U-Boot under `/usr/lib/u-boot` "
+"folder, and save all supported bootloaders in a single package."
+msgstr ""
+
+#: docs/firmware/management.md:16
+msgid "We also provide a maintenance script called [`setup.sh`](setup_sh.md)."
+msgstr ""
+
+#: docs/firmware/management.md:18
+msgid "Extracting binaries from released package"
+msgstr ""
+
+#: docs/firmware/management.md:20
+msgid ""
+"Firmware binaries are usually needed to perform various offline recovery "
+"tasks. As we only release firmware in the form of Debian package, it is "
+"necessary to extract the required files first before performing any recovery "
+"steps."
+msgstr ""
+
+#: docs/firmware/management.md:24
+msgid ""
+"On Windows, you can extract `.deb` files with [7-Zip](https://www.7-zip.org/"
+"download.html)."
+msgstr ""
+
+#: docs/firmware/management.md:26
+msgid "On Linux, you can run following command to extrace the package:"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:1
+msgid "`setup.sh` usage"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:3
+msgid ""
+"Under each board's directory, there are a few binary blobs, along with a "
+"maintenance script called `setup.sh`, which provides a wrapper for common "
+"management tasks."
+msgstr ""
+
+#: docs/firmware/setup_sh.md:5
+msgid ""
+"There is minimal error checking in the script, as such, it is intended as "
+"the advanced method of bootloader management. Normal user should use "
+"`rsetup` instead, which provides a TUI for bootloader update."
+msgstr ""
+
+#: docs/firmware/setup_sh.md:7
+msgid ""
+"Additionally, not all commands are intended for the end user usage. Below "
+"are documented and supported commands:"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:9
+msgid "Common `setup.sh` command"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:11
+msgid "`setup.sh maskrom`"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:13
+msgid ""
+"Maskrom is a special boot mode, that can run binary passed via USB OTG "
+"connection. This is usually the first command to run when you boot the board "
+"in maskrom mode."
+msgstr ""
+
+#: docs/firmware/setup_sh.md:15
+msgid ""
+"For Amlogic devices, the binary is actually a normal U-Boot binary running "
+"in memory, so you can access the U-Boot console for recovery."
+msgstr ""
+
+#: docs/firmware/setup_sh.md:17
+msgid ""
+"For Rockchip devices, the binary allows access to on-board eMMC via "
+"`rkdeveloptool`."
+msgstr ""
+
+#: docs/firmware/setup_sh.md:19
+msgid "`setup.sh update_bootloader <file>`"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:21
+msgid ""
+"This command update the installed bootloader on a uncompressed system image "
+"file. Since block devices is also a file, the command can also update the "
+"bootloader on storage medias like eMMC or NVMe SSD."
+msgstr ""
+
+#: docs/firmware/setup_sh.md:23
+msgid "Rockchip specific `setup.sh` command"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:25
+msgid "`setup.sh maskrom_autoupdate_bootloader`"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:27
+msgid ""
+"This command update the eMMC bootloader via Rockchip Maskrom mode. You do "
+"not need to run `setup.sh maskrom` first when using this command."
+msgstr ""
+
+#: docs/firmware/setup_sh.md:29
+msgid "`setup.sh maskrom_autoupdate_spinor`"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:31
+msgid ""
+"This command update the SPI bootloader via Rockchip Maskrom mode. You do not "
+"need to run `setup.sh maskrom` first when using this command."
+msgstr ""
+
+#: docs/firmware/setup_sh.md:33
+msgid "`setup.sh update_spinor [mtd_device]`"
+msgstr ""
+
+#: docs/firmware/setup_sh.md:35
+msgid ""
+"This command update the installed bootloader on the SPI flash. When no "
+"`mtd_device` is assigned, it will update `/dev/mtd0`."
+msgstr ""
+
+#: docs/gh_workflows.md:3
+msgid ""
+"Please check out our [GitHub workflows](https://github.com/radxa-repo/bsp/"
+"tree/main/.github/workflows) as an example."
+msgstr ""
+
+#: docs/reproduce.md:3
+msgid "In this example, we will recreate `linux-rockchip` 5.10.110-5 package."
+msgstr ""
+
+#: docs/reproduce.md:5
+msgid ""
+"Find the original GitHub release for the desired package  \n"
+"For our example, it is located at [https://github.com/radxa-pkg/linux-"
+"rockchip/releases/tag/5.10.110-5](https://github.com/radxa-pkg/linux-"
+"rockchip/releases/tag/5.10.110-5)."
+msgstr ""
+
+#: docs/reproduce.md:8
+msgid ""
+"From the release pages, you will see multiple packages.  \n"
+"We will focus on the top 2 packages:"
+msgstr ""
+
+#: docs/reproduce.md:11
+msgid "File Name"
+msgstr ""
+
+#: docs/reproduce.md:11
+msgid "Size"
+msgstr ""
+
+#: docs/reproduce.md:13
+msgid "linux-headers-5.10.110-5-rockchip_5.10.110-5-1932709cf_arm64.deb"
+msgstr ""
+
+#: docs/reproduce.md:13
+msgid "7.4 MB"
+msgstr ""
+
+#: docs/reproduce.md:14
+msgid "linux-headers-radxa-nx5-io_5.10.110-5-3a557f6_all.deb"
+msgstr ""
+
+#: docs/reproduce.md:14
+msgid "1.1 KB"
+msgstr ""
+
+#: docs/reproduce.md:16
+msgid ""
+"As our packages are built with `bsp` and `radxa/kernel`, there are 2 git "
+"commits that we need to find out to accurately reproduce those packages:  \n"
+"Since the real package (the one with larger file size) is closely related to "
+"`radxa/kernel`, `1932709cf` is the commit for it.  \n"
+"Since the meta package (the one with smaller file size) is closely related "
+"to `bsp`, `3a557f6` is the commit for it."
+msgstr ""
+
+#: docs/reproduce.md:20
+msgid ""
+"We now have the following essential commit information:  \n"
+"`radxa/kernel`: [`1932709cf`](https://github.com/radxa/kernel/"
+"commit/1932709cf)  \n"
+"`bsp`: [`3a557f6`](https://github.com/radxa-repo/bsp/commit/3a557f6)"
+msgstr ""
+
+#: docs/reproduce.md:24
+msgid ""
+"However, `fork.conf` only takes full commit hash. So click the `radxa/"
+"kernel` link above, and click `Browse files` button on GitHub page, that "
+"will get you the full commit hash in the URL bar: `radxa/kernel`: "
+"[`1932709cf7d98d0d92952bba38d990d938fabc58`](https://github.com/radxa/kernel/"
+"tree/1932709cf7d98d0d92952bba38d990d938fabc58)"
+msgstr ""
+
+#: docs/reproduce.md:27
+msgid ""
+"We can also check the content of [`overlay.sh`](https://github.com/radxa-"
+"repo/bsp/blob/3a557f688241ba03dba26f6804d1f39564342856/linux/.common/"
+"overlays.sh) to find the commit used for `radxa/overlays`:  \n"
+"`radxa/overlays`: [`4940ae33e4def0fb9133faf68adf0c3421b61f06`](https://"
+"github.com/radxa/overlays/commit/4940ae33e4def0fb9133faf68adf0c3421b61f06)"
+msgstr ""
+
+#: docs/reproduce.md:30
+msgid "We can now recreate the package:"
+msgstr ""
+
+#: docs/reproduce.md:32
+msgid ""
+"```bash\n"
+"git clone --recurse-submodules https://github.com/radxa-repo/bsp.git\n"
+"cd bsp\n"
+"# switch to bsp commit found above\n"
+"git switch --detach 3a557f6\n"
+"# replace BSP_BRANCH with radxa/kernel commit found above\n"
+"sed -i \"s/BSP_BRANCH.*/"
+"BSP_COMMIT='1932709cf7d98d0d92952bba38d990d938fabc58'/\" linux/rockchip/fork."
+"conf\n"
+"./bsp linux rockchip\n"
+"# the prepared kernel tree will be available under .src/linux\n"
+"```"
+msgstr ""

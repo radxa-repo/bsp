@@ -5,12 +5,21 @@ multilingual = true
 src = "docs"
 title = "bsp"
 
+[build]
+extra-watch-dirs = ["po"]
+
 [output.html]
 git-repository-url = "https://github.com/radxa-repo/bsp/tree/main"
 edit-url-template = "https://github.com/radxa-repo/bsp/edit/main/{path}"
-additional-css = ["./theme/css/mdbook-admonish.css"]
+additional-css = [
+    "./theme/css/mdbook-admonish.css",
+    "./theme/css/language-picker.css",
+]
 
 [preprocessor]
+
+[preprocessor.gettext]
+after = ["links"]
 
 [preprocessor.admonish]
 command = "mdbook-admonish"

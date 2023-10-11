@@ -30,12 +30,33 @@ jobs:
         uses: peaceiris/actions-mdbook@v1
         with:
           mdbook-version: 'latest'
-      - name: Install mdbook-admonish
+      - name: Install mdbook plugins
         shell: bash
         run: |
           cargo install mdbook-admonish
+          cargo install mdbook-i18n-helpers
       - name: Build
-        run: mdbook build
+        run: |
+          mdbook build
+          for po_lang in zh-CN
+          do
+            POT_CREATION_DATE=$(grep --max-count 1 '^"POT-Creation-Date:' po/$po_lang.po | sed -E 's/".*: (.*)\\n"/\1/')
+            if [[ $POT_CREATION_DATE == "" ]]; then
+                POT_CREATION_DATE=now
+            fi
+            echo "::group::Building $po_lang translation as of $POT_CREATION_DATE"
+            rm -r docs/
+            git restore --source "$(git rev-list -n 1 --before "$POT_CREATION_DATE" @)" docs/
+
+            # Set language and adjust site URL. Clear the redirects
+            # since they are in sync with the source files, not the
+            # translation.
+            MDBOOK_BOOK__LANGUAGE=$po_lang \
+            MDBOOK_OUTPUT__HTML__SITE_URL=/bsp/$po_lang/ \
+            MDBOOK_OUTPUT__HTML__REDIRECT='{}' \
+            mdbook build -d book/$po_lang
+            echo "::endgroup::"
+          done
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
