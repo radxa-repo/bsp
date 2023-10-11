@@ -11,6 +11,7 @@ on:
       - .gitignore
       - 'docs/**'
       - 'theme/**'
+      - 'po/**'
       - book.toml
       - .github/workflows/docs.yaml
       - container/Dockerfile
@@ -21,6 +22,7 @@ on:
       - .gitignore
       - 'docs/**'
       - 'theme/**'
+      - 'po/**'
       - book.toml
       - .github/workflows/docs.yaml
       - container/Dockerfile
