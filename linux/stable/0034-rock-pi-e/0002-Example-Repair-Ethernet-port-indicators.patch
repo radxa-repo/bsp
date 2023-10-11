@@ -1,0 +1,94 @@
+From 83b2eb40d60e68b11da8b66922d60cefd92a76b1 Mon Sep 17 00:00:00 2001
+From: machuang <machuang@radxa.com>
+Date: Tue, 10 Oct 2023 17:11:40 +0800
+Subject: [PATCH 2/3] Example Repair Ethernet port indicators
+
+Signed-off-by: machuang <machuang@radxa.com>
+---
+ .../net/ethernet/stmicro/stmmac/stmmac_main.c | 56 +++++++++++++++++++
+ 1 file changed, 56 insertions(+)
+
+diff --git a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+index 693197302..65b4dbdff 100644
+--- a/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
++++ b/drivers/net/ethernet/stmicro/stmmac/stmmac_main.c
+@@ -60,6 +60,12 @@
+ #define	STMMAC_ALIGN(x)		ALIGN(ALIGN(x, SMP_CACHE_BYTES), 16)
+ #define	TSO_MAX_BUFF_SIZE	(SZ_16K - 1)
+ 
++#define RTL8211F_PHY_UID        0x001cc800
++#define RTL8211F_PHY_UID_MASK   0x001ffc00
++#define RTL8211F_PAGE_SELECT    0x1f
++#define RTL8211F_LCR_ADDR       0x10
++#define RTL8211F_EEELCR_ADDR    0x11
++
+ /* Module parameters */
+ #define TX_TIMEO	5000
+ static int watchdog = TX_TIMEO;
+@@ -7039,6 +7045,44 @@ int stmmac_reinit_ringparam(struct net_device *dev, u32 rx_size, u32 tx_size)
+ 	return ret;
+ }
+ 
++static int phy_rtl8211f_led_fixup(struct phy_device *phydev)
++{
++	u32 val, val2;
++	/* Switch to Page 0x0d04 */
++	phy_write(phydev, RTL8211F_PAGE_SELECT, 0x0d04);
++	/* Set LED1(Green) Link 10/100/1000M + Active, and set LED2(Yellow) Link 10/100/1000M */
++	val = phy_read(phydev, RTL8211F_LCR_ADDR);
++	val |= (1<<5);
++	val |= (1<<8);
++	val |= (1<<10);
++	val |= (1<<11);
++	val &= (~(1<<14));
++	phy_write(phydev, RTL8211F_LCR_ADDR, val);
++	/* Disable LED2(Yellow) EEE LED function to keep it on when linked */
++	val2 = phy_read(phydev, RTL8211F_EEELCR_ADDR);
++	val2 &= (~(1<<3));
++	phy_write(phydev, RTL8211F_EEELCR_ADDR, val2);
++	/* Switch back to the PHY's IEEE Standard Registers. Here it is Page 0 */
++	phy_write(phydev, RTL8211F_PAGE_SELECT, 0);
++	return 0;
++}
++
++static int phy_rtl8211f_eee_fixup(struct phy_device *phydev)
++{
++	phy_write(phydev, 31, 0x0000);
++	phy_write(phydev,  0, 0x8000);
++	mdelay(20);
++	phy_write(phydev, 31, 0x0a4b);
++	phy_write(phydev, 17, 0x1110);
++	phy_write(phydev, 31, 0x0000);
++	phy_write(phydev, 13, 0x0007);
++	phy_write(phydev, 14, 0x003c);
++	phy_write(phydev, 13, 0x4007);
++	phy_write(phydev, 14, 0x0000);
++
++	return 0;
++}
++
+ #define SEND_VERIFY_MPAKCET_FMT "Send Verify mPacket lo_state=%d lp_state=%d\n"
+ static void stmmac_fpe_lp_task(struct work_struct *work)
+ {
+@@ -7418,6 +7462,18 @@ int stmmac_dvr_probe(struct device *device,
+ 	if (priv->plat->dump_debug_regs)
+ 		priv->plat->dump_debug_regs(priv->plat->bsp_priv);
+ 
++	/* Register fixup for PHY RTL8211F */
++	ret = phy_register_fixup_for_uid(RTL8211F_PHY_UID, RTL8211F_PHY_UID_MASK, phy_rtl8211f_led_fixup);
++	if (ret) {
++		dev_warn(priv->device, "Failed to register fixup for PHY RTL8211F.\n");
++	}
++
++	/* Register fixup for PHY RTL8211F disabling EEE */
++	ret = phy_register_fixup_for_uid(RTL8211F_PHY_UID, RTL8211F_PHY_UID_MASK, phy_rtl8211f_eee_fixup);
++	if (ret) {
++		dev_warn(priv->device, "Failed to register fixup for PHY RTL8211F disabling EEE.\n");
++	}
++
+ 	/* Let pm_runtime_put() disable the clocks.
+ 	 * If CONFIG_PM is not enabled, the clocks will stay powered.
+ 	 */
+-- 
+2.25.1
+
