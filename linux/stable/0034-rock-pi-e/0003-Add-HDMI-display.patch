@@ -1,0 +1,52 @@
+From 3cfd6cc34cf0b8a7f4da2614e9d6e5c5a5165e50 Mon Sep 17 00:00:00 2001
+From: machuang <machuang@radxa.com>
+Date: Fri, 13 Oct 2023 11:08:01 +0800
+Subject: [PATCH] Add HDMI display
+
+Signed-off-by: machuang <machuang@radxa.com>
+---
+ .../boot/dts/rockchip/rk3328-rock-pi-e.dts    | 28 +++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts b/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
+index 3f962cf8f..fa4889cf7 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
+@@ -298,6 +298,34 @@ regulator-state-mem {
+ 	};
+ };
+ 
++&display_subsystem {
++	status = "okay";
++};
++
++&hdmi {
++	status = "okay";
++};
++
++&hdmiphy {
++	status = "okay";
++};
++
++&vop {
++	status = "okay";
++};
++
++&vop_mmu {
++	status = "okay";
++};
++
++&hdmi_sound {
++	status = "okay";
++};
++
++&i2s0 {
++	status = "okay";
++};
++
+ &i2s1 {
+ 	status = "okay";
+ };
+-- 
+2.25.1
+
