@@ -60,9 +60,10 @@ Alternative sub-commands:
                             Available catagories: $(get_supported_info)
     export <profile>        Export profile
     import <profile>        Import profile
-    install <disk> [file]   Install built artifact to specified disk
+    install <target> [file] Install built artifact to the specified target
+                            Target can be either block device, or raw disk image
                             Root partition will be determined based on the layout
-                            When file is 
+                            When file is omitted, bsp will drop to a root shell of the target
                             Supported file types: deb, dtb, dtbo
 
 Supported Linux profile:

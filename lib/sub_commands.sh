@@ -20,7 +20,15 @@ _install() {
     local disk="$1" file="${2:-}" i
     local ext="${file##*.}"
 
-    if [[ ! -b "$disk" ]]
+    if [[ -f "$disk" ]]
+    then
+        trap "sudo kpartx -d '$disk'" SIGINT SIGQUIT SIGTSTP EXIT
+        sudo kpartx -a "$disk"
+        disk="$(sudo blkid -t LABEL=rootfs -o device | grep /dev/mapper/loop | tail -n 1)"
+        disk="${disk%p*}p"
+    fi
+
+    if [[ ! -b "$disk" ]] && [[ "$disk" != /dev/mapper/loop* ]]
     then
         error $EXIT_BAD_BLOCK_DEVICE "$disk"
     fi
