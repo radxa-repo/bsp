@@ -5,6 +5,7 @@ bsp_reset() {
     BSP_COMMIT=
     BSP_BRANCH=
     BSP_DEFCONFIG=
+    BSP_REPLACES=
 
     BSP_MAKE_DEFINES=()
     BSP_MAKE_TARGETS=("all")
@@ -225,9 +226,19 @@ bsp_makedeb() {
     local VERSION="$(bsp_version)-${PKG_REVISION}${SOURCE_GITREV:+-$SOURCE_GITREV}"
     local URL="https://github.com/radxa-pkg/$NAME"
     local DESCRIPTION="Radxa U-Boot image for $FORK"
+    local REPLACES=()
+    if [[ -n "$BSP_REPLACES" ]]
+    then
+        REPLACES+=(
+            "--provides" "u-boot-$BSP_REPLACES"
+            "--conflicts" "u-boot-$BSP_REPLACES"
+            "--replaces" "u-boot-$BSP_REPLACES"
+        )
+    fi
     fpm -s dir -t deb -n "$NAME" -v "$VERSION" \
         --deb-compression xz \
         -a arm64 \
+        "${REPLACES[@]}" \
         --url "$URL" \
         --description "$DESCRIPTION" \
         --license "GPL-2+" \
