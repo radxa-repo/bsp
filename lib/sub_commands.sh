@@ -22,7 +22,7 @@ _install() {
 
     if [[ -f "$disk" ]]
     then
-        trap "sudo kpartx -d '$disk'" SIGINT SIGQUIT SIGTSTP EXIT
+        trap "set +e; sudo umount -R /mnt; sudo kpartx -d '$disk'; sync" SIGINT SIGQUIT SIGTSTP EXIT
         sudo kpartx -a "$disk"
         disk="$(sudo blkid -t LABEL=rootfs -o device | grep /dev/mapper/loop | tail -n 1)"
         disk="${disk%p*}p"
@@ -83,7 +83,7 @@ _install() {
             error $EXIT_UNSUPPORTED_OPTION "$file"
             ;;
     esac
-
+    
     sudo umount -R /mnt
 
     sync
