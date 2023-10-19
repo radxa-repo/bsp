@@ -17,7 +17,7 @@ index f231280cd8..f9e467edff 100644
 +++ b/arch/arm64/boot/dts/amlogic/Makefile
 @@ -1,4 +1,9 @@
 +DTC_FLAGS_meson-g12a-radxa-zero := -@
-+DTC_FLAGS_meson-g12b-radxa-zero2 := -@
++DTC_FLAGS_meson-g12b-radxa-zero-2pro := -@
 +
 +subdir-y += overlays
 +
