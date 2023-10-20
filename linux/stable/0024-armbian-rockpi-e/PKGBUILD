@@ -1,0 +1,12 @@
+source=(
+    "add-rockchip-iep-driver.patch"
+    "general-rk3328-dtsi-trb-ent-quirk.patch"
+    "rk3328-add-dmc-driver.patch"
+    "rk3328-add-rga-node.patch"
+    "rk3328-dtsi-mali-opp-table.patch"
+    "rk3328-dtsi-mmc-reset-properties.patch"
+    "rk3328-dtsi-sdmmc-ext-node.patch"
+    "rk3328-dtsi-spdif.patch"
+    "rk3328-dtsi-usb3-reset-properties.patch"
+    "rk3328-gpu-cooling-target.patch"
+)
