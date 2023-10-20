@@ -12,7 +12,7 @@ index d2613ec774c1..37ffedb99a2d 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3308.dtsi
 +++ b/arch/arm64/boot/dts/rockchip/rk3308.dtsi
 @@ -605,6 +605,109 @@ dmac1: dma-controller@ff2d0000 {
- 		#dma-cells = <1>;
+ 		};
  	};
  
 +	i2s_8ch_0: i2s@ff300000 {

@@ -1,0 +1,17 @@
+source=(
+    "board-rockpis-0001-arm64-dts.patch"
+    "board-rockpis-0005-arm64-dts-rk3308-Add-gmac-node-at-dtsi-level.patch"
+    "board-rockpis-0007-arm64-dts-rockchip-add-cpu-s-thermal-config-for-rk33.patch"
+    "board-rockpis-0008-thermal-rockchip-add-tsadc-support-for-rk3308.patch"
+    "board-rockpis-0010-arm64-dts-rockchip-add-i2s_8ch-for-rk3308.patch"
+    "board-rockpis-0012-arm64-dts-rk3308-Add-rk-timer-rtc.patch"
+    "board-rockpis-0018-ASoC-codecs-Add-RK3308-internal-codec-driver.patch"
+    "board-rockpis-0019-Sync-rk3308_codec-to-BSP-tree.patch"
+    "board-rockpis-0020-arm64-dts-rockchip-Add-acodec-node-for-rk3308.patch"
+    "board-rockpis-0022-ASoC-rk3308_codec-replace-codec-to-component.patch"
+    "board-rockpis-0027-arm64-dts-rk3308-add-otp-cpuinfo.patch"
+    "board-rockpis-0029-arm64-dts-rk3308-add-reserved-memory-ramoops.patch"
+    "rk3308-0001-pinctrl-slew-mux.patch"
+    "rk3308-0002-iodomains.patch"
+    "rk3308-0003-pinctrl-io-voltage-domains.patch"
+)
