@@ -67,10 +67,10 @@ bsp_prepare() {
                 local rkbin_bl31
                 if [[ -n $BSP_BL31_OVERRIDE ]]
                 then
-                    rkbin_bl31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e "${BSP_BL31_OVERRIDE}_bl31_${BSP_BL31_VARIANT:-v}" | sort | tail -n 1)
-                    if [[ -z $rkbin_bl31 ]]
+                    if ! rkbin_bl31=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e "${BSP_BL31_OVERRIDE}_bl31_${BSP_BL31_VARIANT:-v}" | sort | tail -n 1) || [[ -z $rkbin_bl31 ]]
                     then
-                        echo "Unable to find prebuilt bl31. The resulting bootloader may not work!" >&2
+                        echo "Unable to find prebuilt bl31. The resulting bootloader will not work!" >&2
+                        return 1
                     else
                         echo "Using bl31 $(basename $rkbin_bl31)"
                         BSP_MAKE_EXTRA+=("BL31=$rkbin_bl31")
@@ -79,8 +79,7 @@ bsp_prepare() {
 
                 if [[ -n $RKBIN_DDR ]]
                 then
-                    BSP_ROCKCHIP_TPL="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN_DDR} | sort | tail -n 1)"
-                    if [[ -z $BSP_ROCKCHIP_TPL ]]
+                    if ! BSP_ROCKCHIP_TPL="$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKBIN_DDR} | sort | tail -n 1)" || [[ -z $BSP_ROCKCHIP_TPL ]]
                     then
                         echo "Unable to find prebuilt Rockchip TPL. The resulting bootloader may not work!" >&2
                     else
