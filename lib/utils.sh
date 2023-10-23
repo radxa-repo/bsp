@@ -128,6 +128,13 @@ git_am() {
     popd
 }
 
+git_patch() {
+    local patch="$(realpath "$1")"
+    pushd "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER"
+    patch -N -p1 < "$patch"
+    popd
+}
+
 source_cp() {
     local file="$(realpath "$1")"
     cp "$file" "$SCRIPT_DIR/.src/$__CUSTOM_SOURCE_FOLDER/$2"
