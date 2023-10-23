@@ -298,14 +298,14 @@ get_soc_family() {
 }
 
 load_profile() {
-    if ! source "$SCRIPT_DIR/lib/$1.sh" 2>/dev/null
+    if ! source "$SCRIPT_DIR/lib/$1.sh"
     then
         error $EXIT_UNKNOWN_OPTION "$1"
     fi
     TARGET=$1
     bsp_reset
 
-    if ! source "$SCRIPT_DIR/$TARGET/$2/fork.conf" 2>/dev/null
+    if ! source "$SCRIPT_DIR/$TARGET/$2/fork.conf"
     then
         error $EXIT_UNKNOWN_OPTION "$2"
     fi
