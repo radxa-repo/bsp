@@ -294,6 +294,10 @@ component_build() {
         fi
         if [[ $(type -t bsp_$BOARD) == function ]]
         then
+            if [[ -f "$SCRIPT_DIR/$TARGET/$FORK/kconfig.template" ]]
+            then
+                rm -f "$SCRIPT_DIR/$TARGET/$FORK/kconfig.conf"
+            fi
             bsp_$BOARD
         fi
         if [[ $(type -t bsp_profile_override) == function ]]
