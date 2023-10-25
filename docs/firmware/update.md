@@ -36,7 +36,7 @@ radxa-cm3-sodimm-io   radxa-e61  radxa-zero3      rock-3c  rock-4se        rock-
 
 This means the firmware is extracted and is ready to use.
 
-## Update firmeware existing system
+## Update firmware existing system
 
 To install the firmware to an existing system image (must be uncompressed raw image), or a block device (ex. microSD card), you can use the included `setup.sh`. With ROCK 4SE as an example:
 
