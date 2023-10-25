@@ -13,6 +13,7 @@
 # Low-level troubleshooting
 - [Firmware management](firmware/management.md)
 - [setup.sh usage](firmware/setup_sh.md)
+  - [Update firmware](firmware/update.md)
 ---
 # Common use cases
 - [Running from GitHub Workflows](gh_workflows.md)
