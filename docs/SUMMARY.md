@@ -8,6 +8,7 @@
 - [Understand profile](profile/index.md)
   - [fork.conf](profile/fork.conf.md)
   - [kconfig.conf](profile/kconfig.conf.md)
+- [Build artifacts](artifacts.md)
 ---
 # Low-level troubleshooting
 - [Firmware management](firmware/management.md)

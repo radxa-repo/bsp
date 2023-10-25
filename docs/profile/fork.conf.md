@@ -8,4 +8,6 @@
 
 `BSP_DEFCONFIG` defines the defconfig used for building. Default to `defconfig`.
 
-`SUPPORTED_BOARDS` defines the supported product list, which is a [Bash array](https://www.gnu.org/software/bash/manual/html_node/Arrays.html). `bsp` will use this list to create virtual packages that reference the binary package. Suffixes are commonly used to denote kernel/firmware variants that also support the same board. However, the default package is the one that matches exactly to the product name.
+`SUPPORTED_BOARDS` defines the supported product list, which is a [Bash array](https://www.gnu.org/software/bash/manual/html_node/Arrays.html). `bsp` will use this list to create metapackages that reference the binary package. Suffixes are commonly used to denote kernel/firmware variants that also support the same board. However, the default package is the one that matches exactly to the product name.
+
+You can read more about `SUPPORTED_BOARDS` in [Build artifacts](artifacts.md) section.
