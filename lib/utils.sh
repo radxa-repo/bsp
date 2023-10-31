@@ -286,10 +286,13 @@ apply_kconfig() {
 get_soc_family() {
     case "$1" in
         rk*)
-            echo rockchip
+            echo "rockchip"
             ;;
         s905y2|a311d)
-            echo amlogic
+            echo "amlogic"
+            ;;
+        mt*)
+            echo "mediatek"
             ;;
         *)
             error $EXIT_UNSUPPORTED_OPTION "$1"
@@ -324,6 +327,7 @@ bsp_build() {
     
     if ! $NO_CONFIG
     then
+        echo "Initialize .config with $BSP_DEFCONFIG"
         bsp_make "${BSP_MAKE_DEFINES[@]}" $BSP_DEFCONFIG 2>&1 | tee -a "$SCRIPT_DIR/.src/build.log"
         for d in $(find -L "$SCRIPT_DIR/$TARGET/$FORK" -mindepth 1 -type d | sort)
         do

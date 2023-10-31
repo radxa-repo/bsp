@@ -25,6 +25,11 @@ bsp_reset() {
     RKMINILOADER=
     UBOOT_BASE_ADDR=
     USE_ATF="false"
+
+    BSP_MTK_LK_PROJECT=
+    BSP_MTK_LIBDRAM_BOARD_NAME=
+    BSP_OPTEE_DRAM_SIZE=
+    BSP_UFS_BOOT="false"
 }
 
 bsp_version() {
@@ -112,6 +117,43 @@ bsp_prepare() {
                     fi
                 fi
             fi
+            ;;
+        mediatek)
+            make -C "$SCRIPT_DIR/.src/mtk-optee" -j$(nproc) \
+                CROSS_COMPILE_core=$CROSS_COMPILE \
+                CROSS_COMPILE_ta_arm64=$CROSS_COMPILE \
+                PLATFORM=mediatek \
+                CFG_DRAM_SIZE=$BSP_OPTEE_DRAM_SIZE \
+                CFG_TZDRAM_START=0x43200000 \
+                CFG_TZDRAM_SIZE=0x00a00000 \
+                SOC_PLATFORM=$BSP_BL31_OVERRIDE \
+                CFG_TEE_CORE_LOG_LEVEL=3 CFG_UART_ENABLE=y \
+                CFG_ARM64_core=y \
+                ta-targets=ta_arm64
+                #CONSOLE_BAUDRATE=115200
+
+            local atf_extra_option=()
+            if "$BSP_UFS_BOOT"
+            then
+                atf_extra_option+=("STORAGE_UFS=1")
+            fi
+
+            make -C "$SCRIPT_DIR/.src/mtk-atf" -j$(nproc) CROSS_COMPILE=$CROSS_COMPILE \
+                E=0 "${atf_extra_option[@]}" \
+                PLAT=$BSP_BL31_OVERRIDE \
+                TFA_PLATFORM=$BSP_BL31_OVERRIDE \
+                TFA_SPD=opteed \
+                LIBDRAM=$SCRIPT_DIR/.src/libdram-prebuilt/$BSP_MTK_LIBDRAM_BOARD_NAME/libdram.a \
+                LIBBASE=$SCRIPT_DIR/.src/libbase-prebuilt/$BSP_BL31_OVERRIDE/libbase.a \
+                NEED_BL32=yes CFLAGS+=-DNEED_BL32\
+                BL32=$SCRIPT_DIR/.src/mtk-optee/out/arm-plat-mediatek/core/tee.bin
+                #NEED_BL33=yes \
+                #BL33=$SCRIPT_DIR/.src/u-boot/u-boot.bin
+
+            BSP_MAKE_EXTRA+=("BL31=$SCRIPT_DIR/.src/mtk-atf/build/$BSP_BL31_OVERRIDE/release/bl31/bl31.elf")
+            ;;
+        *)
+            error $EXIT_UNSUPPORTED_OPTION "$soc_family"
             ;;
     esac
 }
@@ -213,6 +255,24 @@ bsp_preparedeb() {
             fi
             rkpack_rkboot
             cp "$TARGET_DIR/idbloader-spi"*".img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+            ;;
+        mediatek)
+            cp "$SCRIPT_DIR/.src/mtk-atf/build/$BSP_BL31_OVERRIDE/release/bl2.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+            truncate -s%4 "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/bl2.bin"
+
+            local media="emmc"
+            if "$BSP_UFS_BOOT"
+            then
+                media="ufs"
+            fi
+            "$TARGET_DIR/tools/mkimage" -T mtk_image -a 0x201000 -e 0x201000 -n "media=$media;arm64=1" \
+                -d "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/bl2.bin" \
+                "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/bl2.img"
+            rm "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/bl2.bin"
+
+            cp "$SCRIPT_DIR/.src/lk-prebuilt/$BSP_MTK_LK_PROJECT/lk.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+
+            cp "$TARGET_DIR/u-boot.bin" "$TARGET_DIR/u-boot-mtk.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
             ;;
         *)
             error $EXIT_UNSUPPORTED_OPTION "$soc_family"
