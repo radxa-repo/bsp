@@ -72,8 +72,8 @@ index 8e9ac6bc2cde..9e6e1c7e7d86 100644
  };
  
  &sdio0 {
-@@ -50,6 +87,11 @@ &sound {
- 	hp-det-gpio = <&gpio1 RK_PA0 GPIO_ACTIVE_HIGH>;
+@@ -50,6 +87,11 @@ &spi1 {
+ 	};
  };
  
 +&tcphy0 {

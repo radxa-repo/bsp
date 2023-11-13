@@ -23,7 +23,7 @@ index f231280cd..3b5a15e47 100644
 +
  # SPDX-License-Identifier: GPL-2.0
  dtb-$(CONFIG_ARCH_MESON) += amlogic-c3-c302x-aw409.dtb
- dtb-$(CONFIG_ARCH_MESON) += meson-a1-ad401.dtb
+ dtb-$(CONFIG_ARCH_MESON) += amlogic-t7-a311d2-an400.dtb
 diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
 index 971b1f0ae..66aba816d 100644
 --- a/arch/arm64/boot/dts/rockchip/Makefile

@@ -83,9 +83,9 @@ diff --git a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a.dts b/arch/arm64/boo
 index 89f2af5e111d..32f869c2e66b 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3399-rock-pi-4a.dts
-@@ -11,3 +11,18 @@ / {
- 	model = "Radxa ROCK Pi 4A";
- 	compatible = "radxa,rockpi4a", "radxa,rockpi4", "rockchip,rk3399";
+@@ -11,3 +11,18 @@ &spi1 {
+ 		spi-max-frequency = <10000000>;
+ 	};
  };
 +
 +&pinctrl {
