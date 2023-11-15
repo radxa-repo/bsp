@@ -48,12 +48,21 @@ _install() {
         sudo mount "$disk"1 /mnt/config
     elif [[ -b "$disk"2 ]]
     then
-        # old rbuild image
         sudo mount "$disk"2 /mnt
-        sudo mount "$disk"1 /mnt/config
+        case "$(sudo blkid "$disk"1 -s LABEL -o value)"
+        in
+            "armbi_boot")
+                # new armbian image
+                sudo mount "$disk"1 /mnt/boot
+                ;;
+            *)
+                # old rbuild image
+                sudo mount "$disk"1 /mnt/config
+                ;;
+        esac
     elif [[ -b "$disk"1 ]]
     then
-        # armbian
+        # old armbian image
         sudo mount "$disk"1 /mnt
     else
         error $EXIT_BAD_BLOCK_DEVICE "$disk"2
