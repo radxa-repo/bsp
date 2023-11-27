@@ -194,7 +194,13 @@ rkpack_idbloader() {
 
         if [[ -n $BSP_RKMINILOADER_SPINOR ]]
         then
-            $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}$BSP_RKMINILOADER_SPINOR" "$TARGET_DIR/idbloader-spi.img"
+            if [[ "$BSP_SOC_OVERRIDE" =~ "rk3399" ]] && [[ "$BSP_BRANCH" == "rk3399-pie-gms-express-baseline" ]]
+            then
+                # mkimage in this branch is too old to support multiple data file
+                mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}$BSP_RKMINILOADER_SPINOR" "$TARGET_DIR/idbloader-spi.img"
+            else
+                $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}$BSP_RKMINILOADER_SPINOR" "$TARGET_DIR/idbloader-spi.img"
+            fi
         fi
     else
         if [[ "$BSP_SOC_OVERRIDE" =~ "rk3399" ]]
