@@ -111,7 +111,7 @@ bsp_prepare() {
 
                     if ! BSP_RKMINILOADER_SPINAND=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}spinand_v | sort | tail -n 1) || [[ -z $BSP_RKMINILOADER_SPINAND ]]
                     then
-                        echo "Unable to find Rockchip miniloader for SPI NAND. This is only required for all platforms." >&2
+                        echo "Unable to find Rockchip miniloader for SPI NAND. This is only required for some platforms." >&2
                     else
                         echo "Using Rockchip SPI NAND miniloader $(basename $BSP_RKMINILOADER_SPINAND)"
                     fi
