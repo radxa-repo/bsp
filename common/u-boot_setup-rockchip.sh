@@ -49,8 +49,12 @@ maskrom_spinand() {
     fi
 }
 
-maskrom_update_bootloader() {
+maskrom_update_idbloader() {
     rkdeveloptool wl 64 "$SCRIPT_DIR/idbloader.img"
+}
+
+maskrom_update_bootloader() {
+    maskrom_update_idbloader
     if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
     then
         rkdeveloptool wl 16384 "$SCRIPT_DIR/u-boot.itb"
@@ -119,10 +123,16 @@ maskrom_reset() {
     rkdeveloptool rd
 }
 
-update_bootloader() {
+update_idbloader() {
     local DEVICE=$1
 
     dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader.img" of=$DEVICE bs=512 seek=64
+}
+
+update_bootloader() {
+    local DEVICE=$1
+
+    update_idbloader "$DEVICE"
     if [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
     then
         dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=$DEVICE bs=512 seek=16384
