@@ -1,0 +1,43 @@
+From e6a3d820081737cac09fbc19ff65b77782f7a4c6 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Wed, 29 Nov 2023 20:00:57 +0800
+Subject: [PATCH 2/2] rename radxa s0 to rock s0
+
+Signed-off-by: bsp <bsp@radxa.com>
+
+diff --git a/arch/arm64/boot/dts/rockchip/Makefile b/arch/arm64/boot/dts/rockchip/Makefile
+index 457717695b..84d30b035f 100644
+--- a/arch/arm64/boot/dts/rockchip/Makefile
++++ b/arch/arm64/boot/dts/rockchip/Makefile
+@@ -23,9 +23,9 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-engicam-px30-core-ctouch2.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-engicam-px30-core-ctouch2-of10.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += px30-engicam-px30-core-edimm2.2.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3308-evb.dtb
+-dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3308-radxa-s0.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3308-roc-cc.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3308-rock-pi-s.dtb
++dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3308-rock-s0.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3318-a95x-z2.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3326-odroid-go2.dtb
+ dtb-$(CONFIG_ARCH_ROCKCHIP) += rk3328-a1.dtb
+diff --git a/arch/arm64/boot/dts/rockchip/rk3308-radxa-s0.dts b/arch/arm64/boot/dts/rockchip/rk3308-rock-s0.dts
+similarity index 99%
+rename from arch/arm64/boot/dts/rockchip/rk3308-radxa-s0.dts
+rename to arch/arm64/boot/dts/rockchip/rk3308-rock-s0.dts
+index 473e636445..6b4bf39b95 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3308-radxa-s0.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3308-rock-s0.dts
+@@ -9,8 +9,8 @@
+ #include "rk3308.dtsi"
+ 
+ / {
+-	model = "Radxa S0";
+-	compatible = "radxa,s0", "rockchip,rk3308";
++	model = "Radxa ROCK S0";
++	compatible = "radxa,rock-s0", "rockchip,rk3308";
+ 
+ 	chosen {
+ 		stdout-path = "serial0:1500000n8";
+-- 
+2.25.1
+
