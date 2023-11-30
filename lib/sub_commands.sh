@@ -22,7 +22,7 @@ _install() {
 
     if [[ -f "$disk" ]]
     then
-        trap "set +e; sudo umount -R /mnt; sudo kpartx -d '$disk'; sync" SIGINT SIGQUIT SIGTSTP EXIT
+        trap "set +e; sudo -n true && (sudo umount -R /mnt; sudo kpartx -d '$disk'; sync)" SIGINT SIGQUIT SIGTSTP EXIT
         sudo kpartx -a "$disk"
         disk="$(sudo blkid -t LABEL=rootfs -o device | grep /dev/mapper/loop | tail -n 1)"
         disk="${disk%p*}p"
@@ -72,8 +72,8 @@ _install() {
         deb)
             sudo cp "$file" /mnt
             sudo systemd-nspawn -D /mnt bash -c \
-                "apt-get install -y --allow-downgrades --reinstall '/$(basename "$file")' || \
-                apt-get install -y --allow-downgrades '/$(basename "$file")'"
+                "dpkg -i '/$(basename "$file")' && \
+                apt-get install -y --fix-missing  --allow-downgrades"
             ;;
         dtbo)
             sudo cp "$file" /mnt/boot/dtbo
