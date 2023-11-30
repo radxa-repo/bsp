@@ -342,7 +342,7 @@ index 0000000000..f07543e072
 +
 +	leds {
 +		green_led_gio: green-led-gpio {
-+			rockchip,pins = <0 RK_PA6 RK_FUNC_GPIO &pcfg_pull_none>;
++			rockchip,pins = <0 RK_PB6 RK_FUNC_GPIO &pcfg_pull_none>;
 +		};
 +	};
 +
