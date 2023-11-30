@@ -27,8 +27,8 @@ index 684a011a63..81ba5740ce 100644
 --- a/drivers/mfd/mfd-core.c
 +++ b/drivers/mfd/mfd-core.c
 @@ -215,7 +215,7 @@ static int mfd_add_device(struct device *parent, int id,
- 		}
  
+ match:
  		if (!pdev->dev.of_node)
 -			pr_warn("%s: Failed to locate of_node [id: %d]\n",
 +			pr_debug("%s: Failed to locate of_node [id: %d]\n",
