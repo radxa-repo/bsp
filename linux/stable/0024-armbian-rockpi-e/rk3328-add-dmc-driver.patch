@@ -1130,18 +1130,18 @@ index 9a88faaf8..c034df869 100644
 +	u32 val;
 +
 +	node = of_parse_phandle(np, "rockchip,pmu", 0);
-+	if (node) {
-+		data->regmap_pmu = syscon_node_to_regmap(node);
-+		if (IS_ERR(data->regmap_pmu))
-+			return PTR_ERR(data->regmap_pmu);
-+	}
++	if (!node)
++		return PTR_ERR(data->regmap_pmu);
++	data->regmap_pmu = syscon_node_to_regmap(node);
++	if (IS_ERR(data->regmap_pmu))
++		return PTR_ERR(data->regmap_pmu);
 +
 +	node = of_parse_phandle(np, "rockchip,grf", 0);
-+	if (node) {
-+		data->regmap_grf = syscon_node_to_regmap(node);
-+		if (IS_ERR(data->regmap_grf))
-+			return PTR_ERR(data->regmap_grf);
-+	}
++	if (!node)
++		return PTR_ERR(data->regmap_grf);
++	data->regmap_grf = syscon_node_to_regmap(node);
++	if (IS_ERR(data->regmap_grf))
++		return PTR_ERR(data->regmap_grf);
 +
 +	regmap_read(data->regmap_pmu, RK3288_PMU_SYS_REG2, &val);
 +	data->dram_type = READ_DRAMTYPE_INFO(val);
@@ -1188,9 +1188,9 @@ index 9a88faaf8..c034df869 100644
  	data->regs = devm_platform_ioremap_resource(pdev, 0);
  	if (IS_ERR(data->regs))
 @@ -202,21 +582,97 @@ static int rockchip_dfi_probe(struct platform_device *pdev)
- 		if (IS_ERR(data->regmap_pmu))
- 			return PTR_ERR(data->regmap_pmu);
- 	}
+ 	if (IS_ERR(data->regmap_pmu))
+ 		return PTR_ERR(data->regmap_pmu);
+ 
 -	data->dev = dev;
 +
 +	regmap_read(data->regmap_pmu, PMUGRF_OS_REG2, &val);
