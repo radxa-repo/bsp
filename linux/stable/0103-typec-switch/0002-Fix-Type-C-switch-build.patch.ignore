@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Wed, 13 Sep 2023 16:44:41 +0800
+Subject: [PATCH] Fix Type-C switch build
+
+---
+ drivers/usb/typec/mux/gpio-switch.c | 27 +++++++++++++++------------
+ 1 file changed, 15 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/usb/typec/mux/gpio-switch.c b/drivers/usb/typec/mux/gpio-switch.c
+index 9ccfefe240a4..f3968f174d06 100644
+--- a/drivers/usb/typec/mux/gpio-switch.c
++++ b/drivers/usb/typec/mux/gpio-switch.c
+@@ -16,16 +16,15 @@
+ #include <linux/usb/typec_mux.h>
+ 
+ struct gpio_typec_switch {
+-	struct typec_switch sw;
++	struct typec_switch_dev *sw;
+ 	struct mutex lock;
+ 	struct gpio_desc *ss_sel;
+ };
+ 
+-static int switch_gpio_set(struct typec_switch *sw,
++static int switch_gpio_set(struct typec_switch_dev *sw,
+ 			   enum typec_orientation orientation)
+ {
+-	struct gpio_typec_switch *gpio_sw = container_of(sw,
+-				struct gpio_typec_switch, sw);
++	struct gpio_typec_switch *gpio_sw = typec_switch_get_drvdata(sw);
+ 
+ 	mutex_lock(&gpio_sw->lock);
+ 
+@@ -48,8 +47,8 @@ static int switch_gpio_set(struct typec_switch *sw,
+ static int typec_switch_gpio_probe(struct platform_device *pdev)
+ {
+ 	struct gpio_typec_switch	*gpio_sw;
++	struct typec_switch_desc sw_desc = { };
+ 	struct device			*dev = &pdev->dev;
+-	int				ret;
+ 
+ 	gpio_sw = devm_kzalloc(dev, sizeof(*gpio_sw), GFP_KERNEL);
+ 	if (!gpio_sw)
+@@ -57,8 +56,11 @@ static int typec_switch_gpio_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, gpio_sw);
+ 
+-	gpio_sw->sw.dev = dev;
+-	gpio_sw->sw.set = switch_gpio_set;
++
++	sw_desc.drvdata = gpio_sw;
++	sw_desc.fwnode = dev->fwnode;
++	sw_desc.set = switch_gpio_set;
++
+ 	mutex_init(&gpio_sw->lock);
+ 
+ 	/* Get the super speed active channel selection GPIO */
+@@ -66,10 +68,11 @@ static int typec_switch_gpio_probe(struct platform_device *pdev)
+ 	if (IS_ERR(gpio_sw->ss_sel))
+ 		return PTR_ERR(gpio_sw->ss_sel);
+ 
+-	ret = typec_switch_register(&gpio_sw->sw);
+-	if (ret) {
+-		dev_err(dev, "Error registering typec switch: %d\n", ret);
+-		return ret;
++	gpio_sw->sw = typec_switch_register(dev, &sw_desc);
++	if (IS_ERR(gpio_sw->sw)) {
++		dev_err(dev, "Error registering typec switch: %ld\n",
++			PTR_ERR(gpio_sw->sw));
++		return PTR_ERR(gpio_sw->sw);
+ 	}
+ 
+ 	return 0;
+@@ -79,7 +82,7 @@ static int typec_switch_gpio_remove(struct platform_device *pdev)
+ {
+ 	struct gpio_typec_switch *gpio_sw = platform_get_drvdata(pdev);
+ 
+-	typec_switch_unregister(&gpio_sw->sw);
++	typec_switch_unregister(gpio_sw->sw);
+ 
+ 	return 0;
+ }
+-- 
+2.42.0
+

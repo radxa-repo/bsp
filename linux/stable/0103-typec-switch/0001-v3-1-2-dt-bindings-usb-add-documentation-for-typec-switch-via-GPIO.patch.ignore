@@ -1,0 +1,468 @@
+From patchwork Mon Mar 11 10:40:09 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Li Jun <jun.li@nxp.com>
+X-Patchwork-Id: 10847253
+Return-Path: <linux-usb-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id F0AE01390
+	for <patchwork-linux-usb@patchwork.kernel.org>;
+ Mon, 11 Mar 2019 10:40:16 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id DCC1E28F94
+	for <patchwork-linux-usb@patchwork.kernel.org>;
+ Mon, 11 Mar 2019 10:40:16 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id DA75628FAF; Mon, 11 Mar 2019 10:40:16 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-8.0 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,RCVD_IN_DNSWL_HI autolearn=ham
+	version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 7046828FC5
+	for <patchwork-linux-usb@patchwork.kernel.org>;
+ Mon, 11 Mar 2019 10:40:16 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1726932AbfCKKkO (ORCPT
+        <rfc822;patchwork-linux-usb@patchwork.kernel.org>);
+        Mon, 11 Mar 2019 06:40:14 -0400
+Received: from mail-eopbgr20085.outbound.protection.outlook.com
+ ([40.107.2.85]:10405
+        "EHLO EUR02-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725839AbfCKKkO (ORCPT <rfc822;linux-usb@vger.kernel.org>);
+        Mon, 11 Mar 2019 06:40:14 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=8FoYEqrWHHFAe47teIpoyxftaVJUm7Dcym6k/mBzbbs=;
+ b=DQ7W6OGTl4q1KZaO94cz05CMDSaLJ9YvDe8XXoYhtZEhjPErMrZWnBICiuX/KMJQlKGqlBE5uHj3UmKOslgP1XfDqmCGSiwOHWpBBxpDZQbnWJR7cQFPVyju6FZ2rdMWd1iO2F6R8J4Oh5AUb5vM2eT0h39qsQEo7vknoHZQBSw=
+Received: from VI1PR04MB4558.eurprd04.prod.outlook.com (20.177.55.216) by
+ VI1PR04MB4160.eurprd04.prod.outlook.com (52.133.15.160) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1686.18; Mon, 11 Mar 2019 10:40:09 +0000
+Received: from VI1PR04MB4558.eurprd04.prod.outlook.com
+ ([fe80::952d:34ed:3402:da3]) by VI1PR04MB4558.eurprd04.prod.outlook.com
+ ([fe80::952d:34ed:3402:da3%6]) with mapi id 15.20.1686.021; Mon, 11 Mar 2019
+ 10:40:09 +0000
+From: Jun Li <jun.li@nxp.com>
+To: "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "heikki.krogerus@linux.intel.com" <heikki.krogerus@linux.intel.com>
+CC: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+        "hdegoede@redhat.com" <hdegoede@redhat.com>,
+        "andy.shevchenko@gmail.com" <andy.shevchenko@gmail.com>,
+        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>
+Subject: [PATCH v3 1/2] dt-bindings: usb: add documentation for typec switch
+ via GPIO
+Thread-Topic: [PATCH v3 1/2] dt-bindings: usb: add documentation for typec
+ switch via GPIO
+Thread-Index: AQHU1/bM2snEdI6yLECsdv/WqEZxiQ==
+Date: Mon, 11 Mar 2019 10:40:09 +0000
+Message-ID: <1552299557-6306-1-git-send-email-jun.li@nxp.com>
+Accept-Language: zh-CN, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-mailer: git-send-email 2.7.4
+x-clientproxiedby: HK0P153CA0042.APCP153.PROD.OUTLOOK.COM
+ (2603:1096:203:17::30) To VI1PR04MB4558.eurprd04.prod.outlook.com
+ (2603:10a6:803:6f::24)
+authentication-results: spf=none (sender IP is ) smtp.mailfrom=jun.li@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [119.31.174.71]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: b5d33fc8-448b-4c7b-e91f-08d6a60deecb
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: 
+ BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);SRVR:VI1PR04MB4160;
+x-ms-traffictypediagnostic: VI1PR04MB4160:
+x-microsoft-exchange-diagnostics: =?iso-8859-1?q?1=3BVI1PR04MB4160=3B23=3AAc?=
+	=?iso-8859-1?q?T4DgobzLuA1mibuK1jm+SQnTYm8p+4hYM3moK19up36Yn+YvOjzNu4CpjL+F?=
+	=?iso-8859-1?q?H5loPnkXQUeJ/TDFz9chG7ivV3k2Dds9brMZx76y0P8XDP1rSn7inREGJJOH?=
+	=?iso-8859-1?q?ykQZjD6pe6tap8smOMnn+943owtm0NBll82PLOBx37wo/apCDYnJKgnw7gBk?=
+	=?iso-8859-1?q?5MNw2cYU808ZvGa3eyi9BVZ2VlY5EpHssPlVIe8k9Kbx3xUCtX502L6m2tqg?=
+	=?iso-8859-1?q?IPjvqA8vFLAKyLfWfJ3ZKTkPkWNprITkbESULpzHl4HGugcq4on872XlrlsF?=
+	=?iso-8859-1?q?Jl7ifkRThOAkfmwf0wP5CxuR4i7DLBKfdam+ONZJVZ+dJzJAa+1uKco62PBQ?=
+	=?iso-8859-1?q?5OUPRtV5kFFus6y4NFB3vd70RKxcCwb3WYBc+EMVT7z6tK+TUAJCkVjkNgAK?=
+	=?iso-8859-1?q?K6jgn47n7p4IlXNhCVwsJxgRMCpJrjpVn7/bY82rzN909oBUx4OrJoRJ0F2u?=
+	=?iso-8859-1?q?WbHakG/0CUOmjGduZ3C/ruSWfDZLaJBQM2k3seRO582u+zyLLkxVJAmW4ixD?=
+	=?iso-8859-1?q?6b0HBQU5PhSissMBkkKzzNv4syJLp1lwgT1dUepRhd5DM+pTfBzANCv6XW1D?=
+	=?iso-8859-1?q?jjeiqdfj/lwsCTSvMqaz+zEid/uhJXBywCbmACbEVSEUF8mKXzJFL15BqUYk?=
+	=?iso-8859-1?q?WCyWPiML8tjzSIfLNBXZ2aDMl8jhOGFp1wwv8wuZrRZJ3wNYhiY1ah58iAKX?=
+	=?iso-8859-1?q?zMNrvri2uCl8TXLfSkvbmlLFrIk4hqC02DWlQ9o2919B6niz2BOJDuoh1eNx?=
+	=?iso-8859-1?q?J8+xSoHXlpgZS8CMrgSflAC2M7vtlR/1om2KqMFwNrZx0fU0BNnjiqg8wc+J?=
+	=?iso-8859-1?q?kx/AurPVxlVCw8IrGhAfeKp0FGw/FEyAcdx0yStEvCcPK36WTQWY0BBHLoXY?=
+	=?iso-8859-1?q?KhFkWL0uOSU3AIt7EXX2x3gqpo4ElKx4X9bgUSjL0maTCAdl6uIjS5Wp2YfC?=
+	=?iso-8859-1?q?5IdVswVTejigcPby/FKpvs7DwzW+ktmFqmvAzJ9vcphJgCYRzpmkl3aMY2xf?=
+	=?iso-8859-1?q?56QO90pgOYEdSTvJItmeq1lUR7cf6tT6fjIxoeqoG+FR9AYm/W20xgY6IuUb?=
+	=?iso-8859-1?q?RnOvGaZ9RS6HCJ2NyDVypFOlF0NdsfkIjMMAO1o+U+rkz3b7D1Wl8vBdvvWa?=
+	=?iso-8859-1?q?uc7Lo1zfK9XA988dT6KyBhql2gp6dqEg=3D=3D?=
+x-microsoft-antispam-prvs: 
+ <VI1PR04MB41602B37F7900EB9DAD823C389480@VI1PR04MB4160.eurprd04.prod.outlook.com>
+x-forefront-prvs: 09730BD177
+x-forefront-antispam-report: 
+ SFV:NSPM;SFS:(10009020)(39860400002)(366004)(376002)(136003)(346002)(396003)(189003)(199004)(6506007)(386003)(2501003)(97736004)(478600001)(102836004)(305945005)(7736002)(81156014)(81166006)(2616005)(5660300002)(86362001)(256004)(8676002)(71200400001)(71190400001)(476003)(26005)(36756003)(44832011)(6436002)(6486002)(14454004)(68736007)(3846002)(53936002)(66066001)(6512007)(316002)(54906003)(110136005)(186003)(6116002)(2906002)(4326008)(25786009)(50226002)(99286004)(486006)(8936002)(105586002)(106356001)(52116002);DIR:OUT;SFP:1101;SCL:1;SRVR:VI1PR04MB4160;H:VI1PR04MB4558.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: 
+ 77g4mF+w0kkj4HJHIS2flpC/2t741azoazLDWybeA3qUOO54JkKYbOzy8Nw44xMPvdtgqWyUWU/3wng0c6uJ/Wyv9227dXBD0Jb+MWy0KakP42eIRzydfV1sCAR2Etm8L93vMdLj5HENs3Vot3NJDS69fTBkgCtdPXe5aL3KXV6VApBmxR3E4LGH0PeyLsJUCbZzeJXrhKHXdF/vD6HqdYXjI5jrvM8pxt0/+vF6aRrCpNDYfac7eo/bfPdHDzLmtM0LDswSUe3K3HxoFHUztEXmHPpLthoB80SKhgZmhcU9ED0b+4zGrilmo22QSc3enZFPtxE+YCE1OrCGUkQuqkBMsXKCg538pgBo4Eu2YCoExaou1DCF9aCpAcKPyc8FAYpUiGILlDOUr05/Q0QH1/27omtyn0EabHbvcbdXwNM=
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 
+ b5d33fc8-448b-4c7b-e91f-08d6a60deecb
+X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Mar 2019 10:40:09.4463
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB4160
+Sender: linux-usb-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-usb.vger.kernel.org>
+X-Mailing-List: linux-usb@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+Some typec super speed active channel switch can be controlled via
+a GPIO, this binding can be used to specify the switch node by
+a GPIO and the remote endpoint of its consumer.
+
+Signed-off-by: Li Jun <jun.li@nxp.com>
+---
+ .../devicetree/bindings/usb/typec-switch-gpio.txt  | 30 ++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/usb/typec-switch-gpio.txt b/Documentation/devicetree/bindings/usb/typec-switch-gpio.txt
+new file mode 100644
+index 0000000..4ef76cf
+--- /dev/null
++++ b/Documentation/devicetree/bindings/usb/typec-switch-gpio.txt
+@@ -0,0 +1,30 @@
++Typec orientation switch via a GPIO
++-----------------------------------
++
++Required properties:
++- compatible: should be set one of following:
++	- "nxp,ptn36043" for NXP Type-C SuperSpeed active switch.
++
++- gpios: the GPIO used to switch the super speed active channel,
++		GPIO_ACTIVE_HIGH: GPIO state high for cc1;
++		GPIO_ACTIVE_LOW:  GPIO state low for cc1.
++- orientation-switch: must be present.
++
++Required sub-node:
++- port: specify the remote endpoint of typec switch consumer.
++
++Example:
++
++ptn36043 {
++	compatible = "nxp,ptn36043";
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ss_sel>;
++	gpios = <&gpio3 15 GPIO_ACTIVE_HIGH>;
++	orientation-switch;
++
++	port {
++		usb3_data_ss: endpoint {
++			remote-endpoint = <&typec_con_ss>;
++		};
++	};
++};
+
+From patchwork Mon Mar 11 10:40:12 2019
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Li Jun <jun.li@nxp.com>
+X-Patchwork-Id: 10847255
+Return-Path: <linux-usb-owner@kernel.org>
+Received: from mail.wl.linuxfoundation.org (pdx-wl-mail.web.codeaurora.org
+ [172.30.200.125])
+	by pdx-korg-patchwork-2.web.codeaurora.org (Postfix) with ESMTP id 9604D1390
+	for <patchwork-linux-usb@patchwork.kernel.org>;
+ Mon, 11 Mar 2019 10:40:21 +0000 (UTC)
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 80BBE28FCA
+	for <patchwork-linux-usb@patchwork.kernel.org>;
+ Mon, 11 Mar 2019 10:40:21 +0000 (UTC)
+Received: by mail.wl.linuxfoundation.org (Postfix, from userid 486)
+	id 7CE2D28FCB; Mon, 11 Mar 2019 10:40:21 +0000 (UTC)
+X-Spam-Checker-Version: SpamAssassin 3.3.1 (2010-03-16) on
+	pdx-wl-mail.web.codeaurora.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-8.0 required=2.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,RCVD_IN_DNSWL_HI autolearn=ham
+	version=3.3.1
+Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
+	by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 2D60A28FCE
+	for <patchwork-linux-usb@patchwork.kernel.org>;
+ Mon, 11 Mar 2019 10:40:20 +0000 (UTC)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
+        id S1726977AbfCKKkS (ORCPT
+        <rfc822;patchwork-linux-usb@patchwork.kernel.org>);
+        Mon, 11 Mar 2019 06:40:18 -0400
+Received: from mail-eopbgr140045.outbound.protection.outlook.com
+ ([40.107.14.45]:23431
+        "EHLO EUR01-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725839AbfCKKkS (ORCPT <rfc822;linux-usb@vger.kernel.org>);
+        Mon, 11 Mar 2019 06:40:18 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=HghK79E/wNuHG86xDJMehkx9Qq1k2ojWKTodHPnWMpI=;
+ b=vTS55Ny6LSJJdFezm7zQGNrOyQJDrFdF/WkCuP6OnJUVPxtaggYtvUEOaBgq3ghodeEfqIQ2VXBqMvJ8fPQkp2LAxG21jYMJx0AdI5XOOwdNj9tiduxmKeVD5mLghHrSG1viX8ym//8iYMlp8k40xLPwgU6/Ju4zKd1DDT1zmmU=
+Received: from VI1PR04MB4558.eurprd04.prod.outlook.com (20.177.55.216) by
+ VI1PR04MB4160.eurprd04.prod.outlook.com (52.133.15.160) with Microsoft SMTP
+ Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.1686.18; Mon, 11 Mar 2019 10:40:12 +0000
+Received: from VI1PR04MB4558.eurprd04.prod.outlook.com
+ ([fe80::952d:34ed:3402:da3]) by VI1PR04MB4558.eurprd04.prod.outlook.com
+ ([fe80::952d:34ed:3402:da3%6]) with mapi id 15.20.1686.021; Mon, 11 Mar 2019
+ 10:40:12 +0000
+From: Jun Li <jun.li@nxp.com>
+To: "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "heikki.krogerus@linux.intel.com" <heikki.krogerus@linux.intel.com>
+CC: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+        "hdegoede@redhat.com" <hdegoede@redhat.com>,
+        "andy.shevchenko@gmail.com" <andy.shevchenko@gmail.com>,
+        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        dl-linux-imx <linux-imx@nxp.com>
+Subject: [PATCH v3 2/2] usb: typec: add typec switch via GPIO control
+Thread-Topic: [PATCH v3 2/2] usb: typec: add typec switch via GPIO control
+Thread-Index: AQHU1/bOoP26LZAM9k25/lbScogfwg==
+Date: Mon, 11 Mar 2019 10:40:12 +0000
+Message-ID: <1552299557-6306-2-git-send-email-jun.li@nxp.com>
+References: <1552299557-6306-1-git-send-email-jun.li@nxp.com>
+In-Reply-To: <1552299557-6306-1-git-send-email-jun.li@nxp.com>
+Accept-Language: zh-CN, en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-mailer: git-send-email 2.7.4
+x-clientproxiedby: HK0P153CA0042.APCP153.PROD.OUTLOOK.COM
+ (2603:1096:203:17::30) To VI1PR04MB4558.eurprd04.prod.outlook.com
+ (2603:10a6:803:6f::24)
+authentication-results: spf=none (sender IP is ) smtp.mailfrom=jun.li@nxp.com; 
+x-ms-exchange-messagesentrepresentingtype: 1
+x-originating-ip: [119.31.174.71]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 65b45690-129f-4c90-cc2b-08d6a60df0d9
+x-ms-office365-filtering-ht: Tenant
+x-microsoft-antispam: 
+ BCL:0;PCL:0;RULEID:(2390118)(7020095)(4652040)(8989299)(4534185)(4627221)(201703031133081)(201702281549075)(8990200)(5600127)(711020)(4605104)(4618075)(2017052603328)(7153060)(7193020);SRVR:VI1PR04MB4160;
+x-ms-traffictypediagnostic: VI1PR04MB4160:
+x-microsoft-exchange-diagnostics: =?iso-8859-1?q?1=3BVI1PR04MB4160=3B23=3AFY?=
+	=?iso-8859-1?q?Sm6hCt9XyinyK9XdKOmDXIw3B9o05CayfbZ2uykVGy5kdmQOvyuD9X9MGeqf?=
+	=?iso-8859-1?q?C+AWW8zYMY6aO4dJZIuWVfNvan0cLsykPvWuCgF6ty5PyAbQDLzBoaN4nRKn?=
+	=?iso-8859-1?q?e+IRm0FSBT3DugjEhOlUMF4r57ld6eT9EFjhjjtmWBd4QA3+cK+nQrWCT5dJ?=
+	=?iso-8859-1?q?zzmUbyKbYnuyN+VMyxA3W+Ue/ykjXjo1GnN/5ujPc4X0GI45roDTx23QQTTk?=
+	=?iso-8859-1?q?f3O+1uHBXgkwBZsNLw90cefQCb7AJQ3EjtzBlMXDsEb9lAskajOb41Jl85t/?=
+	=?iso-8859-1?q?JH0UmjB6Fjj80RpxHhnngKpUXLr3FZhFeHWImkQ0WytteifZdQZIgQakriRU?=
+	=?iso-8859-1?q?+3c+XSFjVNBRu3CuvA27NcMPpVW6HKQ83g2v/sACIJ3wt3CDEl1jAd73OsbT?=
+	=?iso-8859-1?q?9yiO8+IGWB1mpJmT7zqps8uNIRE3XA0H9P5yHLfsheim96XHYkveccKPE84x?=
+	=?iso-8859-1?q?ig8tagYB+Jnx09Z5cq9OMcMTzFVElSoNWG8arf3ylE0owalgTsyhI7J5itRy?=
+	=?iso-8859-1?q?J7I0+85cueq5AtJAKa1wHCr9GSrfP1QwjZsNpl52BUPBlTMrTToHjwMgQiQp?=
+	=?iso-8859-1?q?s3fR0t/+uJ4dOLZbGQF4iU+d5tsFU76PPmlxloU3/cRK8Gl8pgZ8cFPbMhaI?=
+	=?iso-8859-1?q?vaFXmlPIQrNUTEhQR9ZsWT6g9Tb+M9pPZyeQMHyOdCeUHWD0Yj6ZDzigLGFT?=
+	=?iso-8859-1?q?PkEJZMJKm0Tc9NTOcR6IUxhytmMSgTNwUxWPzn9R/XBvfsATJ9i0+iioqVkM?=
+	=?iso-8859-1?q?pkMqhB1B/9XEhxEbdkcGjIPH2Dxib+Im4B8S/W1ZwNCMECHDe1bMmRoKjrqA?=
+	=?iso-8859-1?q?kpDoGG20HPM4fiOmooEAUFhD72VlOnmbdJVodAYPO6EUZCegH4xpvfME3l1Z?=
+	=?iso-8859-1?q?430fhWZfHKy5Si3BDHTD/8AdUgfuBXEU7VIn5ou1pcCecy14Sy7Kj7V8HOml?=
+	=?iso-8859-1?q?Rv9TcaZNqjPqclzDwwombPNdjliqTELAgIMo77skngDExXEVBGqQNcjMDaNK?=
+	=?iso-8859-1?q?YZYoxApsBnrMBiPqDPqgegKec/FZmeeFA3HE7gjwL3Mlf4/gdSVBbTafhJQl?=
+	=?iso-8859-1?q?0YipBVGTa3wWiCbg0KnHBTnYfVGLkyn5Jm8ayC35xkh5DjJmTfByQfNU+JTh?=
+	=?iso-8859-1?q?VoBUvkM20ck9LtmaZQVRrpYCjof+zEMmlbllsxRjUX2xFdCCAw2KTrvWKx88?=
+	=?iso-8859-1?q?Tr+a0zyvt5J6jUv1m7OE7NoLNtMJjeNnYU94w1xyKGP6YGIYTPXVype6w=3D?=
+x-microsoft-antispam-prvs: 
+ <VI1PR04MB416092E320F3D9CA9AE75DF689480@VI1PR04MB4160.eurprd04.prod.outlook.com>
+x-forefront-prvs: 09730BD177
+x-forefront-antispam-report: 
+ SFV:NSPM;SFS:(10009020)(39860400002)(366004)(376002)(136003)(346002)(396003)(189003)(199004)(6506007)(386003)(2501003)(97736004)(478600001)(102836004)(305945005)(7736002)(81156014)(446003)(11346002)(81166006)(2616005)(5660300002)(86362001)(256004)(14444005)(8676002)(71200400001)(71190400001)(476003)(26005)(36756003)(44832011)(6436002)(6486002)(14454004)(68736007)(3846002)(53936002)(66066001)(6512007)(316002)(54906003)(110136005)(186003)(6116002)(2906002)(76176011)(4326008)(25786009)(50226002)(99286004)(486006)(8936002)(105586002)(106356001)(52116002);DIR:OUT;SFP:1101;SCL:1;SRVR:VI1PR04MB4160;H:VI1PR04MB4558.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;MX:1;A:1;
+received-spf: None (protection.outlook.com: nxp.com does not designate
+ permitted sender hosts)
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam-message-info: 
+ Cy/PFjb4e3RbWcndbliLXhCvx8ZRms6MncxgvQsPe5PCKDIRo5gFdKDNTeibo0ByY99/JYIkSq0pCsptp6TJjQSu2h81LuSJ5Sj375qHbKlf4xAc/DxuJgMYf/bLmSIeDQah4xP7OIa0tsXKig1Em4cJ733+FVeChuuidluwuG/2MIGC/vDkj+2KfqYMUhWDJ46Z3TpfZyVEdJ9Z2YTuQpJwshhFnkGUKhEqCY/LU+rs2VqXoRpqLjeYWwcPHKtjDDVUkb+j+qH9GfgWqrU4fd+4CWJ581ah58v7aLHli1AoVxM0UDpcntNnWDuMWXWCzmjgOdiimD+Ye7zW9I8Abw8LCcK4SiJSumsfk5bEiMoaFohA7h3nXGJU6nmx6cK/j9t/GonfWoX8W9uaZB+LMB6/jcwdCBNdFzMVc8tC0fw=
+MIME-Version: 1.0
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 
+ 65b45690-129f-4c90-cc2b-08d6a60df0d9
+X-MS-Exchange-CrossTenant-originalarrivaltime: 11 Mar 2019 10:40:12.7926
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB4160
+Sender: linux-usb-owner@vger.kernel.org
+Precedence: bulk
+List-ID: <linux-usb.vger.kernel.org>
+X-Mailing-List: linux-usb@vger.kernel.org
+X-Virus-Scanned: ClamAV using ClamSMTP
+
+This patch adds a simple typec switch driver which only needs
+a GPIO to switch the super speed active channel according to
+typec orientation.
+
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Signed-off-by: Li Jun <jun.li@nxp.com>
+---
+
+Change for v3:
+- Remove file name in driver description.
+- Add Andy Shevchenko's Reviewed-by tag.
+
+Changes for v2:
+- Use the correct head files for gpio api and of_device_id:
+  #include <linux/gpio/consumer.h>
+  #include <linux/mod_devicetable.h>
+- Add driver dependency on GPIOLIB
+
+ drivers/usb/typec/mux/Kconfig       |   7 +++
+ drivers/usb/typec/mux/Makefile      |   1 +
+ drivers/usb/typec/mux/gpio-switch.c | 105 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 113 insertions(+)
+
+diff --git a/drivers/usb/typec/mux/Kconfig b/drivers/usb/typec/mux/Kconfig
+index 01ed0d5..27120e6 100644
+--- a/drivers/usb/typec/mux/Kconfig
++++ b/drivers/usb/typec/mux/Kconfig
+@@ -9,4 +9,11 @@ config TYPEC_MUX_PI3USB30532
+ 	  Say Y or M if your system has a Pericom PI3USB30532 Type-C cross
+ 	  switch / mux chip found on some devices with a Type-C port.
+ 
++config TYPEC_SWITCH_GPIO
++	tristate "Simple Super Speed Active Switch via GPIO"
++	depends on GPIOLIB
++	help
++	  Say Y or M if your system has a typec super speed channel
++	  switch via a simple GPIO control.
++
+ config TYPEC_MUX_INTEL_PMC
+diff --git a/drivers/usb/typec/mux/Makefile b/drivers/usb/typec/mux/Makefile
+index 1332e46..e29377c 100644
+--- a/drivers/usb/typec/mux/Makefile
++++ b/drivers/usb/typec/mux/Makefile
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+ obj-$(CONFIG_TYPEC_MUX_FSA4480)		+= fsa4480.o
+ obj-$(CONFIG_TYPEC_MUX_PI3USB30532)	+= pi3usb30532.o
++obj-$(CONFIG_TYPEC_SWITCH_GPIO)		+= gpio-switch.o
+ obj-$(CONFIG_TYPEC_MUX_INTEL_PMC)	+= intel_pmc_mux.o
+diff --git a/drivers/usb/typec/mux/gpio-switch.c b/drivers/usb/typec/mux/gpio-switch.c
+new file mode 100644
+index 0000000..9ccfefe
+--- /dev/null
++++ b/drivers/usb/typec/mux/gpio-switch.c
+@@ -0,0 +1,105 @@
++// SPDX-License-Identifier: GPL-2.0
++/**
++ * Typec switch via a simple GPIO control driver.
++ *
++ * Copyright 2019 NXP
++ * Author: Jun Li <jun.li@nxp.com>
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/kernel.h>
++#include <linux/platform_device.h>
++#include <linux/gpio/consumer.h>
++#include <linux/mod_devicetable.h>
++#include <linux/usb/typec_mux.h>
++
++struct gpio_typec_switch {
++	struct typec_switch sw;
++	struct mutex lock;
++	struct gpio_desc *ss_sel;
++};
++
++static int switch_gpio_set(struct typec_switch *sw,
++			   enum typec_orientation orientation)
++{
++	struct gpio_typec_switch *gpio_sw = container_of(sw,
++				struct gpio_typec_switch, sw);
++
++	mutex_lock(&gpio_sw->lock);
++
++	switch (orientation) {
++	case TYPEC_ORIENTATION_NORMAL:
++		gpiod_set_value_cansleep(gpio_sw->ss_sel, 1);
++		break;
++	case TYPEC_ORIENTATION_REVERSE:
++		gpiod_set_value_cansleep(gpio_sw->ss_sel, 0);
++		break;
++	case TYPEC_ORIENTATION_NONE:
++		break;
++	}
++
++	mutex_unlock(&gpio_sw->lock);
++
++	return 0;
++}
++
++static int typec_switch_gpio_probe(struct platform_device *pdev)
++{
++	struct gpio_typec_switch	*gpio_sw;
++	struct device			*dev = &pdev->dev;
++	int				ret;
++
++	gpio_sw = devm_kzalloc(dev, sizeof(*gpio_sw), GFP_KERNEL);
++	if (!gpio_sw)
++		return -ENOMEM;
++
++	platform_set_drvdata(pdev, gpio_sw);
++
++	gpio_sw->sw.dev = dev;
++	gpio_sw->sw.set = switch_gpio_set;
++	mutex_init(&gpio_sw->lock);
++
++	/* Get the super speed active channel selection GPIO */
++	gpio_sw->ss_sel = devm_gpiod_get(dev, NULL, GPIOD_OUT_LOW);
++	if (IS_ERR(gpio_sw->ss_sel))
++		return PTR_ERR(gpio_sw->ss_sel);
++
++	ret = typec_switch_register(&gpio_sw->sw);
++	if (ret) {
++		dev_err(dev, "Error registering typec switch: %d\n", ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static int typec_switch_gpio_remove(struct platform_device *pdev)
++{
++	struct gpio_typec_switch *gpio_sw = platform_get_drvdata(pdev);
++
++	typec_switch_unregister(&gpio_sw->sw);
++
++	return 0;
++}
++
++static const struct of_device_id of_typec_switch_gpio_match[] = {
++	{ .compatible = "nxp,ptn36043" },
++	{ /* Sentinel */ }
++};
++MODULE_DEVICE_TABLE(of, of_typec_switch_gpio_match);
++
++static struct platform_driver typec_switch_gpio_driver = {
++	.probe		= typec_switch_gpio_probe,
++	.remove		= typec_switch_gpio_remove,
++	.driver		= {
++		.name	= "typec-switch-gpio",
++		.of_match_table = of_typec_switch_gpio_match,
++	},
++};
++
++module_platform_driver(typec_switch_gpio_driver);
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("TypeC Super Speed Switch GPIO driver");
++MODULE_AUTHOR("Jun Li <jun.li@nxp.com>");
