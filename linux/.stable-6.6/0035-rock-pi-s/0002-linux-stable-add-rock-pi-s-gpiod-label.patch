@@ -1,0 +1,136 @@
+From a691876e0d82a625ac1edb392079d46f0af79303 Mon Sep 17 00:00:00 2001
+From: machuang <machuang@radxa.com>
+Date: Fri, 24 Nov 2023 20:34:45 +0800
+Subject: [PATCH] linux: stable: add rock-pi-s gpiod label
+
+Signed-off-by: machuang <machuang@radxa.com>
+---
+ .../boot/dts/rockchip/rk3308-rock-pi-s.dts    | 115 ++++++++++++++++++
+ 1 file changed, 115 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3308-rock-pi-s.dts b/arch/arm64/boot/dts/rockchip/rk3308-rock-pi-s.dts
+index 0d917658d..3e9f9c787 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3308-rock-pi-s.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3308-rock-pi-s.dts
+@@ -338,3 +338,118 @@ &usb_host_ehci {
+ &usb_host_ohci{
+ 	status = "okay";
+ };
++
++&gpio0 {
++	gpio-line-names =
++		/* GPIO0_A0-A3 */
++		"", "", "", "",
++		/* GPIO0_A4-A7 */
++		"", "", "", "",
++
++		/* GPIO0_B0-B3 */
++		"", "", "", "PIN_3",
++		/* GPIO0_B4-B7 */
++		"PIN_5", "", "", "PIN_11",
++
++		/* GPIO0_C0-C3 */
++		"PIN_13", "PIN_15", "", "",
++		/* GPIO0_C4-C7 */
++		"", "", "", "",
++
++		/* GPIO0_D0-D3 */
++		"", "", "", "",
++		/* GPIO0_D4-D7 */
++		"", "", "", "";
++};
++
++&gpio1 {
++	gpio-line-names =
++		/* GPIO1_A0-A3 */
++		"", "", "", "",
++		/* GPIO1_A4-A7 */
++		"", "", "", "",
++
++		/* GPIO1_B0-B3 */
++		"", "", "", "",
++		/* GPIO1_B4-B7 */
++		"", "", "", "",
++
++		/* GPIO1_C0-C3 */
++		"", "", "", "",
++		/* GPIO1_C4-C7 */
++		"", "", "PIN_21", "PIN_19",
++
++		/* GPIO1_D0-D3 */
++		"PIN_23", "PIN_24", "", "",
++		/* GPIO1_D4-D7 */
++		"", "", "", "";
++};
++
++&gpio2 {
++	gpio-line-names =
++		/* GPIO2_A0-A3 */
++		"PIN_10", "PIN_8", "", "",
++		/* GPIO2_A4-A7 */
++		"PIN_7", "PIN_12", "PIN_46", "PIN_22",
++
++		/* GPIO2_B0-B3 */
++		"PIN_45", "PIN_18", "PIN_16", "PIN_44",
++		/* GPIO2_B4-B7 */
++		"PIN_43", "PIN_28", "PIN_30", "PIN_32",
++
++		/* GPIO2_C0-C3 */
++		"PIN_34", "", "", "",
++		/* GPIO2_C4-C7 */
++		"", "", "", "",
++
++		/* GPIO2_D0-D3 */
++		"", "", "", "",
++		/* GPIO2_D4-D7 */
++		"", "", "", "";
++};
++
++&gpio3 {
++	gpio-line-names =
++		/* GPIO3_A0-A3 */
++		"", "", "", "",
++		/* GPIO3_A4-A7 */
++		"", "", "", "",
++
++		/* GPIO3_B0-B3 */
++		"", "", "PIN_42", "PIN_41",
++		/* GPIO3_B4-B7 */
++		"PIN_40", "PIN_39", "", "",
++
++		/* GPIO3_C0-C3 */
++		"", "", "", "",
++		/* GPIO3_C4-C7 */
++		"", "", "", "",
++
++		/* GPIO3_D0-D3 */
++		"", "", "", "",
++		/* GPIO3_D4-D7 */
++		"", "", "", "";
++};
++
++&gpio4 {
++	gpio-line-names =
++		/* GPIO4_A0-A3 */
++		"", "", "", "",
++		/* GPIO4_A4-A7 */
++		"", "", "", "",
++
++		/* GPIO4_B0-B3 */
++		"", "", "", "",
++		/* GPIO4_B4-B7 */
++		"", "", "", "",
++
++		/* GPIO4_C0-C3 */
++		"", "", "", "",
++		/* GPIO4_C4-C7 */
++		"", "", "", "",
++
++		/* GPIO4_D0-D3 */
++		"", "", "", "",
++		/* GPIO4_D4-D7 */
++		"", "", "", "";
++};
+-- 
+2.25.1
+

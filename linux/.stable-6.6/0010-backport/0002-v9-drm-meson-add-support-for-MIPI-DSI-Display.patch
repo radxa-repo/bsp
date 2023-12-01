@@ -1,0 +1,3265 @@
+From patchwork Fri Nov 24 08:41:12 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467207
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3DD26C61D97
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:42:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=2hkT3KBuBot7A1OU0AMJl3qtRnFJTh0Tw5GyE+nf96A=; b=FF4JOi/iEiExkw
+	PZWJL6LXjE8X9T7v+lPdlTBcogntNhR5cjg8iiBMhr5HM0Vkh4F1O02EU3QTyEEKe1fMCvPU/Y6wr
+	vLePaLBhJa9f7q4orJELYH2Wl7xQljq1m5SJ47ZXNLvIYsYkIbac8Q94uWN7OpyHcKVflJHS9C4iH
+	SV+zZ4LqgIggJ6THsLUUXEzxXXHf+WEGE/HPf5ib3GEQqL6gwm7AvKRSddL5cdEi4V1poxrk1BzxU
+	eibyVIBEFqAwViv20NRgSdoC/3EtwChbYvl+tCtd5SMhywBSk/nFbXS3LytzKOIGR11UNvFjcBgrw
+	daYzxy28upGXS7trvnJg==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rki-006Xo4-30;
+	Fri, 24 Nov 2023 08:41:32 +0000
+Received: from mail-wm1-x32e.google.com ([2a00:1450:4864:20::32e])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rke-006XjI-1g
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:30 +0000
+Received: by mail-wm1-x32e.google.com with SMTP id
+ 5b1f17b1804b1-4083f61312eso12919235e9.3
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:26 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815286; x=1701420086;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=Rfvt+EmrHZv1zbeX+XtXPk6Fy/0gOVGXRVeJ603Il6c=;
+        b=Xtvu0xuyZ/NOXe4SmrzruMwzRriOkwywgoWudcT5ifWA+9Vxk+7epGFMumG3uS815v
+         +pEXcJNlRjebIPVk2t2FYAmnso42uPdun7RkqJPyFnNxQx2/rIF03JWshU+UnvZiwbL0
+         FSWaFzP1MmXhcMVEeRjpuVNcJacgSciaD3q3owTB7+L58QFfLAOhEmmATcyPK+V6l363
+         zGpj0wc1cO3kPyknAQ6lF5e6TfjzyrwHCJQAIYGw1xTw4OXHH1UI6RVsdZFU3c1tOdrJ
+         WiPkeRU+7jgi1l9EUTb6FLiNxUNkS8HBXdAnwFMwxvhf4TuB7coaRb/anZQgiBVv+PHL
+         cf1Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815286; x=1701420086;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Rfvt+EmrHZv1zbeX+XtXPk6Fy/0gOVGXRVeJ603Il6c=;
+        b=h6zGf5NwxwCQlqliwPXzglMJTMQUmFwF9EMsyPkmrT9mxpq6Je1tZEyjibp4ZS33Q5
+         J10sSYxvWvqXejD5t8PrgCHaT0P9rRL0gVxqBrgr+2GZgWaIOz67O/APvKo0bGxSBlZ0
+         Huc4/fcPl6K2ZAQP1RF1FxP+eJnU8j9Nhp7QTZkojXaxDP4IAZvIkC5nUTk4vMX3cAXR
+         C4y4JbFExRUT8U3+Me1/7nnQTkiK6w7h6plrhnZbGNj7I5rq4ZSCd1OTSVxWGwU9sIgd
+         9qv5z5+Zl19x5kPmJH16T8PLFp5GG7mIluidMNB62e5kDkNQyPjh4qz2Pu+zRGOP4qeV
+         kuwg==
+X-Gm-Message-State: AOJu0Yxl8nBJz6vQYdM3OItLhc3kK00NWpB7WOxSeLayRiW4Slr1Yo8A
+	kaS25ksRUgjWjM/qmqzPY8WoiQ==
+X-Google-Smtp-Source: 
+ AGHT+IFnuchw8Ikyiy3m+j3gALkvJfoErNWWwqz7BB2ufK/58r0Gt+p5OXv1H8cdurIdKXJg/ONALw==
+X-Received: by 2002:adf:f48d:0:b0:332:e6d8:9345 with SMTP id
+ l13-20020adff48d000000b00332e6d89345mr1676453wro.8.1700815285668;
+        Fri, 24 Nov 2023 00:41:25 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:25 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:12 +0100
+Subject: [PATCH v9 01/12] dt-bindings: clk: g12a-clkc: add CTS_ENCL clock
+ ids
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-1-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Conor Dooley <conor.dooley@microchip.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=761;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=OBDzXE6zqX89kc7pvzy4CIEH7gf5glqDzs5WzIgtsF0=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGupCZ+JBm/j62lgDoGr7xNwQCD1mUMzIViQ3Q+
+ 5BTtcTmJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhrgAKCRB33NvayMhJ0e0rEA
+ C7eQ9byvp8DK/smW2cQqD8180I42XiMLdt3wZ7xVsHlZzRItzA+GMiMo8KBxOsciSTcMe2vQ3qkNz8
+ /viQaJnuONTjKXGF1XzU0w2a1mU/w+GMAqpq5t5GYrsJYhBKucDz9O4ybGOoKdKFn12f8S8vjiTPdC
+ +zThFD679SlacJRPuk0vKbwaPI4yFbHSvKWYKMtm1yYUOTWdf3asCcSbA1r7ZdSxR9n5ptrY/j0S+/
+ 7MyDnuRCfp8bhrWJqlXGhdXqWuabpaTaiWo7WgKW1sfpHHJgnES0z1FOzy3t+/lECu07cuhyLkdHK6
+ hBFrNDz28dCn70wp0d3lmAAKuMaGh0riTCG6cjJHW9y2nNUNfLScNubW48XowuSlqaadd5YUu67laO
+ bsXX8vh7L1Nu5uT2wmRY2BZpkUek6F6XRKcvDP9fG/P7LNiGCNkG/gK2pGYR0D8pI8SfeZN3558EO5
+ m43V1xVJ/3fhvgYUcrY9QiimI6m7WxdQhcxoePjjVBNYsQwezxq4FGFV6yYRLjjGzzPY1REEU0hYSx
+ oHJQit3xEHjUuNXc2fQH7wAQLOFnTcqe1LFiHzo8u0TVEv0EaxKFo1fFXSlIPwb+jNK9flSKdZq9aV
+ jjtxeGFXZGXslCW1Bd7c+mso633D4cWnl5ZWduv7cUenT9VDAgcrqQz9kh6w==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004128_563796_CD134C75 
+X-CRM114-Status: UNSURE (   8.04  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+Add new CLK ids for the CTS_ENCL and CTS_ENCL_SEL clocks
+on G12A compatible SoCs.
+
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ include/dt-bindings/clock/g12a-clkc.h | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/include/dt-bindings/clock/g12a-clkc.h b/include/dt-bindings/clock/g12a-clkc.h
+index 387767f4e298..636d713f95ff 100644
+--- a/include/dt-bindings/clock/g12a-clkc.h
++++ b/include/dt-bindings/clock/g12a-clkc.h
+@@ -279,5 +279,7 @@
+ #define CLKID_MIPI_DSI_PXCLK_DIV		268
+ #define CLKID_MIPI_DSI_PXCLK_SEL		269
+ #define CLKID_MIPI_DSI_PXCLK			270
++#define CLKID_CTS_ENCL				271
++#define CLKID_CTS_ENCL_SEL			272
+ 
+ #endif /* __G12A_CLKC_H */
+
+From patchwork Fri Nov 24 08:41:13 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467205
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C3354C61D97
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:41:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=fK/fFE/vNt9mvER5z+9dTaexqZPpZx8TFMXmYgiIjYI=; b=Ek1YTUmcEgPP5a
+	BpO4kmBJGpotXwrzUi4S58YnsSElIfwptlXMpa/0g3fGoku7tEVlF04bKk8qGwkSKj502NLwPidaC
+	PQDAqH8AafmPAO5TwmVO+7BGPz7+tDFYJ41chZ/ZWvV6iQD2WXgYOC12S6wjhIeWOEo10Dn5/yMbi
+	Si4ZAm4zqnchqWJzxy+VL9OmL3BcsaBg7h6WOEUa8xuKch53CgJxiReBs3UaL8ZvwOGwjnLLITgt2
+	iGEOhj6VVa5ejTTha/q7jSm1Sgv7kYxWVzIBTOjW3ncFVnYVA2r/o83QqoliwMYPlsN+3VbA26nbs
+	1qelolttFDC/2tGmg6Ag==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkk-006Xq1-26;
+	Fri, 24 Nov 2023 08:41:34 +0000
+Received: from mail-wr1-x434.google.com ([2a00:1450:4864:20::434])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rke-006Xjc-1h
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:30 +0000
+Received: by mail-wr1-x434.google.com with SMTP id
+ ffacd0b85a97d-32f737deedfso946426f8f.3
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:28 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815287; x=1701420087;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=pmqHf7vG3OgSbkZDuoqTVPYV9KLNSSDAPn0Rr1mvHIw=;
+        b=aOUsA9tumDYfXUI21Nj6aqv+5wzXLhajR8qKQbjd/eJSggLJ/MNbf7jA7xuO2NrQfs
+         1FduONmJzM2fulGJLVTC6cwkpXOfhcoGPQzj/VRb40BLhoPzdTMaXEZauofqiIq15RrW
+         tABgWrl3evT4NAERLVoeRJEsgTofQ6fIro8wv5I1EbULdVFH6/mbe5gu++gUi+5mM3TY
+         OMadvaemB4NCX9YM87qZtTVQhawPN9hoaeLfK1H2mWnpYm+DaqFLSSEk4YkJv2mwIaPQ
+         hSpPcfTUo4+aWoAexlv6wLUL9oHna+rCB1SPQTDHzArkN9akM0u5lTziCv5jYmdzhUyW
+         /CQA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815287; x=1701420087;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=pmqHf7vG3OgSbkZDuoqTVPYV9KLNSSDAPn0Rr1mvHIw=;
+        b=ZtG5LwdrAvun9ca+y7LRzqoqA9Gz331L1rjw2ukhNTv+Cmd0z0FiVKL2N1mtuK/qSI
+         rDz4pO/xHJMpNfFD+xytCScE8qSJaculkCPhjCBWHNvwCt1xLqC0LsZ+RI/3p4eIA6Hl
+         gm6+HAX72T+A4stUgnz8xAZCFj+NmZpGFNs0oHrUzA6BWZjbDB8n10nMwieMnYEM1zK7
+         vO8tUkddJXcVPtYtrNo2rtKvywvA4VFFxM42RcdRYz/KN6O5XqUZ4bsulI5Ihss+Qx2e
+         Auj1kv1cTEJiewfG2Zw1HtfoFIA+vqgQxCWFoSArzSIAT5e71SscVjyYy/K9o4LjCg8m
+         BPpw==
+X-Gm-Message-State: AOJu0Ywt0ahZQeyx3F74lTHB3LDtdDJVLWCz/9v31ZwF2ZHBZzRd0735
+	LPa5wypu50KQvBuy9gp/4/vncA==
+X-Google-Smtp-Source: 
+ AGHT+IFPKfH4bRgwYLSScdIAX4eq/D8aF5dbD0VbyY0HPbjeV7slo9I4RmgXoBTePe/TnCrXi0Gj6g==
+X-Received: by 2002:adf:f10d:0:b0:331:6c3b:4f1b with SMTP id
+ r13-20020adff10d000000b003316c3b4f1bmr1399602wro.6.1700815286963;
+        Fri, 24 Nov 2023 00:41:26 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:26 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:13 +0100
+Subject: [PATCH v9 02/12] dt-bindings: soc: amlogic,meson-gx-hhi-sysctrl:
+ add example covering meson-axg-hhi-sysctrl
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-2-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Conor Dooley <conor.dooley@microchip.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1847;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=KQGG1ytiHBIC5JgUp3eMPUlMvnricP4K9ae8Hqw91b4=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGuRHAkz/o0FoARcM/nBhaSVY4S5HKY2Q4xPPDK
+ g0HXtl+JAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhrgAKCRB33NvayMhJ0SoJD/
+ 40QaN+xss8YhXmbPd7kcRXbNr00DUi9YXy17gL5d+nQzAJClUpXWM/LHE9EckZTKnrONy8hm8IyTsm
+ +Q7v99Ma/k1BhRTuMLsWwfwFdFNoAm7OTDjKTKX3C8XSRZsYU+fUgVCAk9mLi0ILxo3unQMKEakNSO
+ dE9rb6fvsHrXEVu4hEJRwGyxCKaj3v/DHp1F3CJPhnYNbdk+GJFAYD9mL6/Rquv7pfpR3IjTM6le/R
+ CteRqtCWIuTLlnxJ2PR3bb6vtUGOpsAkWvdE95r40uUkhGJ5c4kZUY26dxnxstVIwWFeG2s7oL8t3S
+ ZVlS1l/hLzSrpaeHiYKZfwxv5nccbZ/0qhpFqor44I2oPPA1T3HykRL+qs0mIMrBmmmK6W5gikOwrA
+ GZifoZAOOG3AChGpZamhVtFHgvVgLP/SvPLmJamG2uSYLX4M7Wu2blhSuoHw/L2HdKB+d3880wK096
+ fdWsEuUVgv8fRo95lxdriQPJb69/AHXgHKL4NQcNFjTNqOJ8YkkAquQwhf/yOaDIcnW3ERUKxybg5+
+ 2lm/rhZbQ1IYLlYT1bip3o4J/rw6V6TvE6LtKHhjvs31uK1MH2UwobR7GUv+a6sJR+vtVHbwzC+9YM
+ iNd8dCd57nIB+Awkk1LFT+YJgUoJCMyAh8AI+tTF+Y4Vrb1wSxd8bt5jIWKQ==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004128_569897_2199CE91 
+X-CRM114-Status: UNSURE (   8.26  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+Add a third example covering the meson-axg-hhi-sysctrl variant and more
+importantly the phy subnode.
+
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ .../soc/amlogic/amlogic,meson-gx-hhi-sysctrl.yaml  | 33 ++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/soc/amlogic/amlogic,meson-gx-hhi-sysctrl.yaml b/Documentation/devicetree/bindings/soc/amlogic/amlogic,meson-gx-hhi-sysctrl.yaml
+index 16977e4e4357..c6bce40946d4 100644
+--- a/Documentation/devicetree/bindings/soc/amlogic/amlogic,meson-gx-hhi-sysctrl.yaml
++++ b/Documentation/devicetree/bindings/soc/amlogic/amlogic,meson-gx-hhi-sysctrl.yaml
+@@ -158,3 +158,36 @@ examples:
+             };
+         };
+     };
++
++  - |
++    system-controller@ff63c000 {
++        compatible = "amlogic,meson-axg-hhi-sysctrl", "simple-mfd", "syscon";
++        reg = <0xff63c000 0x400>;
++
++        clock-controller {
++            compatible = "amlogic,axg-clkc";
++            #clock-cells = <1>;
++            clocks = <&xtal>;
++            clock-names = "xtal";
++        };
++
++        power-controller {
++           compatible = "amlogic,meson-axg-pwrc";
++           #power-domain-cells = <1>;
++           amlogic,ao-sysctrl = <&sysctrl_AO>;
++
++           resets = <&reset_viu>,
++                    <&reset_venc>,
++                    <&reset_vcbus>,
++                    <&reset_vencl>,
++                    <&reset_vid_lock>;
++           reset-names = "viu", "venc", "vcbus", "vencl", "vid_lock";
++           clocks = <&clk_vpu>, <&clk_vapb>;
++           clock-names = "vpu", "vapb";
++        };
++
++        phy {
++           compatible = "amlogic,axg-mipi-pcie-analog-phy";
++           #phy-cells = <0>;
++        };
++    };
+
+From patchwork Fri Nov 24 08:41:14 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467208
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A3D4C61DF4
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:42:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=JyN9YakXkyZTsSly00igqAn1kdrBK8EQh66erewl3M0=; b=nxN8oPEbJ1MFDL
+	OTj/0ytGox7/ka+oic4pxqyaFdXWV5XeE4eiFWIRokZ5H3reqAINEMazWmPWffnQaKZGwN+BEdFfV
+	IKQY0HYlave2AR6ZdbZWgqur4jbBBtGZhZUDxU48vqfC2GzHIYIkpNyK8fYUHSUOimha2MATYfY8K
+	tfuKh2DqoglYIRPnobXjM4p+vheYifSr2jqVyWTTu7kc/PtXnsdkYOBuqNV+1CrNxoyEy6LUe3ct4
+	G5BnIf0AsoYmXECeZPahpu0SXqaVoB9ypngx2El8tvy/YvjHjjhLXlSqWTjcpFOQ5loKsaAkqXt1O
+	mJJx25nW63yfey9SBhpw==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkt-006Xzq-18;
+	Fri, 24 Nov 2023 08:41:43 +0000
+Received: from mail-lf1-x12c.google.com ([2a00:1450:4864:20::12c])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rki-006Xkm-11
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:34 +0000
+Received: by mail-lf1-x12c.google.com with SMTP id
+ 2adb3069b0e04-507ad511315so2280585e87.0
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:29 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815288; x=1701420088;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=m2ZTLCIzGtDzdo93FJ4l2pfkops6GMcXVN1dXIsoDYI=;
+        b=UchG3Ncvof+JctBVY4l5xzIBoEY4D4scbeX7M3vWp64G/h66w7sbsvWM7vKClVD4h7
+         qK6CKXbAPhJfjEHbCma+aLz79iVypSIxhMIhfqSdpzAdBO9kqD/NnOi4Fu+X81wYFIAV
+         sw2ee/aFqv+RtgD/RVKXqlq98EyxNhP88IYAXMMMSvtIVZ/+rCsxwQbsecPE0Y9QHcoW
+         ih5fzpLdrTr8HFOwba7BbKp9keJVfrmCbo8lSUmTaO0W70YBaVajXQJuzocjEJXwCInL
+         S8Rj9K5WzClip48v3LwPhBuFvipS9AB9MdYs0z4d1ogYx9Awa+L/18HM0bPqV0Xq4zrW
+         jhGg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815288; x=1701420088;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=m2ZTLCIzGtDzdo93FJ4l2pfkops6GMcXVN1dXIsoDYI=;
+        b=J6T4T1CU56k7xRTtpgxFZFWHpjBic7pBue1tnSERHozGTGfiHq+0nOkzWPoBhFg7W6
+         hjthMMNJTzeDLS8/rjCexCVUcPPXj9sX1TpgguB4EdIecpZbFSfV9yc0zRDpE4TJZXj5
+         qSDb/k+AK2kDmEIjzlYdMp7YQeAcB1lCo8otvvx9nvV4X1mgiHaPnH0V4Zr3vo3iqX/F
+         6gKWVtTNMlYyRzd2r4yeyt4TATKvwOVZ2RUiQHJvGkkovC+3G1j0SiwSiGdicvvy8m+/
+         1xYtNrZIgDNB+UUgKvHSrxlYWHD4C76huLrZfSyC9QtebV47CFf2STABp2YoUEbQQfB2
+         xwUw==
+X-Gm-Message-State: AOJu0YyUBuhKM8yQL2IiahZVoKNg5jHABedmmO3tbKkr4KLneqfkPdmm
+	W8EuNKnEx/iXyTuK1YhPQXWIdA==
+X-Google-Smtp-Source: 
+ AGHT+IF7kjc01o/SSdybHjyNhj71mp3t5jB+vgaS6Zawv8K1Yz8ZO/SXKRCN8wCpxqC5dFcGrXnmPg==
+X-Received: by 2002:ac2:48b0:0:b0:50a:71d8:c94f with SMTP id
+ u16-20020ac248b0000000b0050a71d8c94fmr1135313lfg.60.1700815288264;
+        Fri, 24 Nov 2023 00:41:28 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:27 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:14 +0100
+Subject: [PATCH v9 03/12] dt-bindings: phy:
+ amlogic,meson-axg-mipi-pcie-analog: drop text about parent syscon and drop
+ example
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-3-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Conor Dooley <conor.dooley@microchip.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1573;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=8X7fhNCy/HvwIwzbk4yey3zcZzSI2bVpb2v4gVLXFlE=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGu31exqQpuNJfZ3NjzAF/oHsRU6ubp/jrWqLQT
+ WaJLbsCJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhrgAKCRB33NvayMhJ0VZEEA
+ CD9QWyKz5JqJKUffivHccIDuBx4b2ZX1upUOn4LYSEVYLaEcJbOEb6eAX5QsIvTezN2HvZAOD/TF9X
+ 9pmybusblHc3qqagjwruVann9xFjxmVQCB9SWYGaaQ0kQYjPaY5PMoVHthzTo9JWLHJSz24rKrbXDu
+ xLpfwHLzURD2kOC43HpN66RtC1etfxfHeGOidg6loQOI04C9jg8vbuQKk7i0kIDBhl8PiFEJ+wgw6L
+ D7M5mAuFYh9Tbd5Z5hbpNP6A+NahpX86HYi2TeKEMOMMCD92TqldpuV62F+Ry6VSJLYPVXi4i9FJ2y
+ BG4Ix/aRkBZrVNcPjfiOppcPJ0kO+XcRl3EUpuMo/bjnARyq7bqZoHTiJ+VMyLwNo/K5LsaelA5kmv
+ tA5YgY9gVsjAhiCEvOX8bGnkrRYLI6rINhOz1VqeVgbhFxOkYVfICfwTIaVpJmfniwQ4jOThbthyjO
+ CAAKJ0dXfO51MW7CDFudjjcdwaRBdjl0nEOEWQgIe/adFoJX+l1iF43Lq8JJYTIF2ignclF4V7fEdO
+ ihz9RrW4apafWFspszLmJDMa7hi6fS04cXDWU+4GidaAXBkpZmoJpvuwsx1qgdBLvOr6AlDgFvKXYk
+ z9mvyPn/fy3OaYQofJppI6cR8w4scLqA3Bd7v8qyOdKyjBKiNATHR5rXnrrA==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004132_368218_27988E8F 
+X-CRM114-Status: UNSURE (   8.65  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+Since this bindings is referred from amlogic,meson-gx-hhi-sysctrl.yaml, drop the now
+useless description about the parent node and also drop the unnecessary example.
+
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ .../phy/amlogic,meson-axg-mipi-pcie-analog.yaml         | 17 -----------------
+ 1 file changed, 17 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/phy/amlogic,meson-axg-mipi-pcie-analog.yaml b/Documentation/devicetree/bindings/phy/amlogic,meson-axg-mipi-pcie-analog.yaml
+index 009a39808318..70def36e5688 100644
+--- a/Documentation/devicetree/bindings/phy/amlogic,meson-axg-mipi-pcie-analog.yaml
++++ b/Documentation/devicetree/bindings/phy/amlogic,meson-axg-mipi-pcie-analog.yaml
+@@ -9,16 +9,6 @@ title: Amlogic AXG shared MIPI/PCIE analog PHY
+ maintainers:
+   - Remi Pommarel <repk@triplefau.lt>
+ 
+-description: |+
+-  The Everything-Else Power Domains node should be the child of a syscon
+-  node with the required property:
+-
+-  - compatible: Should be the following:
+-                "amlogic,meson-gx-hhi-sysctrl", "simple-mfd", "syscon"
+-
+-  Refer to the bindings described in
+-  Documentation/devicetree/bindings/mfd/syscon.yaml
+-
+ properties:
+   compatible:
+     const: amlogic,axg-mipi-pcie-analog-phy
+@@ -31,10 +21,3 @@ required:
+   - "#phy-cells"
+ 
+ additionalProperties: false
+-
+-examples:
+-  - |
+-    mpphy: phy {
+-          compatible = "amlogic,axg-mipi-pcie-analog-phy";
+-          #phy-cells = <0>;
+-    };
+
+From patchwork Fri Nov 24 08:41:15 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467206
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFDC1C61D97
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:42:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=+EDxNkgShGyNCifUm0NVLcmCujLV4QMiwwPt3JF3crQ=; b=YYltFF9Yajfe5r
+	Nj2lu7VVm/7tbG6hpRd4yOsIOdi8tLBFPvmwyEvOQEfSrN7ZQObxizj/SKsj/DgH2j7xU9tprrg8A
+	RiORXCYJaBQ1fTT07WR0vtQvPQK5L0geFneVjIVwmBNBubOw4DZpViRRvSkdushO6LqMCeBf9r08G
+	09dZeWM9jo/3q4q2DISVIgKNyDlWQfl2qhPtTRshVOC24SGwP9x1R128Xgh0HYKTtSIR7zCROboof
+	LV18ZmXGMORDLOWmxjHjQSDBDypx/qwPybi7YAznAYpnuh9N2QuilXeLH0sLUxbqlPyNdcUiaHgWs
+	vVUiRuJjw9a9+8sbhH8A==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkn-006Xtb-3D;
+	Fri, 24 Nov 2023 08:41:38 +0000
+Received: from mail-wm1-x332.google.com ([2a00:1450:4864:20::332])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkg-006XlG-2f
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:32 +0000
+Received: by mail-wm1-x332.google.com with SMTP id
+ 5b1f17b1804b1-4083dbc43cfso11234895e9.3
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:30 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815289; x=1701420089;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1vhZkFxLvuCZe0A7RVw31v//xJIvUsZb7i8/r2Jbnxg=;
+        b=hkQ5yDKmHvyBvBRW+23t2OzV+zdkcpjqKJCWXPcmC1fGS4HlsDLhJX1rqFUmvK+Hvb
+         bAh5hQtLu0F+VoomoOEF1wBWvqpOG1mSZ+55DAi5kxvWy2ljEp1pfuEiKOlR1j6t3lDq
+         3GixSijUB7H52hCqGGxyUwHBqZc1REeEhkgafhuFJNn4MQi47nvWQ5JowKaJdz5rGpzz
+         vzZte+ovWPLJJZ102kyGrf/F+JCd/p2fV8qAmzsF9WkNJmiOJJDylDlhTiehfzOuASdb
+         Crx2gI2YsNMS4UUe3eQtkwkuNV/u/+JqVZRcumLyxpQByyRTvw97iekFMLNd2bhrwhHy
+         ncAw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815289; x=1701420089;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=1vhZkFxLvuCZe0A7RVw31v//xJIvUsZb7i8/r2Jbnxg=;
+        b=xVAwBxbEnVQMqRzi+I6YKb4jedmVsTECGwYxvvxcbIHTR0n9IsGJIFS4k9Vdid5K+S
+         8cZpbl4v1lgfpLe2mSfPjIZy5YBjaSYK7ygDKUKJKWWkHZe3qCweSLyX9NyblzBAYcgK
+         0QqIfPePUwD2hwxV6eIEfOrVSeMM0Hg1HenMZ9vmAM7ubp0VNp1s8lf+/WJGairwa8rC
+         Jod5ubZ7cjeRNTy437APsW58mNGa/0Q0tWtTCiHxivw4e8EfxvL/LOFdeYk7dZwX+DU6
+         Ah1yrMqk1PqG8ilDzLUX9uOyevFt9vOEWT6ThsQdXIuT7SB3BzJFtT+Xyh12+49GqY9N
+         M7fA==
+X-Gm-Message-State: AOJu0Yx1oI9P1eH8mweRZXTeWSazzdbJs6yOPXnml/Y1TuN7T/RGrswr
+	Ed5kCRUizomvObf+7erJrAd6Kw==
+X-Google-Smtp-Source: 
+ AGHT+IGommKInNd3FR31Z3mvyaSG7pswa9iifJaF+pYGzjLLSWEIzKdNop4bPbWiyyiCahf+KYNE1A==
+X-Received: by 2002:a05:6000:253:b0:332:d84e:7fc5 with SMTP id
+ m19-20020a056000025300b00332d84e7fc5mr1129911wrz.53.1700815289535;
+        Fri, 24 Nov 2023 00:41:29 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:29 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:15 +0100
+Subject: [PATCH v9 04/12] dt-bindings: phy: amlogic,g12a-mipi-dphy-analog:
+ drop unneeded reg property and example
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-4-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1642;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=oOPbXDBk3aIjcohZAd4QtWQn75Ng6fL6sZ33nsFIHDg=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGvi+SK2D6szCKmhAOwxD/2QkmEkYDKCfLNt3LA
+ z+A/wj2JAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhrwAKCRB33NvayMhJ0ePwEA
+ CZkwqf2CNqmVAwhMX0mZ6T3o+S0SegeVMlwXXCEGDJEr4YPs+En7dabAcfzM+Cz06Vx9Zc/iok3MkR
+ 3l/Etm2uXi7mRQMPmkwioAgKInUhxH3cZikmdPzcDPpmofgII8wuYs7a6cYf5yTXw6pjEApR0HtiUK
+ YdDcEJUhCQVntgWFS7k4cYOHvojsRtTeBtAkFN5Juedqh+/k0QT00muBYoiaDzpv0I9zKIFwAkQBaw
+ +vjAo6H7OB7DxHTFN/rzL07P6VP0hKpn0A4wBml3xMm8pyzBrLTIeZrC/XNzMPnZMuEXc4xcLqcD0+
+ yYfCnlrWlC5RdOY9r3O739eRSaT1sFV+CdPSYlZfmNytYz3scHVC7lvOFy2amjLYR8cIj44XpVl/gq
+ nvCrQ0L+Np3xv3IAVNB+rgNWwA0Y6X+AdDc9WeR/N+tkIgVkRdOJbKwa+Tz5TQnyIlIn7H9+9kcxjr
+ x9kHQzecSDOjxwkeDxnQoFYjq2zLIAtazMFXw18qKpIHytQKCVIwesOCK0vmh8UhcLPht/tvo5jygg
+ 6GmyPFvso6780JXtf4XZgJtV4iJD0kRG9ADaiFmlhjAj2c8tE9QBNiE5JBHZ9HwatytJficQUuOMYC
+ fJV2oR4Qa4KbVzoK8OChR68Wmrx5JW1EE0Ye5nsmZzGraDCeBQaMd1wYGBkA==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004130_882213_00870D8F 
+X-CRM114-Status: UNSURE (   7.61  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+The amlogic,g12a-mipi-dphy-analog is a feature of the simple-mfd
+amlogic,meson-axg-hhi-sysctrl system control register zone which is an
+intermixed registers zone, thus it's very hard to define clear ranges for
+each SoC controlled features even if possible.
+
+The amlogic,g12a-mipi-dphy-analog was wrongly documented as an independent
+register range, which is not the reality, thus fix the bindings by dropping
+the reg property now it's referred from amlogic,meson-gx-hhi-sysctrl.yaml
+and documented as a subnode of amlogic,meson-axg-hhi-sysctrl.
+
+Also drop the unnecessary example, the top level bindings example should
+be enough.
+
+Fixes: 76ab79f9726c ("dt-bindings: phy: add Amlogic G12A Analog MIPI D-PHY bindings")
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+ .../bindings/phy/amlogic,g12a-mipi-dphy-analog.yaml          | 12 ------------
+ 1 file changed, 12 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/phy/amlogic,g12a-mipi-dphy-analog.yaml b/Documentation/devicetree/bindings/phy/amlogic,g12a-mipi-dphy-analog.yaml
+index c8c83acfb871..81c2654b7e57 100644
+--- a/Documentation/devicetree/bindings/phy/amlogic,g12a-mipi-dphy-analog.yaml
++++ b/Documentation/devicetree/bindings/phy/amlogic,g12a-mipi-dphy-analog.yaml
+@@ -16,20 +16,8 @@ properties:
+   "#phy-cells":
+     const: 0
+ 
+-  reg:
+-    maxItems: 1
+-
+ required:
+   - compatible
+-  - reg
+   - "#phy-cells"
+ 
+ additionalProperties: false
+-
+-examples:
+-  - |
+-    phy@0 {
+-          compatible = "amlogic,g12a-mipi-dphy-analog";
+-          reg = <0x0 0xc>;
+-          #phy-cells = <0>;
+-    };
+
+From patchwork Fri Nov 24 08:41:16 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467210
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 851B6C636CB
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:42:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=zrf0GpkmoyYe39jf0KAV0/2NKlpdYlarsLu6q69BkzY=; b=lVJHGX5ZYqIoQX
+	g+1Zc7EozNa92KyNkQ0V3nNemMf5+Pkfx25BqL1M52KnAqN6SOWsZWmtqepnA1Vgm+cpdbIh8//U7
+	PN9nn/J6tQwyiBwrX03r6+aEk2HfG4PrNMWkrYxdC0bO22eCX898SJaqs96u5DODf3ENvKP3fbAAD
+	yD3rJpJWSEvxEdqACZui2gaCZsy7J+IWzRhRzaa45BPjMLnfQKurA4rDCnZna+Tf11Qb5+23oPpAD
+	oCYMbyd33UrzCua36K0vwzKhS/BupjMGUtzg4tM0YikSTKnAEwBx63QfZ9rKiHkJxi78sdUOOr+MO
+	BpjuKe7uPLMngT7YSANw==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rl4-006YC8-1w;
+	Fri, 24 Nov 2023 08:41:54 +0000
+Received: from mail-lf1-x135.google.com ([2a00:1450:4864:20::135])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkl-006Xmc-03
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:37 +0000
+Received: by mail-lf1-x135.google.com with SMTP id
+ 2adb3069b0e04-50aab3bf71fso2163858e87.3
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:32 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815291; x=1701420091;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=szbyE8B5HmerWTS9QCGM8GNA9TtBAZ10zn0t2kxJOBs=;
+        b=RUDoXWu3Jo3l8/SBmkl/5GvO5XtAEu1tazHbzR78r0hFp3/6i1/oJJmw42NVIv8A0+
+         f6gLqgjcT/cij+5sF9ln+Gq56/MY1q7vKkDxWPHD3qPCzYl7OPSKhLL/seG4ngSB1pjc
+         nGDLrTB8D/0eNxbC8+7JT0o9LEmya02C/j9pM4fyt0FxKD903oP4NnbAKCaWMwVUuMaA
+         3wCM+OEwSOkd/PXDnhSb+7ay2Zv8kyMDoOTWkxCbrpUy/37Qt02nmiM45y7oC/F1DBoG
+         MCelb5DWR0AmnFhVGXr/yzCTF0/WQQ2930rizHzAFusdlRQbrqMl3Tar1gnx4N3dTdZt
+         a3cQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815291; x=1701420091;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=szbyE8B5HmerWTS9QCGM8GNA9TtBAZ10zn0t2kxJOBs=;
+        b=rIhekmSynt1pAMhf/ww6EVBz6GJ4Sf+OfwQ963CGgrgNNw+a+Qh4spQ4Oi4CxxSVS1
+         HHsX2jnjRuFGbigzzXebzKtBeHHJuvQ6LeZ9cdaI30Jppj16/p24UT0c/Lfvr+4tqwvi
+         3oLxmaMSaQbnwrez39RBYs/hAbHGvDLvZ1x+GM6WN22Bps8eud6kIriwIL6cVoEdsb88
+         AprJ4LV0YW+pWEP+oEYC5bMVdvdJ9kUaK6MbbNJf0L2KG0dLNC2fjbMpFTWF/OHXyGC9
+         h5VakP5yJuFfeIXbhtH9gXlAQW3hyq9JcpdfkBVA7JSKG+qumWubOSZ7kVTWlC1xf8At
+         eKlw==
+X-Gm-Message-State: AOJu0YyTUSe4nknq5vbYi/pb4ZOu57kJDYO4n7pqryRAWF7DsrCkGD8O
+	Zt0O1ExEoz31DN1maMNOXuXJhQ==
+X-Google-Smtp-Source: 
+ AGHT+IF8wC4ZbNV+iRqsapT1X1L6KArgTHWCtJUniE+JBLrichukip7x/MNUSFgjU69zSXGhwIYP9Q==
+X-Received: by 2002:a05:6512:2026:b0:509:4916:8b6f with SMTP id
+ s6-20020a056512202600b0050949168b6fmr1088541lfs.37.1700815290893;
+        Fri, 24 Nov 2023 00:41:30 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:30 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:16 +0100
+Subject: [PATCH v9 05/12] dt-bindings: arm: amlogic: Document the MNT
+ Reform 2 CM4 adapter with a BPI-CM4 Module
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-5-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Conor Dooley <conor.dooley@microchip.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=886;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=dsHeljQP++qeke1zASpQ3YPnuH6eGTAu4r6z8mvmrbM=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGv3r2urKVQCnv1GMSXAcUHF2wbzkyg1d49b8yI
+ ncf0ylyJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhrwAKCRB33NvayMhJ0VlcD/
+ 4y1L+GLLwogkpqrR1xVtyGU3WNktnmQpmbhriYFVjc8mfDK6pfyBAzykOOFUyjcoCgKWxV1oJTuxod
+ n2fNJepwZ3udvXq/phRAoM+JgB5VwPl02d66w6yh2mRT0xsuthdMpZ6GVLhbcP++Rm6wgxEcX9p/cl
+ HRUp2NPx6OZGj49CiOwd4JQIe2nejmgGDUlTtfXBx0UrpPjamVyrNvMBGIIdLVH9mDQNONWT1rQM/L
+ kSTuU57hLl926SrMVJ4DP3qFu/14HhsgOLiIPMgZjSVyiPWu3h2FGpFHOsXi8u4wUdJO1o/HOUy40V
+ Mic7Q/lZFY39/kVxbZ4ICyg8QT9p5CzDwYXuLTYST5SCoBr7yLEBEraTke0toEJOpzx3meHPsl3ghp
+ 9BOlz3g/+AVzEyoz3yjDqnifU8Z4ZCG/pVJ3VAH88P7pXL8LkGyqfrzZSnWg9tiDwRC9P34pFG0CPs
+ vZQ+OaIsqPpSEN6et5R/tN/luhPgfUia87H5KA3QYFyemEKu037HhZcdomNkQnxU+uBNy377thMRdD
+ BxLMWftl1gzwElohUV/HuoVhcZbLRQy3xkepA0QjbquW5+cKI4Jog/261FPx6rw2ZHOLpxSyh2BoTG
+ AEQOfpbdxt+xlZIRW3QRefScRXlSnVfYvXehYP9LUfxILN5HJYzvwxQy0xeA==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004135_128172_07E9BA55 
+X-CRM114-Status: UNSURE (   7.59  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+The MNT Reform 2 CM4 adapter can be populated with any Raspberry Pi CM4
+compatible module such as a BPI-CM4 Module, document that.
+
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ Documentation/devicetree/bindings/arm/amlogic.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/amlogic.yaml b/Documentation/devicetree/bindings/arm/amlogic.yaml
+index caab7ceeda45..2154a4614fda 100644
+--- a/Documentation/devicetree/bindings/arm/amlogic.yaml
++++ b/Documentation/devicetree/bindings/arm/amlogic.yaml
+@@ -164,6 +164,7 @@ properties:
+         items:
+           - enum:
+               - bananapi,bpi-cm4io
++              - mntre,reform2-cm4
+           - const: bananapi,bpi-cm4
+           - const: amlogic,a311d
+           - const: amlogic,g12b
+
+From patchwork Fri Nov 24 08:41:17 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467209
+X-Patchwork-Delegate: neil.armstrong@linaro.org
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 466C6C61DF4
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:42:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=x71SRsNWxKOtV3GIneNKGtJcsHCQGtyDGvcXxjyEsOU=; b=xWHSmyO5WpgN0k
+	bN52hR+mt2NjkUKaufySdWexiK/sGz8VuObxo+4kIa5VmdEcXwfS54EtTnKQQtUPiNIeTYe1oq64E
+	5IHRMtvoMBqWDainW3J83X9Rtsid9OTn8ekXgfvn9sSTUCoTQ5LwXyzKzjROnTjkGM9bpj7JZxjV8
+	vfZ3S7f0qD86nwhxzKbmnXc+JX9sx0GRP7gM+M/v/GeFHHrYxuoHadccNMW/aQnSYEaUrQhRMSOtn
+	fuWGgvVXH3PP2Vmx810quJlQvRtncZJaeJxlD5N1uXPgUNutBz0N8QQW9LQzmH6Rbj7eVtE46fMBd
+	Sd0H6qLUXC5C9LwN8lZA==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rl1-006Y8u-1o;
+	Fri, 24 Nov 2023 08:41:51 +0000
+Received: from mail-wm1-x32c.google.com ([2a00:1450:4864:20::32c])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkj-006Xog-2G
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:37 +0000
+Received: by mail-wm1-x32c.google.com with SMTP id
+ 5b1f17b1804b1-4079ed65471so12035065e9.1
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815292; x=1701420092;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=NufD4rIrXXVswDRLLGN1v8mzear6C88bLMu3144o0cg=;
+        b=JtFVJ2SudFZajaFgkcXeWsuVi5DUEShA+5f2lS4Mxa4W8VQw9FcgFlEonnsjNJpZgK
+         xiSn59RXsb8LkP9gm9USIA8jWTlQEmq2weNSYOG1QGHW5VSUOOZLYi2nzp/AXGB+BL4E
+         RBIcqWTTvVQSckNMtbeB3QZ0qSoPLo0BD3kNr6HDHlkZZFfcD5KrKRtg3EuCz6sy4NzV
+         c3zzSfSvPfRWfS6Ngougx9ucy2QHHn3v/UdAzEEsokRrs2jfpk6Ya02jAhk8pL7+cF4X
+         9h609SpPr237VEYiOrrFMtS3LzUDYgk1NDj88HiO57Rn2d92Y5DE9jpcHX6Y06DsI3IK
+         e6Vg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815292; x=1701420092;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=NufD4rIrXXVswDRLLGN1v8mzear6C88bLMu3144o0cg=;
+        b=cAL0ZYvF1tYuGwlbKpeav1nWqz2GYivhGdnuZI+xlprABhYz4GzvSlzD3++03mOxIe
+         Q11fTcu5cZYE1GGHa8Ir0cyI9fA8GQ2AiOXvHwFYr/VWGFmf+YeITV7b2YqWmCZIax86
+         G+G3++3+r+wMokARPXsKs/jWprryDLDi6IwVPRTqA0ywnYQrHYZvGqxhdiFzM0Oc26Rm
+         iUGUpgrWwLs20WSSVlNiSqmzRxFI1exBC08quEgrsgwVf54a1UOWRwdphLBdsb9ccCet
+         Z17Rz9BWBo67vojFpGAkTRQjCPtrecCf/uPjfBilK5H/Us4ovun1dnSyrfXJQAxHNFul
+         g1kw==
+X-Gm-Message-State: AOJu0YycT3yCxVSWpywx9Cq/gw5bBxp134JtGLNz1RZOXRx6ZWX9ulgu
+	CMGtlYAtej3WJfgRk5vUOxBePg==
+X-Google-Smtp-Source: 
+ AGHT+IEUvqbt1DC0+uUVhVOjCpWlb1bksQ3RH9iprckyOqtqXcIRgR+VEHZE3xWFIFmSj+o95DaHUQ==
+X-Received: by 2002:a05:600c:1c81:b0:40b:3938:65fc with SMTP id
+ k1-20020a05600c1c8100b0040b393865fcmr1676370wms.4.1700815292199;
+        Fri, 24 Nov 2023 00:41:32 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:31 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:17 +0100
+Subject: [PATCH v9 06/12] clk: meson: g12a: add CTS_ENCL & CTS_ENCL_SEL
+ clocks
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-6-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3966;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=zJsrzxQnYGg+gnkYOtONfQmErbGuCQDfLn/cHrjnMZI=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGw1r3vVBeENP9OV0j71X8URZHXlJ+d/mBHQQda
+ /IzcQvaJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhsAAKCRB33NvayMhJ0QTzD/
+ 4vRZ2aynVoS5fO5ARDE67DKlHGKuGgLC9GXQRtRgIUs3Mu+COUAIcaRtlW6kEVlJCYprA696aSv17H
+ 4HeQfr7gr42wp4r5752yquCQmT3szcXqLGJXPhyrZIlSm7UzyO+ZAkUVsQgilHpsqdBySdzYs2+OZf
+ VnpNmODCpfZL8yRrbw5MFpWNu+cK6btltj1HbZ5i1mIO4gcPh59BmyDsA3MNjGnDDYJs5J9B/+Z55P
+ rhnZV6IJYrHKDfXS2TfvlsrBdq7zbCutti5zW2ZodDX97FPXqiLtw9fGTU1CNL9veh5UH1izbk3c33
+ EoL61SPGIFeX87mCtHhD6TBpaT0q3l14gfZMb9uLuAUoZIrL3zHmYK8CkZSaKobiIllK3pwXTeAT+8
+ 8JK/6AywyrQOKX17wq9vbVhYaZFDA7I0N5CL8mfNVv7qv1kBjgNa5mjjs9whc0QJ7fY8YGFhB3+BmP
+ 39NCJ4KwJaNC/DRbjSsHKaKUIaBmM/ysxcZ5Qq5QUcVzxCieZudSZNjjRmzhayMI2BfezwFpseU+nz
+ NMDusiOD4vRwgOCwgLnSSILP/d7eF89rrFWvFakLyrhqdIaKsEaZKEHEVJTqUQmSuTJ/A/tdHwhNyX
+ w4J61IQKvEPtgC4tNemh+iKu/uI4xTU2o+PO7pB4QBxmQ0TtV19P4BwInebw==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004133_761300_2D3EEE4D 
+X-CRM114-Status: GOOD (  10.08  )
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+Add new CTS_ENCL & CTS_ENCL_SEL clocks for the G12A compatible
+SoCs, they are used to feed the VPU LCD Pixel encoder used for
+DSI display purposes.
+
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ drivers/clk/meson/g12a.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+
+diff --git a/drivers/clk/meson/g12a.c b/drivers/clk/meson/g12a.c
+index f373a8d48b1d..cadd824336ad 100644
+--- a/drivers/clk/meson/g12a.c
++++ b/drivers/clk/meson/g12a.c
+@@ -3549,6 +3549,22 @@ static struct clk_regmap g12a_cts_encp_sel = {
+ 	},
+ };
+ 
++static struct clk_regmap g12a_cts_encl_sel = {
++	.data = &(struct clk_regmap_mux_data){
++		.offset = HHI_VIID_CLK_DIV,
++		.mask = 0xf,
++		.shift = 12,
++		.table = mux_table_cts_sel,
++	},
++	.hw.init = &(struct clk_init_data){
++		.name = "cts_encl_sel",
++		.ops = &clk_regmap_mux_ops,
++		.parent_hws = g12a_cts_parent_hws,
++		.num_parents = ARRAY_SIZE(g12a_cts_parent_hws),
++		.flags = CLK_SET_RATE_NO_REPARENT | CLK_GET_RATE_NOCACHE,
++	},
++};
++
+ static struct clk_regmap g12a_cts_vdac_sel = {
+ 	.data = &(struct clk_regmap_mux_data){
+ 		.offset = HHI_VIID_CLK_DIV,
+@@ -3628,6 +3644,22 @@ static struct clk_regmap g12a_cts_encp = {
+ 	},
+ };
+ 
++static struct clk_regmap g12a_cts_encl = {
++	.data = &(struct clk_regmap_gate_data){
++		.offset = HHI_VID_CLK_CNTL2,
++		.bit_idx = 3,
++	},
++	.hw.init = &(struct clk_init_data) {
++		.name = "cts_encl",
++		.ops = &clk_regmap_gate_ops,
++		.parent_hws = (const struct clk_hw *[]) {
++			&g12a_cts_encl_sel.hw
++		},
++		.num_parents = 1,
++		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
++	},
++};
++
+ static struct clk_regmap g12a_cts_vdac = {
+ 	.data = &(struct clk_regmap_gate_data){
+ 		.offset = HHI_VID_CLK_CNTL2,
+@@ -4407,10 +4439,12 @@ static struct clk_hw *g12a_hw_clks[] = {
+ 	[CLKID_VCLK2_DIV12]		= &g12a_vclk2_div12.hw,
+ 	[CLKID_CTS_ENCI_SEL]		= &g12a_cts_enci_sel.hw,
+ 	[CLKID_CTS_ENCP_SEL]		= &g12a_cts_encp_sel.hw,
++	[CLKID_CTS_ENCL_SEL]		= &g12a_cts_encl_sel.hw,
+ 	[CLKID_CTS_VDAC_SEL]		= &g12a_cts_vdac_sel.hw,
+ 	[CLKID_HDMI_TX_SEL]		= &g12a_hdmi_tx_sel.hw,
+ 	[CLKID_CTS_ENCI]		= &g12a_cts_enci.hw,
+ 	[CLKID_CTS_ENCP]		= &g12a_cts_encp.hw,
++	[CLKID_CTS_ENCL]		= &g12a_cts_encl.hw,
+ 	[CLKID_CTS_VDAC]		= &g12a_cts_vdac.hw,
+ 	[CLKID_HDMI_TX]			= &g12a_hdmi_tx.hw,
+ 	[CLKID_HDMI_SEL]		= &g12a_hdmi_sel.hw,
+@@ -4632,10 +4666,12 @@ static struct clk_hw *g12b_hw_clks[] = {
+ 	[CLKID_VCLK2_DIV12]		= &g12a_vclk2_div12.hw,
+ 	[CLKID_CTS_ENCI_SEL]		= &g12a_cts_enci_sel.hw,
+ 	[CLKID_CTS_ENCP_SEL]		= &g12a_cts_encp_sel.hw,
++	[CLKID_CTS_ENCL_SEL]		= &g12a_cts_encl_sel.hw,
+ 	[CLKID_CTS_VDAC_SEL]		= &g12a_cts_vdac_sel.hw,
+ 	[CLKID_HDMI_TX_SEL]		= &g12a_hdmi_tx_sel.hw,
+ 	[CLKID_CTS_ENCI]		= &g12a_cts_enci.hw,
+ 	[CLKID_CTS_ENCP]		= &g12a_cts_encp.hw,
++	[CLKID_CTS_ENCL]		= &g12a_cts_encl.hw,
+ 	[CLKID_CTS_VDAC]		= &g12a_cts_vdac.hw,
+ 	[CLKID_HDMI_TX]			= &g12a_hdmi_tx.hw,
+ 	[CLKID_HDMI_SEL]		= &g12a_hdmi_sel.hw,
+@@ -4892,10 +4928,12 @@ static struct clk_hw *sm1_hw_clks[] = {
+ 	[CLKID_VCLK2_DIV12]		= &g12a_vclk2_div12.hw,
+ 	[CLKID_CTS_ENCI_SEL]		= &g12a_cts_enci_sel.hw,
+ 	[CLKID_CTS_ENCP_SEL]		= &g12a_cts_encp_sel.hw,
++	[CLKID_CTS_ENCL_SEL]		= &g12a_cts_encl_sel.hw,
+ 	[CLKID_CTS_VDAC_SEL]		= &g12a_cts_vdac_sel.hw,
+ 	[CLKID_HDMI_TX_SEL]		= &g12a_hdmi_tx_sel.hw,
+ 	[CLKID_CTS_ENCI]		= &g12a_cts_enci.hw,
+ 	[CLKID_CTS_ENCP]		= &g12a_cts_encp.hw,
++	[CLKID_CTS_ENCL]		= &g12a_cts_encl.hw,
+ 	[CLKID_CTS_VDAC]		= &g12a_cts_vdac.hw,
+ 	[CLKID_HDMI_TX]			= &g12a_hdmi_tx.hw,
+ 	[CLKID_HDMI_SEL]		= &g12a_hdmi_sel.hw,
+@@ -5123,10 +5161,12 @@ static struct clk_regmap *const g12a_clk_regmaps[] = {
+ 	&g12a_vclk2_div12_en,
+ 	&g12a_cts_enci_sel,
+ 	&g12a_cts_encp_sel,
++	&g12a_cts_encl_sel,
+ 	&g12a_cts_vdac_sel,
+ 	&g12a_hdmi_tx_sel,
+ 	&g12a_cts_enci,
+ 	&g12a_cts_encp,
++	&g12a_cts_encl,
+ 	&g12a_cts_vdac,
+ 	&g12a_hdmi_tx,
+ 	&g12a_hdmi_sel,
+
+From patchwork Fri Nov 24 08:41:18 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467211
+X-Patchwork-Delegate: neil.armstrong@linaro.org
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E873C636CB
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:42:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=djSELi15LolAU49xq9VfSXDAR06Pb5fRAYD52vz+PEg=; b=TRrawH1vBB5ZRt
+	UhsjWuRNmL7IOOzrhqm5twCePp2Fm28Yq+quluuqO5470CwbmrOF00nYyMpjmHdx6EAxeI2k1WQOf
+	4FChLCYE0eXyCJ/LZRDze1xyGC6WkRnHVLDFj+hXhPnG/CI38Zcpsx/tsYLjhOtS7UkzyUy+z6/xP
+	qc9PRB7hgVbrfP/yg2HvORxSSJPBcQ8VDHLWTViUUmHQHexuGVwAzsyfWZpWsdBQw65Pei+TmRhOJ
+	E5+b8Li5CYUd/3wf9mH8SQDS1fRgMUY5JW3hgakfyT3/gO76J+kcJ56UTmOVL3M6qR8T0XkjYxxWt
+	Go/K9Qf1CIU61pZ2cwDA==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6RlC-006YLH-0Y;
+	Fri, 24 Nov 2023 08:42:02 +0000
+Received: from mail-wm1-x32b.google.com ([2a00:1450:4864:20::32b])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkm-006XpV-19
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:40 +0000
+Received: by mail-wm1-x32b.google.com with SMTP id
+ 5b1f17b1804b1-40b39d33fe0so3646235e9.0
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:34 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815293; x=1701420093;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=K3jkqVLYPsEBC2yHh5HSbHQhmKply71guvy25cYHi9Y=;
+        b=FdMo/WENMqHaW8VtH5YQdxVVzZWPmn0o1ZLIdo76JGoxr6Q88NK535xOh8U9TI5dBb
+         IJi0nbLNQoz47hGPsAn3AHok2lCZ7kBeqB+ZZVMZr0fMuk95eFHcS29yxGmZdp/ZeLF6
+         z9ENbhRDxIUlAMZLasGSYo/GntCopMyIzAKm3/dCWkBSiuEJFVTK2AD5lh+Bnc+Ns8c0
+         3PFkGMI0zzuk1BitYI+NSb2aVLD5gADGpD5yEyntK+tGfZoTxm6+TOMtYMQ6py+jMYUf
+         1XWT70qG+lLe9/6Fu6duh7BWgx+jQr7LD5yTjbZl5LEdQGYWSX9tC+eQuG7M3tU5Zeh8
+         xIlw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815293; x=1701420093;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=K3jkqVLYPsEBC2yHh5HSbHQhmKply71guvy25cYHi9Y=;
+        b=DQMGMrlrJrfZt1DEejV0wUR8eDh/W+GM+AsBnkIeos5u3+PJYvO4iv4vbGrqnOtJSQ
+         CVhfpR6uym3W3HMBMt8QtL+ONdo6ouwuFnq1+6t6QIqu0EH8HBA8+E0aVl0MgWWQ2Z/s
+         cG11FcdZvj6Y1yo04PtSBjLYktXWqCBcXIhTEs/e14Pj+Vbcd5PefrGW54TeBFJvuCKY
+         +qzoc4jOcN7y5c+Wq3d42XBvpo4DkaofXKBsu/skdCBsmOl/fCbDkAnVwuSQORF4vq63
+         HFt39J8vETaPokR4TEjlNvVBeVMMv4xqbTHLgr9iglB7tT9BdEZnmp8MJz7b/2TaItot
+         lUEQ==
+X-Gm-Message-State: AOJu0Yz3NHv0nv35zPbBTuITQfBXNXsHsJorNdXwb9aQ2MxH6pYrN241
+	5OGPoV5jyNcYK7W0GN5RWXP49Q==
+X-Google-Smtp-Source: 
+ AGHT+IG/skb+8Ptal+nS5jVokW1Mln4lSQFVUSzxMMIXZ8cBj7G4ZDrsA+Ldcfzj6m3z7ooJn7ALJg==
+X-Received: by 2002:a5d:6987:0:b0:331:41ef:61f2 with SMTP id
+ g7-20020a5d6987000000b0033141ef61f2mr1666976wru.15.1700815293525;
+        Fri, 24 Nov 2023 00:41:33 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:33 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:18 +0100
+Subject: [PATCH v9 07/12] clk: meson: add vclk driver
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-7-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=8101;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=TV2XB6ZHVpJ07IkqSO4nzY+I+xu/Xq9oDCoWcFAVONI=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGwtOkO34THj9KcGPAlKC53gPRu5CVHayIIw38c
+ QeP3RoaJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhsAAKCRB33NvayMhJ0RLfD/
+ kBQ6skhdahfbqkOJ3pA7v+Kkim1QWBoAXjhxLrynanMSAuGBPLNzvAfm9/mHxU5R3ViyjPjJtvsO2j
+ eBsnsm3ZSAUQndGAlgg28RU7pP7/CIMl3qed2EfhTOqATPU383HVLrZSPLn4S8JEbdgxhoIo92gkU5
+ jdadiicEocfwi6NTCM+vo06Ma1/DZqUXUfUaj+QnvEzCzAYexw5S2/KWE3k9RE56wSSkSpCs03q4AZ
+ LcVX02SIg3YGh7qVmMRHMiXytNkezLNln5rkREg5QXb6+i8K1EwHurgBdqwXzUT1GBfi8Kx7S9evRa
+ ElsS60l+DiVRf+xLTaeSry9PssIZgi8CpriSBiFHQPTgwpVxcM6iwIxsiM0dAJZXrtPhV9tSzMKC/H
+ PvH2F5YLnE04vXIRrect1qwFmr3skPJ+dmxIaRH9/OCWn9ZMap6bZ50MXMgIo9G2NKV28rednit9nC
+ snyu0aIF/+aWdcyo//uA8SOsP/v26M5W+IXB8n842hAP1PP4XiQE/J8QM6BuenGSawckRLsWEuVqAr
+ Nm7+R/baf3tC5yWaaPAorreRazBY0TPBe0//0jbGF/sJA8IFan9qrSK/m5npRUvUWpzrFztDhn3fW0
+ 39ueYWe7IbxtsW0dr0DLy7tbBhnbufExY5UalsD5VnALorQp+hVSEYwd0E5Q==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004136_427345_4DAB22CD 
+X-CRM114-Status: GOOD (  18.59  )
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+The VCLK and VCLK_DIV clocks have supplementary bits.
+
+The VCLK has a "SOFT RESET" bit to toggle after the whole
+VCLK sub-tree rate has been set, this is implemented in
+the gate enable callback.
+
+The VCLK_DIV clocks as enable and reset bits used to disable
+and reset the divider, associated with CLK_SET_RATE_GATE it ensures
+the rate is set while the divider is disabled and in reset mode.
+
+The VCLK_DIV enable bit isn't implemented as a gate since it's part
+of the divider logic and vendor does this exact sequence to ensure
+the divider is correctly set.
+
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ drivers/clk/meson/Kconfig  |   5 ++
+ drivers/clk/meson/Makefile |   1 +
+ drivers/clk/meson/vclk.c   | 141 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/clk/meson/vclk.h   |  51 ++++++++++++++++
+ 4 files changed, 198 insertions(+)
+
+diff --git a/drivers/clk/meson/Kconfig b/drivers/clk/meson/Kconfig
+index 29ffd14d267b..59a40a49f8e1 100644
+--- a/drivers/clk/meson/Kconfig
++++ b/drivers/clk/meson/Kconfig
+@@ -30,6 +30,10 @@ config COMMON_CLK_MESON_VID_PLL_DIV
+ 	tristate
+ 	select COMMON_CLK_MESON_REGMAP
+ 
++config COMMON_CLK_MESON_VCLK
++	tristate
++	select COMMON_CLK_MESON_REGMAP
++
+ config COMMON_CLK_MESON_CLKC_UTILS
+ 	tristate
+ 
+@@ -140,6 +144,7 @@ config COMMON_CLK_G12A
+ 	select COMMON_CLK_MESON_EE_CLKC
+ 	select COMMON_CLK_MESON_CPU_DYNDIV
+ 	select COMMON_CLK_MESON_VID_PLL_DIV
++	select COMMON_CLK_MESON_VCLK
+ 	select MFD_SYSCON
+ 	help
+ 	  Support for the clock controller on Amlogic S905D2, S905X2 and S905Y2
+diff --git a/drivers/clk/meson/Makefile b/drivers/clk/meson/Makefile
+index 9ee4b954c896..9ba43fe7a07a 100644
+--- a/drivers/clk/meson/Makefile
++++ b/drivers/clk/meson/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_COMMON_CLK_MESON_PLL) += clk-pll.o
+ obj-$(CONFIG_COMMON_CLK_MESON_REGMAP) += clk-regmap.o
+ obj-$(CONFIG_COMMON_CLK_MESON_SCLK_DIV) += sclk-div.o
+ obj-$(CONFIG_COMMON_CLK_MESON_VID_PLL_DIV) += vid-pll-div.o
++obj-$(CONFIG_COMMON_CLK_MESON_VCLK) += vclk.o
+ 
+ # Amlogic Clock controllers
+ 
+diff --git a/drivers/clk/meson/vclk.c b/drivers/clk/meson/vclk.c
+new file mode 100644
+index 000000000000..47f08a52b49f
+--- /dev/null
++++ b/drivers/clk/meson/vclk.c
+@@ -0,0 +1,141 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright (c) 2023 Neil Armstrong <neil.armstrong@linaro.org>
++ */
++
++#include <linux/module.h>
++#include "vclk.h"
++
++/* The VCLK gate has a supplementary reset bit to pulse after ungating */
++
++static inline struct clk_regmap_vclk_data *
++clk_get_regmap_vclk_data(struct clk_regmap *clk)
++{
++	return (struct clk_regmap_vclk_data *)clk->data;
++}
++
++static int clk_regmap_vclk_enable(struct clk_hw *hw)
++{
++	struct clk_regmap *clk = to_clk_regmap(hw);
++	struct clk_regmap_vclk_data *vclk = clk_get_regmap_vclk_data(clk);
++
++	meson_parm_write(clk->map, &vclk->enable, 1);
++
++	/* Do a reset pulse */
++	meson_parm_write(clk->map, &vclk->reset, 1);
++	meson_parm_write(clk->map, &vclk->reset, 0);
++
++	return 0;
++}
++
++static void clk_regmap_vclk_disable(struct clk_hw *hw)
++{
++	struct clk_regmap *clk = to_clk_regmap(hw);
++	struct clk_regmap_vclk_data *vclk = clk_get_regmap_vclk_data(clk);
++
++	meson_parm_write(clk->map, &vclk->enable, 0);
++}
++
++static int clk_regmap_vclk_is_enabled(struct clk_hw *hw)
++{
++	struct clk_regmap *clk = to_clk_regmap(hw);
++	struct clk_regmap_vclk_data *vclk = clk_get_regmap_vclk_data(clk);
++
++	return meson_parm_read(clk->map, &vclk->enable);
++}
++
++const struct clk_ops clk_regmap_vclk_ops = {
++	.enable = clk_regmap_vclk_enable,
++	.disable = clk_regmap_vclk_disable,
++	.is_enabled = clk_regmap_vclk_is_enabled,
++};
++EXPORT_SYMBOL_GPL(clk_regmap_vclk_ops);
++
++/* The VCLK Divider has supplementary reset & enable bits */
++
++static inline struct clk_regmap_vclk_div_data *
++clk_get_regmap_vclk_div_data(struct clk_regmap *clk)
++{
++	return (struct clk_regmap_vclk_div_data *)clk->data;
++}
++
++static unsigned long clk_regmap_vclk_div_recalc_rate(struct clk_hw *hw,
++						     unsigned long prate)
++{
++	struct clk_regmap *clk = to_clk_regmap(hw);
++	struct clk_regmap_vclk_div_data *vclk = clk_get_regmap_vclk_div_data(clk);
++
++	return divider_recalc_rate(hw, prate, meson_parm_read(clk->map, &vclk->div),
++				   vclk->table, vclk->flags, vclk->div.width);
++}
++
++static int clk_regmap_vclk_div_determine_rate(struct clk_hw *hw,
++					      struct clk_rate_request *req)
++{
++	struct clk_regmap *clk = to_clk_regmap(hw);
++	struct clk_regmap_vclk_div_data *vclk = clk_get_regmap_vclk_div_data(clk);
++
++	return divider_determine_rate(hw, req, vclk->table, vclk->div.width,
++				      vclk->flags);
++}
++
++static int clk_regmap_vclk_div_set_rate(struct clk_hw *hw, unsigned long rate,
++					unsigned long parent_rate)
++{
++	struct clk_regmap *clk = to_clk_regmap(hw);
++	struct clk_regmap_vclk_div_data *vclk = clk_get_regmap_vclk_div_data(clk);
++	int ret;
++
++	ret = divider_get_val(rate, parent_rate, vclk->table, vclk->div.width,
++			      vclk->flags);
++	if (ret < 0)
++		return ret;
++
++	meson_parm_write(clk->map, &vclk->div, ret);
++
++	return 0;
++};
++
++static int clk_regmap_vclk_div_enable(struct clk_hw *hw)
++{
++	struct clk_regmap *clk = to_clk_regmap(hw);
++	struct clk_regmap_vclk_div_data *vclk = clk_get_regmap_vclk_div_data(clk);
++
++	/* Unreset the divider when ungating */
++	meson_parm_write(clk->map, &vclk->reset, 0);
++	meson_parm_write(clk->map, &vclk->enable, 1);
++
++	return 0;
++}
++
++static void clk_regmap_vclk_div_disable(struct clk_hw *hw)
++{
++	struct clk_regmap *clk = to_clk_regmap(hw);
++	struct clk_regmap_vclk_div_data *vclk = clk_get_regmap_vclk_div_data(clk);
++
++	/* Reset the divider when gating */
++	meson_parm_write(clk->map, &vclk->enable, 0);
++	meson_parm_write(clk->map, &vclk->reset, 1);
++}
++
++static int clk_regmap_vclk_div_is_enabled(struct clk_hw *hw)
++{
++	struct clk_regmap *clk = to_clk_regmap(hw);
++	struct clk_regmap_vclk_div_data *vclk = clk_get_regmap_vclk_div_data(clk);
++
++	return meson_parm_read(clk->map, &vclk->enable);
++}
++
++const struct clk_ops clk_regmap_vclk_div_ops = {
++	.recalc_rate = clk_regmap_vclk_div_recalc_rate,
++	.determine_rate = clk_regmap_vclk_div_determine_rate,
++	.set_rate = clk_regmap_vclk_div_set_rate,
++	.enable = clk_regmap_vclk_div_enable,
++	.disable = clk_regmap_vclk_div_disable,
++	.is_enabled = clk_regmap_vclk_div_is_enabled,
++};
++EXPORT_SYMBOL_GPL(clk_regmap_vclk_div_ops);
++
++MODULE_DESCRIPTION("Amlogic vclk clock driver");
++MODULE_AUTHOR("Neil Armstrong <neil.armstrong@linaro.org>");
++MODULE_LICENSE("GPL v2");
+diff --git a/drivers/clk/meson/vclk.h b/drivers/clk/meson/vclk.h
+new file mode 100644
+index 000000000000..4f25d7ad2717
+--- /dev/null
++++ b/drivers/clk/meson/vclk.h
+@@ -0,0 +1,51 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++/*
++ * Copyright (c) 2023 Neil Armstrong <neil.armstrong@linaro.org>
++ */
++
++#ifndef __VCLK_H
++#define __VCLK_H
++
++#include "clk-regmap.h"
++#include "parm.h"
++
++/**
++ * struct clk_regmap_vclk_data - vclk regmap backed specific data
++ *
++ * @enable:	vclk enable field
++ * @reset:	vclk reset field
++ * @flags:	hardware-specific flags
++ *
++ * Flags:
++ * Same as clk_gate except CLK_GATE_HIWORD_MASK which is ignored
++ */
++struct clk_regmap_vclk_data {
++	struct parm enable;
++	struct parm reset;
++	u8 flags;
++};
++
++extern const struct clk_ops clk_regmap_vclk_ops;
++
++/**
++ * struct clk_regmap_vclk_div_data - vclk_div regmap back specific data
++ *
++ * @div:	divider field
++ * @enable:	vclk divider enable field
++ * @reset:	vclk divider reset field
++ * @table:	array of value/divider pairs, last entry should have div = 0
++ *
++ * Flags:
++ * Same as clk_divider except CLK_DIVIDER_HIWORD_MASK which is ignored
++ */
++struct clk_regmap_vclk_div_data {
++	struct parm div;
++	struct parm enable;
++	struct parm reset;
++	const struct clk_div_table *table;
++	u8 flags;
++};
++
++extern const struct clk_ops clk_regmap_vclk_div_ops;
++
++#endif /* __VCLK_H */
+
+From patchwork Fri Nov 24 08:41:19 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467212
+X-Patchwork-Delegate: neil.armstrong@linaro.org
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31CA9C636BD
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:42:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=DWq8rp3Lpx0DOLn4P7qkwMKyUNkPeM1HBRrdivnnzfA=; b=kE2wIqtubwDQzy
+	slLYY4MCe4VlAoFHmXQhk2Z5VXg5BE7o4G73bgUCxPReHHyfLP05rnfQu8DwLs6t3l7ELIBwo3PEz
+	45+8PoH2xYrwpERc3uRmHU5qM7ONlNrlpYk4rIsNFEE/QBiTJapR0Y2d+gLjcPS4UXJBaYiugcV3L
+	yTYh3pd2WAZuu2QTTEeKke8ZRMzMN2hOvmAwXhwVsJbtj69M6LnqdtLyi4tNoWEQgseAzueBTcZ0q
+	lPaiANFsk9JC0M5qXKUXJJxFvQkC7WCWJzW62hTo28CFcxvP4uO9PAHPJaESjLOvRxMgqwt8tt1MC
+	PSn5GP8AFfN79MCqZufw==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6RlN-006YW1-0a;
+	Fri, 24 Nov 2023 08:42:13 +0000
+Received: from mail-wr1-x42b.google.com ([2a00:1450:4864:20::42b])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkn-006Xqr-2Z
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:42 +0000
+Received: by mail-wr1-x42b.google.com with SMTP id
+ ffacd0b85a97d-33139ecdca7so1072606f8f.0
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815295; x=1701420095;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=XUtE9u6Ed6gm/A0AX82UWipGrZqGgwbiXFrn6U39T+8=;
+        b=a0iobzfJa2OO0wISOHLcjJXy6kM6Raoq2yP55VsC0FZauz0ELZG7xrBxCu1V3gmpK1
+         ODcu09UuqKHBQ3ai/HnDVp7XwI5OPvVeYtZpPv49B1YURPyCEgyEczgUBru+JQSLqsWg
+         0R32sPlhTELC6xEHtCjzwpV2AZ/ObdYdxn7d1LNcqVuRbDFbZjigwxri5R4UFZK/FhQl
+         tLoBZ1W7fbsgnQW3GReAIhwz0eo2XpdYMSbpywi4vjkiaelpqekTNrwZo53UR/khPb3K
+         tSh6JarsPIp3smv3KxM51SfyAuU9cN48qJmvvmrZZ8fpC60mLujq8Mb//KbObAdJrK0u
+         fp1Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815295; x=1701420095;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=XUtE9u6Ed6gm/A0AX82UWipGrZqGgwbiXFrn6U39T+8=;
+        b=N1dVbq6sU1x73G9Rp3q9qsOrNRE1Uk3BwGZqQ9j3kiOElF4E/5DzkvVnqp8HwElBfm
+         pcvE7I2NK3mfQbSLAz0pazCOf3+OxJ86TpizaY3ZR5NgNqfEMfhS9n9qZ4th5f3eIPhc
+         ZrjduAweWp6xVkhpSdV0hYTxmu826pO6W7muHCUZ0DQ951aai5PaKQBIVOEY5pyt6j0Q
+         6fz8b4/T2fne1Chs7MnHfQJ+LKeRCLdydYKL7dzRzdxEAP99ID5c8PW2ImgaHrQ7FEqX
+         clcDxyRSc5OjHzcMa4/Bi52a7vLaLhEHKi6H8uD7x1WthsossZhDDY+asWL9n+j9dVTM
+         9j+Q==
+X-Gm-Message-State: AOJu0YxzDw6VEMHywuBbWjyHKZM91cq/+Cs4CBZhMAuusuvPni88W29V
+	24OK5Sjyawc3oOAjWMQhFodFuA==
+X-Google-Smtp-Source: 
+ AGHT+IGs2Hs/t9MBGfAzsKBVR39DqTSRg1hCen1Yt9UMQl7lp3mtpPNZr636hYvsxT2wrBmXBziDwg==
+X-Received: by 2002:a5d:56c8:0:b0:332:d3a8:d5a1 with SMTP id
+ m8-20020a5d56c8000000b00332d3a8d5a1mr1442247wrw.8.1700815294775;
+        Fri, 24 Nov 2023 00:41:34 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.33
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:34 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:19 +0100
+Subject: [PATCH v9 08/12] clk: meson: g12a: make VCLK2 and ENCL clock path
+ configurable by CCF
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-8-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=7313;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=E1ITnrCeOZZwla8XsvarlWmq+y6flAzoa91IegwwCKM=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGxdg4+oVUTTR7xe5ICXmS98ywJqY3c8U+/hWga
+ oBmsZEKJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhsQAKCRB33NvayMhJ0fDMEA
+ CKvPk2AVxQRDb9GIJ8u6ldzlSlGeSCfuRU4ecP1zeX03gVQkUITfSqMdaqNXzZV+w9kkhqN0Pmjv3n
+ xU2d9LIR9wzaHfkz992kCL4bSqVcOaEct/MsKlxGGJs4SRwKDB2zoHO1I5zzLQoc5E1J184VLfH5X+
+ NkhMMCCyrll4XUvE+yBtwpjffZCxwgknXTlvNVcorkwJyrnGcFEg/dPILjMm1aARf85aT5rHo+4kRo
+ Ru8RtlPsYm4d8iia4ks4ZQ1OBZlXQPD3Xo/Rrc6meIGkfqFSDKC+YqzRPGkeVhxBp+0NqX1Sglv2DV
+ MYnLgeRiM+NrEhPl3HKwD60SG7/76uZGPfuQsLnSLwljT1s06Q17iWiQ8lczBWN+mYRwFe4ftaca/Y
+ eoR5HtYXU9LhWbIGy0jBWme7fIEH5h1F6vmJYjzfvGg4aWc/8fD7EtCx51enIvEGW6OqsdpAiVJnvi
+ s+Rj50uNvmDbcXgtUClKOifBlSIx+3HqW52zROUuCwg7eLnsA1jUunGPZAqFw+1+3G8wRVDDbfaGcZ
+ ZEQvQfkYyYyYlb12eb3u/sgRiXV8lN4yzb40EqzRGUHGDB3N5MlRVzoktDobZ9g79qbgMk1DgIpzPM
+ 5f0OA4sUFpu2jcgRen1Pjo8fbELZOPQCDEhVeSFyAbnrfo4XLLWDJiJ2MJXA==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004138_132068_97911380 
+X-CRM114-Status: GOOD (  13.96  )
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+In order to setup the DSI clock, let's make the unused VCLK2 clock path
+configuration via CCF.
+
+The nocache option is removed from following clocks:
+- vclk2_sel
+- vclk2_input
+- vclk2_div
+- vclk2
+- vclk_div1
+- vclk2_div2_en
+- vclk2_div4_en
+- vclk2_div6_en
+- vclk2_div12_en
+- vclk2_div2
+- vclk2_div4
+- vclk2_div6
+- vclk2_div12
+- cts_encl_sel
+
+vclk2 and vclk2_div uses the newly introduced vclk regmap driver
+to handle the enable and reset bits.
+
+In order to set a rate on cts_encl via the vclk2 clock path,
+the NO_REPARENT flag is set on cts_encl_sel & vclk2_sel in order
+to keep CCF from selection a parent.
+The parents of cts_encl_sel & vclk2_sel are expected to be defined
+in DT.
+
+The following clock scheme is to be used for DSI:
+
+xtal
+\_ gp0_pll_dco
+   \_ gp0_pll
+      |- vclk2_sel
+      |  \_ vclk2_input
+      |     \_ vclk2_div
+      |        \_ vclk2
+      |           \_ vclk2_div1
+      |              \_ cts_encl_sel
+      |                 \_ cts_encl	-> to VPU LCD Encoder
+      |- mipi_dsi_pxclk_sel
+      \_ mipi_dsi_pxclk_div
+         \_ mipi_dsi_pxclk		-> to DSI controller
+
+The mipi_dsi_pxclk_div is set as RO in order to use the same GP0
+for mipi_dsi_pxclk and vclk2_input.
+
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ drivers/clk/meson/g12a.c | 68 +++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 47 insertions(+), 21 deletions(-)
+
+diff --git a/drivers/clk/meson/g12a.c b/drivers/clk/meson/g12a.c
+index cadd824336ad..fb3d9196a1fd 100644
+--- a/drivers/clk/meson/g12a.c
++++ b/drivers/clk/meson/g12a.c
+@@ -22,6 +22,7 @@
+ #include "clk-regmap.h"
+ #include "clk-cpu-dyndiv.h"
+ #include "vid-pll-div.h"
++#include "vclk.h"
+ #include "meson-eeclk.h"
+ #include "g12a.h"
+ 
+@@ -3165,7 +3166,7 @@ static struct clk_regmap g12a_vclk2_sel = {
+ 		.ops = &clk_regmap_mux_ops,
+ 		.parent_hws = g12a_vclk_parent_hws,
+ 		.num_parents = ARRAY_SIZE(g12a_vclk_parent_hws),
+-		.flags = CLK_SET_RATE_NO_REPARENT | CLK_GET_RATE_NOCACHE,
++		.flags = CLK_SET_RATE_PARENT | CLK_SET_RATE_NO_REPARENT,
+ 	},
+ };
+ 
+@@ -3193,7 +3194,7 @@ static struct clk_regmap g12a_vclk2_input = {
+ 		.ops = &clk_regmap_gate_ops,
+ 		.parent_hws = (const struct clk_hw *[]) { &g12a_vclk2_sel.hw },
+ 		.num_parents = 1,
+-		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3215,19 +3216,32 @@ static struct clk_regmap g12a_vclk_div = {
+ };
+ 
+ static struct clk_regmap g12a_vclk2_div = {
+-	.data = &(struct clk_regmap_div_data){
+-		.offset = HHI_VIID_CLK_DIV,
+-		.shift = 0,
+-		.width = 8,
++	.data = &(struct clk_regmap_vclk_div_data){
++		.div = {
++			.reg_off = HHI_VIID_CLK_DIV,
++			.shift   = 0,
++			.width   = 8,
++		},
++		.enable = {
++			.reg_off = HHI_VIID_CLK_DIV,
++			.shift   = 16,
++			.width   = 1,
++		},
++		.reset = {
++			.reg_off = HHI_VIID_CLK_DIV,
++			.shift   = 17,
++			.width   = 1,
++		},
++		.flags = CLK_DIVIDER_ROUND_CLOSEST,
+ 	},
+ 	.hw.init = &(struct clk_init_data){
+ 		.name = "vclk2_div",
+-		.ops = &clk_regmap_divider_ops,
++		.ops = &clk_regmap_vclk_div_ops,
+ 		.parent_hws = (const struct clk_hw *[]) {
+ 			&g12a_vclk2_input.hw
+ 		},
+ 		.num_parents = 1,
+-		.flags = CLK_GET_RATE_NOCACHE,
++		.flags = CLK_SET_RATE_PARENT | CLK_SET_RATE_GATE,
+ 	},
+ };
+ 
+@@ -3246,16 +3260,24 @@ static struct clk_regmap g12a_vclk = {
+ };
+ 
+ static struct clk_regmap g12a_vclk2 = {
+-	.data = &(struct clk_regmap_gate_data){
+-		.offset = HHI_VIID_CLK_CNTL,
+-		.bit_idx = 19,
++	.data = &(struct clk_regmap_vclk_data){
++		.enable = {
++			.reg_off = HHI_VIID_CLK_CNTL,
++			.shift   = 19,
++			.width   = 1,
++		},
++		.reset = {
++			.reg_off = HHI_VIID_CLK_CNTL,
++			.shift   = 15,
++			.width   = 1,
++		},
+ 	},
+ 	.hw.init = &(struct clk_init_data) {
+ 		.name = "vclk2",
+-		.ops = &clk_regmap_gate_ops,
++		.ops = &clk_regmap_vclk_ops,
+ 		.parent_hws = (const struct clk_hw *[]) { &g12a_vclk2_div.hw },
+ 		.num_parents = 1,
+-		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
++		.flags = CLK_SET_RATE_PARENT | CLK_SET_RATE_GATE,
+ 	},
+ };
+ 
+@@ -3339,7 +3361,7 @@ static struct clk_regmap g12a_vclk2_div1 = {
+ 		.ops = &clk_regmap_gate_ops,
+ 		.parent_hws = (const struct clk_hw *[]) { &g12a_vclk2.hw },
+ 		.num_parents = 1,
+-		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3353,7 +3375,7 @@ static struct clk_regmap g12a_vclk2_div2_en = {
+ 		.ops = &clk_regmap_gate_ops,
+ 		.parent_hws = (const struct clk_hw *[]) { &g12a_vclk2.hw },
+ 		.num_parents = 1,
+-		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3367,7 +3389,7 @@ static struct clk_regmap g12a_vclk2_div4_en = {
+ 		.ops = &clk_regmap_gate_ops,
+ 		.parent_hws = (const struct clk_hw *[]) { &g12a_vclk2.hw },
+ 		.num_parents = 1,
+-		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3381,7 +3403,7 @@ static struct clk_regmap g12a_vclk2_div6_en = {
+ 		.ops = &clk_regmap_gate_ops,
+ 		.parent_hws = (const struct clk_hw *[]) { &g12a_vclk2.hw },
+ 		.num_parents = 1,
+-		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3395,7 +3417,7 @@ static struct clk_regmap g12a_vclk2_div12_en = {
+ 		.ops = &clk_regmap_gate_ops,
+ 		.parent_hws = (const struct clk_hw *[]) { &g12a_vclk2.hw },
+ 		.num_parents = 1,
+-		.flags = CLK_SET_RATE_PARENT | CLK_IGNORE_UNUSED,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3461,6 +3483,7 @@ static struct clk_fixed_factor g12a_vclk2_div2 = {
+ 			&g12a_vclk2_div2_en.hw
+ 		},
+ 		.num_parents = 1,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3474,6 +3497,7 @@ static struct clk_fixed_factor g12a_vclk2_div4 = {
+ 			&g12a_vclk2_div4_en.hw
+ 		},
+ 		.num_parents = 1,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3487,6 +3511,7 @@ static struct clk_fixed_factor g12a_vclk2_div6 = {
+ 			&g12a_vclk2_div6_en.hw
+ 		},
+ 		.num_parents = 1,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3500,6 +3525,7 @@ static struct clk_fixed_factor g12a_vclk2_div12 = {
+ 			&g12a_vclk2_div12_en.hw
+ 		},
+ 		.num_parents = 1,
++		.flags = CLK_SET_RATE_PARENT,
+ 	},
+ };
+ 
+@@ -3561,7 +3587,7 @@ static struct clk_regmap g12a_cts_encl_sel = {
+ 		.ops = &clk_regmap_mux_ops,
+ 		.parent_hws = g12a_cts_parent_hws,
+ 		.num_parents = ARRAY_SIZE(g12a_cts_parent_hws),
+-		.flags = CLK_SET_RATE_NO_REPARENT | CLK_GET_RATE_NOCACHE,
++		.flags = CLK_SET_RATE_PARENT | CLK_SET_RATE_NO_REPARENT,
+ 	},
+ };
+ 
+@@ -3717,7 +3743,7 @@ static struct clk_regmap g12a_mipi_dsi_pxclk_sel = {
+ 		.ops = &clk_regmap_mux_ops,
+ 		.parent_hws = g12a_mipi_dsi_pxclk_parent_hws,
+ 		.num_parents = ARRAY_SIZE(g12a_mipi_dsi_pxclk_parent_hws),
+-		.flags = CLK_SET_RATE_NO_REPARENT,
++		.flags = CLK_SET_RATE_PARENT | CLK_SET_RATE_NO_REPARENT,
+ 	},
+ };
+ 
+@@ -3729,7 +3755,7 @@ static struct clk_regmap g12a_mipi_dsi_pxclk_div = {
+ 	},
+ 	.hw.init = &(struct clk_init_data){
+ 		.name = "mipi_dsi_pxclk_div",
+-		.ops = &clk_regmap_divider_ops,
++		.ops = &clk_regmap_divider_ro_ops,
+ 		.parent_hws = (const struct clk_hw *[]) {
+ 			&g12a_mipi_dsi_pxclk_sel.hw
+ 		},
+
+From patchwork Fri Nov 24 08:41:20 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467213
+X-Patchwork-Delegate: neil.armstrong@linaro.org
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BC6CC636CB
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:42:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=NPoFx835gCj7eN3YSRQ7mSSf1RLGDuJ7eouH8nhdQwk=; b=YmDvXLLhM2bhTJ
+	sZ8tx5G4YpAzJsCQ/iw35+Cv5pZJf9v/QP1Ba2Q7zIR6vK/Pkrj8ZYMrPn/zkDEvbFBZEv+I8Zp30
+	nVhI/o9sLUnzAXeLrszZP2hsa+t3K7WIU8b8XAQ0byK+eD17idWwQfjBnb6DHeWlnFKdadLhYUvMa
+	S+rkAVO895Tr62kWaafwvqnzX+fDwHIRMn2EHXfP8uVD87uHcJ69h6I4iwJe0f++WuZ01l0sA5/3E
+	6GYVlpBimYD91U4zTCmMfsbw0I31Z04gjApwSorAbt6kBXCb1MVgtCpWHetFbjeB9jEGZpncmbMx9
+	YtDOreulS7rB8aiLn0/g==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6RlQ-006YZF-2n;
+	Fri, 24 Nov 2023 08:42:16 +0000
+Received: from mail-wr1-x432.google.com ([2a00:1450:4864:20::432])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkp-006Xs9-2t
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:44 +0000
+Received: by mail-wr1-x432.google.com with SMTP id
+ ffacd0b85a97d-332e545e852so665803f8f.1
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:37 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815296; x=1701420096;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=CvmOEb1ckbbB9zBBB0o82fMDjd1uz7C5pNwKHHdJSYY=;
+        b=xFQAjFRwyX88odexdb4rIe/98mIbL6fgiGJwgURnBqsJU42Gb1QOJdJn5fNTKlTuQA
+         6tiAIj3oyyzFWMwVKxlRozCai5C9oDk2PRHfs34xL3s0fIT75B+9fOy7GNjVbRGdOq5+
+         KBb15Iv4r83AfZGaxopBKZvKlmJ8YtSYy0v6cudPufh4++CAdHKZVH8c38WGBUHRVy00
+         bYOGDOpHZxQWRM6x+4QpEIhau/4tI2RFajPJD5LnKZ0ApMn9sBaCYt0oUAniwy3tcA7K
+         +EwRKu2JZ1AbuO9onkZOa9a6ERcwk2n+jw4F/AAvJZu0jouARym5GN1t/nlhftk45LqJ
+         vHag==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815296; x=1701420096;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=CvmOEb1ckbbB9zBBB0o82fMDjd1uz7C5pNwKHHdJSYY=;
+        b=jlVnfb67MAd3ViXQR2hU+wlfhCvTgmG/Q7Lxwv4u/w93qCxviYAmgOrbAGpYqNUg84
+         iTuCqrxEkCJjGPJxaeK3b9OhPyqzGO7EXOy8pkQPNlH84R0ag4hfw8AWstxKIfuOh57o
+         iIMDNvrb4vg07/Biu0+0H41I0szmj53KBKS+e5Yu3OjJXII7tmtLFHWmWTm0M++cZ5Tm
+         mM6MmNSUlSLIRszvG+d+XHAUxdcERMSxjbvv8f+yL80MsMnjlo5AW4ApGep4T0SRVChG
+         mmJ6RsLuWnkoGuKG2lKutqB87AbmIU9H/qecU9vXtZVbVZ7BYXkmtje3BXECNn+uNmS4
+         MvxA==
+X-Gm-Message-State: AOJu0YxWSfC6dgfa1F580hkno9rBgliDgRJKsg93Gbw6KK9HfVB/iwpJ
+	LX2XrEHJmpbaDq9uBGFWUH2mag==
+X-Google-Smtp-Source: 
+ AGHT+IG8oV5vR52wvy6RDc5unbTyrdle+A+ZJEr+VxtPQs/QhVcyXpGgV/X216xPtP580nNksVLMHg==
+X-Received: by 2002:adf:e90d:0:b0:332:c585:4005 with SMTP id
+ f13-20020adfe90d000000b00332c5854005mr1606864wrm.13.1700815296061;
+        Fri, 24 Nov 2023 00:41:36 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:35 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:20 +0100
+Subject: [PATCH v9 09/12] drm/meson: gate px_clk when setting rate
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-9-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1213;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=6wj78w5SzMRVYfTnHYpi/keB3/pw6jAwnhprIG9LUDw=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGx2k+lycVMXd4CGKdFmLLkeE1cSxXUGJmEH5Nt
+ WyqAnCOJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhsQAKCRB33NvayMhJ0XmHD/
+ 0a1u9pKRgdiqiNPEVgNnpvsoHZQCkWeGDJUhl/1pzTgkKKwI42m+N0fYEJSu+tGjebpr24UosgSDpb
+ Hdwxq8/ts9nxnJrpXxDKUQgCs66lF/JOr3TntrVHMUh+z9IoiZheukKo7E9q9hXdTrqIJDNJ6MBrCr
+ M6N8VZAuqfRdGbaEpd7FEX5mQCaN6lUruEfC/rV7D1PF/jSc1UDjGevThxuJC3ngOF08pchl00bddm
+ Tl6iBVLDDzjvwipVuSd0y53J7R3+yvUhONC4GYqZKlYAQ+lamPVJjDCzLqhkxSbSn71KeYkm8g5keW
+ e33PL7GAouKsNVgsiK2a32ZBG/N/MEH4IGTvqZq8Bwi/zy1O2K3zixX8Dm1NV/2CjgF1gFU2MSdMCd
+ fTAQjiTQX2Sui2sTWsMRP5rhM75Thas4AAr7DC/2g4HCUNiYNlpJPLrPRDSeI9wEYBFezagPZ7HOIY
+ 3gueBoeolSSLsKEeZWRckNUMmjLChDMtdCh7qdEAwP01Ir5DHxrQZFHyRgShFyj10HMjIRjiPF0svt
+ /rjcJszqh8GJBUduVrIMd2hdP+4KWKXqmPCam/JWTZn2V40nReclE42GEEi53eFlaETzHcQuRz6uIp
+ F/Up8XwbOiSWancRcIvIDmtt5uDD7vWHX6/nM/NUWEKJQtVjLKuxBwhIILpQ==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004140_061134_A06A243A 
+X-CRM114-Status: UNSURE (   9.56  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+Disable the px_clk when setting the rate to recover a fully
+configured and correctly reset VCLK clock tree after the rate
+is set.
+
+Fixes: 77d9e1e6b846 ("drm/meson: add support for MIPI-DSI transceiver")
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ drivers/gpu/drm/meson/meson_dw_mipi_dsi.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/gpu/drm/meson/meson_dw_mipi_dsi.c b/drivers/gpu/drm/meson/meson_dw_mipi_dsi.c
+index e5fe4e994f43..72abe2057ec3 100644
+--- a/drivers/gpu/drm/meson/meson_dw_mipi_dsi.c
++++ b/drivers/gpu/drm/meson/meson_dw_mipi_dsi.c
+@@ -95,6 +95,7 @@ static int dw_mipi_dsi_phy_init(void *priv_data)
+ 		return ret;
+ 	}
+ 
++	clk_disable_unprepare(mipi_dsi->px_clk);
+ 	ret = clk_set_rate(mipi_dsi->px_clk, mipi_dsi->mode->clock * 1000);
+ 
+ 	if (ret) {
+@@ -103,6 +104,12 @@ static int dw_mipi_dsi_phy_init(void *priv_data)
+ 		return ret;
+ 	}
+ 
++	ret = clk_prepare_enable(mipi_dsi->px_clk);
++	if (ret) {
++		dev_err(mipi_dsi->dev, "Failed to enable DSI Pixel clock (ret %d)\n", ret);
++		return ret;
++	}
++
+ 	switch (mipi_dsi->dsi_device->format) {
+ 	case MIPI_DSI_FMT_RGB888:
+ 		dpi_data_format = DPI_COLOR_24BIT;
+
+From patchwork Fri Nov 24 08:41:21 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467246
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0AC3AC61DF4
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:43:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=0TC3o9hevuYH6eMZZZs/4ZqRijW4LhjHPhBpY5FTOZE=; b=kMkEo6nDWDnG+3
+	uHwwNDF1O8OGYFbuUvgP/8Y5azdGFUM7Jl810AsYvxohdMFNRJfoSZZBJ3urGMdeU8es2Vvp1V8EO
+	MNkFVivjcc1RUEjuTN4PJxDNEhFS1CrazE/DV4VGRT8UPaguvKF8Z9Jm6P5SNEb508Qn7TeKxHl5J
+	ZcyDgStNdflMwfb9dTI3eimqydw6oww9zew78W7tN1mXuE6yWWVylpS8QSP1JltHh5HBo2IelfqmC
+	1ZEdBf3F8mlRyjaRDlQWMWKilXg3p1ffluVKNx85jVKn/W7F2BiLBGBy37vQ1h4KiKAtSKNrF0wB+
+	CCRQAgwCca2ojiDnTr3g==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rmf-006Z9u-0F;
+	Fri, 24 Nov 2023 08:43:33 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rmd-006Z97-17
+	for linux-amlogic@bombadil.infradead.org;
+	Fri, 24 Nov 2023 08:43:31 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
+	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
+	From:Sender:Reply-To:Content-ID:Content-Description;
+	bh=fuSB6hXQgNnhjhBZYMiuriEMaNCWnOiIqJ/w1UyCkVs=; b=QLgMkah9K/sToSzFlQg7etItA0
+	iYikwgviyLV5yW+rsMjjN9DljY/kRVxez+8mrnoteGZrU7uwb3Q75EuQjPWutQys/eBBVdbvOMoti
+	WFj3CZkaU5FWyGrNV1mlR9VuD9H1S3NP6qKjg6jeAV7qlFU6LnHK2/kyZPA3aj1ubWi/zd+7ZAmJ0
+	Bbntf6Nh7ywPLZvtV5tH8TB3xjXD5RtRyoDgH3SNt3PGG7bwLXogRuzEh+NB09OBWIRcwOtEdtLPN
+	PRI9/g5LXeS4M/EQVoORkqN/znY1IELJ0TvlH8E2nUyFqXCo4REBSJHe2Y+2yFcyJ0YCp7SlgD/cN
+	/5Xf2H+w==;
+Received: from mail-wr1-x42d.google.com ([2a00:1450:4864:20::42d])
+	by desiato.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6RlI-00DoTP-2r
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:43:26 +0000
+Received: by mail-wr1-x42d.google.com with SMTP id
+ ffacd0b85a97d-32fd7fc9f19so1012512f8f.2
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815297; x=1701420097;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=fuSB6hXQgNnhjhBZYMiuriEMaNCWnOiIqJ/w1UyCkVs=;
+        b=sh2MRu6tIPrWjlvqjRpEl7FKvZeSrG5dhKd1hbpuHIak2zOQxgPWbvd5C/xduRLqpZ
+         aamWKaIIrWFnBF9DtU/fK7OwD2vB4sAlpmCxwc103fVME0XgkEcAi1GwhZZVzSNG/h00
+         /eUYeHmxgDQv6Gz/81C7YEAxRKIcIK0In/PJ0w1u1oceefePI4k0VfXxxioWV7jesy3a
+         AM9oRi/Fv/g3JQbG0MSib3rRZJJx8vgCgi+HPxtev9W42WenMVVwT4wEyOHYFNpcrQ/h
+         F05AD4iLuoBXKRSJ0PwtcM2vMdY8OHc3JTsm2y3avuJYUPYv/cDzCVDYtVCXT/jchqE/
+         9Tyw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815297; x=1701420097;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=fuSB6hXQgNnhjhBZYMiuriEMaNCWnOiIqJ/w1UyCkVs=;
+        b=LZ7LueL4JnPgmnXMDp/C1342dD7Up1FQfhN5B7AH919JV9D2HM+HIyTe3yY3A1XMpa
+         bLaYwk3Pa7vVwuilxIkd+VuKpWE2sBgJ6z2hW02X7k7hCVrNX/A4wHE+i3l5IHikjUGW
+         H41Zn3GuouucWZp6KM1ory7vIZAZjVqot+kA+JIRaP0HprTBwbLU9MFy34OX+441+sii
+         nRD2PW67hUKrOMdZ0KKEYzmKRhuugzclSMC7TywmEOxnOt3/dpHGDCleIvrPcXIQpZTy
+         +0VXPmYAN8eO1Gn+mhe5W4LPYAKLbjGDBsHnnHTF+Gkc85xbLk5QMHTaOo6kss7g59Ag
+         miFQ==
+X-Gm-Message-State: AOJu0YzuWmWXt3NvrY/QNIe5h5dzBcCyQMh4enNGSwupx3cjkujSkv9f
+	JuCRiCPxix94xO1cTYGoAJz/yg==
+X-Google-Smtp-Source: 
+ AGHT+IE2UZwrK/cWwh2rBEoUeFF98uKEtaA7VGpaEvV3hUAbSjxLyp4wCEN5Kmi6LYzxAyXCY0lmQg==
+X-Received: by 2002:adf:fa85:0:b0:332:e650:dad8 with SMTP id
+ h5-20020adffa85000000b00332e650dad8mr1476988wrr.17.1700815297315;
+        Fri, 24 Nov 2023 00:41:37 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:36 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:21 +0100
+Subject: [PATCH v9 10/12] arm64: meson: g12-common: add the MIPI DSI nodes
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-10-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3028;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=xeZV8gmIC9/2/oObVVqqYZ0sOhta5dqkacXris9lM8k=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGxXEnizWSf7+B7ZodjJhE2lCrlnGpyxQU6g8T2
+ sVrEwh2JAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhsQAKCRB33NvayMhJ0bhED/
+ 95+sFAipBUxjMeFLlGpWzaX+aaME314YyQy85iWqpiZSfTzIyk921PAf5/nQNjVMjWaMT9bcFyVmnC
+ FYUT74aRBf8tx27OxN3+m40y2pVnIpPWDTcF0ekBk2Ii6SREBBVj0MXbgnlstPlamiGjK3CIUu0OU1
+ FbuFRZazTjVe5x5FSc4h7zk6FwjemlqYl65SqHSCtdbCfOS1+vPHsb1pcSsKrWU59gbAw/5LivKxJ+
+ NBv2BGqC3Em8uWoN6/XTIh+z3ToLktXvqE++ydJMjDTrdkxu1arhSfw32ZjafCMpCtCSwIl7WihPcX
+ UxZj3JVxYfyrkgbVsYqnABrWZ/ixlYXKD6hCdBKZJFBs+GhGRnFZ/x3hMih6VUoovnrJTXZDzgCA+n
+ /ru3vSAjKq2HXFlNWPAKZzGzBtkNUX5zwnBrO61/4s8Sy4lKNSX9rueZnAvNPRjL8BwhBtnvcG6Tvf
+ 2z2zzTC1oAFh1O4ZCe1Eut/J+I8JWsKg7UWdpavDsIz1tM4sTf76AQ/WLFze1cXHTr0lqhm8loXERC
+ tdYnAsXCiHj5km2w7X+fj7Gg70xdzOe6zjiwdeBaSXvycF22X3dZvbD2l0HU+8fj3tTpORggJCNps4
+ S4ASkJk+fCkHLMPIvP+zfyVCVk4d+lIdiJq21ZrA4X7InDu6EXUEvM+am9zQ==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_084211_542646_5379A9CF 
+X-CRM114-Status: UNSURE (   8.62  )
+X-CRM114-Notice: Please train this message.
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+Add the MIPI DSI Analog & Digital PHY nodes and the DSI control
+nodes with proper port endpoint to the VPU.
+
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi | 70 +++++++++++++++++++++++
+ 1 file changed, 70 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
+index ff68b911b729..7300408262d5 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
+@@ -1663,9 +1663,28 @@ pwrc: power-controller {
+ 								       <250000000>,
+ 								       <0>; /* Do Nothing */
+ 					};
++
++					mipi_analog_dphy: phy {
++						compatible = "amlogic,g12a-mipi-dphy-analog";
++						#phy-cells = <0>;
++						status = "disabled";
++					};
+ 				};
+ 			};
+ 
++			mipi_dphy: phy@44000 {
++				compatible = "amlogic,axg-mipi-dphy";
++				reg = <0x0 0x44000 0x0 0x2000>;
++				clocks = <&clkc CLKID_MIPI_DSI_PHY>;
++				clock-names = "pclk";
++				resets = <&reset RESET_MIPI_DSI_PHY>;
++				reset-names = "phy";
++				phys = <&mipi_analog_dphy>;
++				phy-names = "analog";
++				#phy-cells = <0>;
++				status = "disabled";
++			};
++
+ 			usb3_pcie_phy: phy@46000 {
+ 				compatible = "amlogic,g12a-usb3-pcie-phy";
+ 				reg = <0x0 0x46000 0x0 0x2000>;
+@@ -2152,6 +2171,15 @@ hdmi_tx_out: endpoint {
+ 					remote-endpoint = <&hdmi_tx_in>;
+ 				};
+ 			};
++
++			/* DPI output port */
++			dpi_port: port@2 {
++				reg = <2>;
++
++				dpi_out: endpoint {
++					remote-endpoint = <&mipi_dsi_in>;
++				};
++			};
+ 		};
+ 
+ 		gic: interrupt-controller@ffc01000 {
+@@ -2189,6 +2217,48 @@ gpio_intc: interrupt-controller@f080 {
+ 				amlogic,channel-interrupts = <64 65 66 67 68 69 70 71>;
+ 			};
+ 
++			mipi_dsi: dsi@7000 {
++				compatible = "amlogic,meson-g12a-dw-mipi-dsi";
++				reg = <0x0 0x7000 0x0 0x1000>;
++				resets = <&reset RESET_MIPI_DSI_HOST>;
++				reset-names = "top";
++				clocks = <&clkc CLKID_MIPI_DSI_HOST>,
++					 <&clkc CLKID_MIPI_DSI_PXCLK>,
++					 <&clkc CLKID_CTS_ENCL>;
++				clock-names = "pclk", "bit", "px";
++				phys = <&mipi_dphy>;
++				phy-names = "dphy";
++				#address-cells = <1>;
++				#size-cells = <0>;
++				status = "disabled";
++
++				assigned-clocks = <&clkc CLKID_MIPI_DSI_PXCLK_SEL>,
++					 <&clkc CLKID_CTS_ENCL_SEL>,
++					 <&clkc CLKID_VCLK2_SEL>;
++				assigned-clock-parents = <&clkc CLKID_GP0_PLL>,
++					 <&clkc CLKID_VCLK2_DIV1>,
++					 <&clkc CLKID_GP0_PLL>;
++
++				ports {
++					#address-cells = <1>;
++					#size-cells = <0>;
++
++					/* VPU VENC Input */
++					mipi_dsi_venc_port: port@0 {
++						reg = <0>;
++
++						mipi_dsi_in: endpoint {
++							remote-endpoint = <&dpi_out>;
++						};
++					};
++
++					/* DSI Output */
++					mipi_dsi_panel_port: port@1 {
++						reg = <1>;
++					};
++				};
++			};
++
+ 			watchdog: watchdog@f0d0 {
+ 				compatible = "amlogic,meson-gxbb-wdt";
+ 				reg = <0x0 0xf0d0 0x0 0x10>;
+
+From patchwork Fri Nov 24 08:41:22 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467247
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15997C61DF4
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:44:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=Ab/FpF+AYcRkiDMCeC45PmmmtosJdPg/5ctma0LXTqI=; b=fPmTFJzVGpvMtg
+	vuHdyJdd/YRuKHrTnmWt0tezelOWxScZAZ99R9yknApyxIBnIE8GiINCztpobX8Q+mPJAva7+F+vM
+	xgIiYiqmVuv1nxTD2WlgnsdW3TkaIFy2SRupBtK4FyZliyGf3fqSNEdWetWLS5vVJSy09R+08XdYf
+	iTlHcNIHfUjqey2N9lddwLnL7knKy0saUJbobcO1KFismBJtsl1KXugZ52e/hd4DMcTe3cHO9QdYo
+	O2cUQP16ZHBtyo6YPTlIf+OfMztH1Iw6/3Xt2Iebkh8zG+tXTTQk7FXj9ytX7FiIeInjrusmDIWTa
+	4+1QSPd/pPmbIKkhG54A==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6RnP-006ZN2-38;
+	Fri, 24 Nov 2023 08:44:20 +0000
+Received: from desiato.infradead.org ([2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6RnO-006ZMd-1v
+	for linux-amlogic@bombadil.infradead.org;
+	Fri, 24 Nov 2023 08:44:18 +0000
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=Cc:To:In-Reply-To:References:
+	Message-Id:Content-Transfer-Encoding:Content-Type:MIME-Version:Subject:Date:
+	From:Sender:Reply-To:Content-ID:Content-Description;
+	bh=8oTd5W7j5AQVAM1KswlxlUS9UNv/MwhkvP27dPDkrG0=; b=WyQvQ2NQMdfFoYQMvn0pVmRSYJ
+	9GBOo4k0Wny2XaxtwxAmQM1dalXqn5dAnKbiiIklow87i2MC+RnsW1eqKVVfFcoGT23M4XvwRK6cM
+	G/HDMx1WxK90DBD3trU6/QF/vb1jTfnzQ78+xVIoJ1ONAW0M6VPUKS13izBOXMBI/wFqImzpdLu5+
+	9q7tKuhHGWfdQvRsTMqk63HOXML4zqs4aRWhvLRNzmEmJjC+WqnDNOsEcIconjR7txl4zQG5lh7y2
+	KTJFxq2h/TBN/J7fEVcFxRE1kxpwqXO/MGBBSRZ2LIXhH3arNmWt4fEBGGRboiEoH61shaRZUkDKL
+	6CrlFl6g==;
+Received: from mail-wr1-x42c.google.com ([2a00:1450:4864:20::42c])
+	by desiato.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rla-00DoTU-1Q
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:44:15 +0000
+Received: by mail-wr1-x42c.google.com with SMTP id
+ ffacd0b85a97d-32faea0fa1fso926984f8f.1
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815299; x=1701420099;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8oTd5W7j5AQVAM1KswlxlUS9UNv/MwhkvP27dPDkrG0=;
+        b=G22HcYIIfzmdaeMB602h8FAS5rnex64f7wSSkkW5wxR6dFhmYYw3ykw6Ku8MGnMsF5
+         PDvnSJ2I6uxtzSVS6WC0VSLhYmEOftgj0rPylG8W+uPqbkMI/1gbXAZReT8zJTcing47
+         esAvwu1w2Nn+w42Egn0FIZ37WX4Af+qeXN5WBMIbO5MFrkBzaE8AXML2V35R07rIYI6Z
+         pjcheAdS4OmrNF7zPpqdnUdTi0E1YKlbW3VR4FlfzHVTckRWXEj0BsSCPvSvcOC3Lc2q
+         yCx9ldAWtB3OwCdLCFvk3zavA6AGpbvaudJAg99Rv45oPjHAb+Fex0ssxGIzoHx0IUbG
+         PrQg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815299; x=1701420099;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=8oTd5W7j5AQVAM1KswlxlUS9UNv/MwhkvP27dPDkrG0=;
+        b=KWBn/w4x+H79RaIz6lNgJNTzvwQZ+fwKPj05+hXO3FWeBKCitRT0z8d2Hp18rDVz88
+         i71XtaUP4cVoxCAVfgSC5nOqUgwwU03cYbNLhaengBzi2Js5Bn+pgEJfXN8p+Xr11Q8b
+         /L0DDhMwxCPgUK5NX88Xt8KZccKkJhAjAziULkAHWIO/mLJiImB7dTFUxIepca17XeoS
+         mFMWK/ovxUXHajxOm8KgYp5GHeG73PztzLNLg0iibj06kAvOyyMj57LVPmySxTlo+79W
+         ekCPW3yHIClJBRRFfh946AFT52ZvaDvstMgHOGofoFbhEgw+qSTMg6gl/tceSuHcr6Wm
+         xGQQ==
+X-Gm-Message-State: AOJu0Yx075nRAMGURUIDc+4L7GLkdCDO0CtYd5/7Q6QrAqTCZ8vp6g55
+	oowBQHEGsmyy51XaPSnvrK3ulQ==
+X-Google-Smtp-Source: 
+ AGHT+IFGqKrpRXgPFNo8Nkj0CWSwWM0Jqha5XIccXvobCjVcVPFXEmRnh1JCVbV1DXZZuPNvfqYsVg==
+X-Received: by 2002:adf:ea8e:0:b0:332:e697:3a71 with SMTP id
+ s14-20020adfea8e000000b00332e6973a71mr1425565wrm.6.1700815298893;
+        Fri, 24 Nov 2023 00:41:38 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:38 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:22 +0100
+Subject: [PATCH v9 11/12] DONOTMERGE: arm64: meson: khadas-vim3l: add DSI
+ panel
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-11-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3778;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=vVnkVglKsbgZynNLE29purYGyqaY5Zp+VaoRvt80IUM=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGyfllM1YRje8HUcgrMolQ8GmfhPjEmFfKjkobM
+ v1z+k2eJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhsgAKCRB33NvayMhJ0e6nEA
+ CuiWO/LKQiz4QcUUBOWcKn2vcKoGaXbd5lgmuGG5W9x6QWdtqriO/sRYcMO6ayXATzZqtJiRrJ3lp1
+ J0grDt38OP49YRZmYRmtThzUcW5CUIMzx4g6tVbVlZqS0MBP0WuGjk1RHZCACfubMDJNNxzDtl/Clq
+ YIQMNIytm3iQkSd4TzVEG3S8JcisprJ8z839AfEaABbx7CmywmXrsv73LarMB7Keqx/jfYD6GjSKoZ
+ hNvIePUgTGDspHspJTTUOX/mGRg7qip5ChOGcklAkHPWR9rnEVG6UMhX8uCQcLPaWdaFv0qOeoIGwR
+ xuAvobmfe1vZBRCYf1jVFGRPMQ9qrLRYJLhuSyhgsEyC4k8Ml0ie9/hsqj1skwDjlseftk4MFKL1oS
+ +frlZ5e0rEllrMSSMzZhx+uYNLlSzvD8b9dKfZipNXDMGAyd11BjTnU94l6ZLwolrqCLD45vXz72OI
+ 5aZvoE4Ac0l3Tf81K+wwtFRiUC4LlEf7xozrhbbx5GCZyt2h5CeeFx6KIE3bP+sgmSOMbil1E17fxH
+ U7qsAyLvAXhyhLW2X8Obi0C0uA5AW5LsXQMl8EmJjGLJyomUa6t3yg+N1wmw/13o4YHI4atFZkeEVJ
+ dMoLfwx/8UEWlRW+o1BjZ7ypcqv/xxXHTSeSthG4zknnIYHEcgqYHlFTOkTA==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_084326_690943_8B4A8B04 
+X-CRM114-Status: GOOD (  10.96  )
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+This add nodes to support the Khadas TS050 panel on the
+Khadas VIM3 & VIM3L boards.
+
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ .../boot/dts/amlogic/meson-g12b-khadas-vim3.dtsi   |  2 +-
+ arch/arm64/boot/dts/amlogic/meson-khadas-vim3.dtsi | 74 ++++++++++++++++++++++
+ .../boot/dts/amlogic/meson-sm1-khadas-vim3l.dts    |  2 +-
+ 3 files changed, 76 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b-khadas-vim3.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12b-khadas-vim3.dtsi
+index 16dd409051b4..81c3057143b4 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12b-khadas-vim3.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-g12b-khadas-vim3.dtsi
+@@ -98,7 +98,7 @@ &pwm_ab {
+ };
+ 
+ &pwm_AO_cd {
+-	pinctrl-0 = <&pwm_ao_d_e_pins>;
++	pinctrl-0 = <&pwm_ao_c_6_pins>, <&pwm_ao_d_e_pins>;
+ 	pinctrl-names = "default";
+ 	clocks = <&xtal>;
+ 	clock-names = "clkin1";
+diff --git a/arch/arm64/boot/dts/amlogic/meson-khadas-vim3.dtsi b/arch/arm64/boot/dts/amlogic/meson-khadas-vim3.dtsi
+index 514a6dd4b124..aafc37863f2e 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-khadas-vim3.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-khadas-vim3.dtsi
+@@ -40,6 +40,14 @@ button-function {
+ 		};
+ 	};
+ 
++	panel_backlight: backlight {
++		compatible = "pwm-backlight";
++		pwms = <&pwm_AO_cd 0 25000 0>;
++		brightness-levels = <0 255>;
++		num-interpolated-steps = <255>;
++		default-brightness-level = <200>;
++	};
++
+ 	leds {
+ 		compatible = "gpio-leds";
+ 
+@@ -358,6 +366,23 @@ rtc: rtc@51 {
+ 	};
+ };
+ 
++&i2c3 {
++	status = "okay";
++	pinctrl-0 = <&i2c3_sda_a_pins>, <&i2c3_sck_a_pins>;
++	pinctrl-names = "default";
++
++	touch-controller@38 {
++		compatible = "edt,edt-ft5206";
++		reg = <0x38>;
++		interrupt-parent = <&gpio_intc>;
++		interrupts = <66 IRQ_TYPE_EDGE_FALLING>; /* GPIOA_5 */
++		reset-gpios = <&gpio_expander 6 GPIO_ACTIVE_LOW>;
++		touchscreen-size-x = <1080>;
++		touchscreen-size-y = <1920>;
++		status = "okay";
++	};
++};
++
+ &ir {
+ 	status = "okay";
+ 	pinctrl-0 = <&remote_input_ao_pins>;
+@@ -365,6 +390,55 @@ &ir {
+ 	linux,rc-map-name = "rc-khadas";
+ };
+ 
++&mipi_dsi {
++	status = "okay";
++
++	assigned-clocks = <&clkc CLKID_GP0_PLL>,
++			  <&clkc CLKID_MIPI_DSI_PXCLK_SEL>,
++			  <&clkc CLKID_MIPI_DSI_PXCLK>,
++			  <&clkc CLKID_CTS_ENCL_SEL>,
++			  <&clkc CLKID_VCLK2_SEL>;
++	assigned-clock-parents = <0>,
++				 <&clkc CLKID_GP0_PLL>,
++				 <0>,
++				 <&clkc CLKID_VCLK2_DIV1>,
++				 <&clkc CLKID_GP0_PLL>;
++	assigned-clock-rates = <960000000>,
++			       <0>,
++			       <960000000>,
++			       <0>,
++			       <0>;
++
++	panel@0 {
++		compatible = "khadas,ts050";
++		reset-gpios = <&gpio_expander 0 GPIO_ACTIVE_LOW>;
++		enable-gpios = <&gpio_expander 1 GPIO_ACTIVE_HIGH>;
++		power-supply = <&vcc_3v3>;
++		backlight = <&panel_backlight>;
++		reg = <0>;
++
++		port {
++			mipi_in_panel: endpoint {
++				remote-endpoint = <&mipi_out_panel>;
++			};
++		};
++	};
++};
++
++&mipi_analog_dphy {
++	status = "okay";
++};
++
++&mipi_dphy {
++	status = "okay";
++};
++
++&mipi_dsi_panel_port {
++	mipi_out_panel: endpoint {
++		remote-endpoint = <&mipi_in_panel>;
++	};
++};
++
+ &pcie {
+ 	reset-gpios = <&gpio GPIOA_8 GPIO_ACTIVE_LOW>;
+ };
+diff --git a/arch/arm64/boot/dts/amlogic/meson-sm1-khadas-vim3l.dts b/arch/arm64/boot/dts/amlogic/meson-sm1-khadas-vim3l.dts
+index 9c0b544e2209..cb52a55ab70a 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-sm1-khadas-vim3l.dts
++++ b/arch/arm64/boot/dts/amlogic/meson-sm1-khadas-vim3l.dts
+@@ -76,7 +76,7 @@ &cpu3 {
+ };
+ 
+ &pwm_AO_cd {
+-	pinctrl-0 = <&pwm_ao_d_e_pins>;
++	pinctrl-0 = <&pwm_ao_c_6_pins>, <&pwm_ao_d_e_pins>;
+ 	pinctrl-names = "default";
+ 	clocks = <&xtal>;
+ 	clock-names = "clkin1";
+
+From patchwork Fri Nov 24 08:41:23 2023
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+X-Patchwork-Submitter: Neil Armstrong <neil.armstrong@linaro.org>
+X-Patchwork-Id: 13467214
+Return-Path: 
+ <linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org>
+X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
+	aws-us-west-2-korg-lkml-1.web.codeaurora.org
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [198.137.202.133])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D97EC61D97
+	for <linux-amlogic@archiver.kernel.org>;
+ Fri, 24 Nov 2023 08:42:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=lists.infradead.org; s=bombadil.20210309; h=Sender:
+	Content-Transfer-Encoding:Content-Type:List-Subscribe:List-Help:List-Post:
+	List-Archive:List-Unsubscribe:List-Id:Cc:To:In-Reply-To:References:Message-Id
+	:MIME-Version:Subject:Date:From:Reply-To:Content-ID:Content-Description:
+	Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:
+	List-Owner; bh=9xT1I3TvuRSLSzWf1Ku0flSnmga+Goba3nfvKS+VO5o=; b=e9POVWhsYsf6rT
+	jlNiCkrvqR0ORnEjSmLT7jRQLTLiowDq3oQ+TZ2jiaHAw+UCV8uyjFE8zKYqHNLkdNLIBQkX3QAz5
+	UA8cAJMpfzaVGgU6KU9EKaF5m1DCbaGKdg07j/+AKv/cduTYX5Dcpvy8zseasqNMgrd6jl+Z5O96s
+	u8EjqF9b+YeJ9bvlUxnG6VE5GsQ8w2i4+zJUwU89hTatjoQSE758dJyNwYC7fvEJ03Hj47NXO+Hc8
+	3zFusts6JEZozkmfIfmJifWMdwfKvJT3vyJoTbgJx92kSJj80Tt2knAdtOtrJqeOfMIb8mXul3hbS
+	EMfIVbYrwgDXaqbxA1hQ==;
+Received: from localhost ([::1] helo=bombadil.infradead.org)
+	by bombadil.infradead.org with esmtp (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rlc-006Yif-1u;
+	Fri, 24 Nov 2023 08:42:28 +0000
+Received: from mail-wm1-f46.google.com ([209.85.128.46])
+	by bombadil.infradead.org with esmtps (Exim 4.96 #2 (Red Hat Linux))
+	id 1r6Rkt-006XyO-2Z
+	for linux-amlogic@lists.infradead.org;
+	Fri, 24 Nov 2023 08:41:49 +0000
+Received: by mail-wm1-f46.google.com with SMTP id
+ 5b1f17b1804b1-4083f613272so11649485e9.1
+        for <linux-amlogic@lists.infradead.org>;
+ Fri, 24 Nov 2023 00:41:42 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1700815300; x=1701420100;
+ darn=lists.infradead.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=rRD0/XbQYtAW0UShy7dQxS5NCjY0yRMA96IAc7AjvhE=;
+        b=GeuEpqAsltfSNA1ysNh3dFZ7nkCIXavoyab1fYcfEWCzq2PpcnabRjChq1Fj5AJ31j
+         LlkewXCrMXl0C0QT4OvE13669ILnqq5a1Zmme2rCNb7qOtR7KN4ADVotS6NX7Fv/2KNw
+         Zb2NG9TCd7qF7HbcI7sXtvP5NyEkHv06Xb+IlOzHnEteF15AhZYHRL40qEUFQP1/5nzp
+         OaCFY4eAw5xJoU9wAsbSttOjEwywRKGUZmd0XOEurROyIYGJA5rQUgIHxbImjXxo7q3D
+         9+DHkr8UBIyrwjsfD4gNTFH+s7/qG0sFMpumu38v/KpMLTFfdJel8L1i7D2DiL7XGY6n
+         9bzQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1700815300; x=1701420100;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=rRD0/XbQYtAW0UShy7dQxS5NCjY0yRMA96IAc7AjvhE=;
+        b=fFCnKHGNtUFxJFB9oX7weBSCOLIpI1Wd+cOmXgrR+nb4J06rb3tIVC4NQF4oK2r5kG
+         9E+YXfNimAdmZhcgW1roOgTnLtNHbuiUfZkJs5A2vkUhbRq0//uQlm4Kq5tgdBHqHK0c
+         5FnFPVudiV0qOQ9Aq1pldCEOmT/2Na0SH7hgscEhTCDZBFik9cpRroNzj7K8glsX0m5h
+         9lw0omcEJAmIi+M9+RyqY/aJ+r9NDcg5iivYGKQFj2O+mUZ7IU7ULAAUAAHKJ6JLiz6P
+         eb4JpBsLeUx9/vaTIOw4cj9FpJvsBAuRRvVJ738FDH6UQRBGj949lakMaFAb9Is6hNpx
+         Sw+w==
+X-Gm-Message-State: AOJu0YwfKO6Eayxz/XDcmJ7Dpw6eoQzg2YpFdf3XIBxAN/fJw8BzKdfg
+	G2RZBrsWioPkXSKKMy4sJgguGw==
+X-Google-Smtp-Source: 
+ AGHT+IFqPH8sr0G7elxK7DLD7w1hvPm0dHfI4zvaliH+BOk4rQHVulmyKcq/aDwROzLdQ9Zm/hznBw==
+X-Received: by 2002:a5d:6152:0:b0:332:e7d1:ea74 with SMTP id
+ y18-20020a5d6152000000b00332e7d1ea74mr1264866wrt.66.1700815300268;
+        Fri, 24 Nov 2023 00:41:40 -0800 (PST)
+Received: from arrakeen.starnux.net ([2a01:e0a:982:cbb0:8261:5fff:fe11:bdda])
+        by smtp.gmail.com with ESMTPSA id
+ c11-20020a5d4f0b000000b00332e67d6564sm2534562wru.67.2023.11.24.00.41.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 24 Nov 2023 00:41:39 -0800 (PST)
+From: Neil Armstrong <neil.armstrong@linaro.org>
+Date: Fri, 24 Nov 2023 09:41:23 +0100
+Subject: [PATCH v9 12/12] arm64: dts: amlogic: meson-g12b-bananapi-cm4: add
+ support for MNT Reform2 with CM4 adaper
+MIME-Version: 1.0
+Message-Id: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-12-95256ed139e6@linaro.org>
+References: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+In-Reply-To: 
+ <20231124-amlogic-v6-4-upstream-dsi-ccf-vim3-v9-0-95256ed139e6@linaro.org>
+To: Jerome Brunet <jbrunet@baylibre.com>,
+ Michael Turquette <mturquette@baylibre.com>,
+ Stephen Boyd <sboyd@kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Krzysztof Kozlowski <krzysztof.kozlowski+dt@linaro.org>,
+ Conor Dooley <conor+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ David Airlie <airlied@gmail.com>, Daniel Vetter <daniel@ffwll.ch>,
+ Jagan Teki <jagan@amarulasolutions.com>,
+ Nicolas Belin <nbelin@baylibre.com>, Vinod Koul <vkoul@kernel.org>,
+ Kishon Vijay Abraham I <kishon@kernel.org>,
+ Remi Pommarel <repk@triplefau.lt>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-clk@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org,
+ linux-phy@lists.infradead.org, Rob Herring <robh@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ "Lukas F. Hartmann" <lukas@mntre.com>
+X-Mailer: b4 0.12.3
+X-Developer-Signature: v=1; a=openpgp-sha256; l=9577;
+ i=neil.armstrong@linaro.org; h=from:subject:message-id;
+ bh=FjGQYDPRgRTrkhoNiGFDMiwmzXCPyK3G03dyvM4EzuE=;
+ b=owEBbQKS/ZANAwAKAXfc29rIyEnRAcsmYgBlYGGyrUud/yo4X9yHxr9g7dtINJXX1EPOpbtQnKKY
+ FU1Hp7WJAjMEAAEKAB0WIQQ9U8YmyFYF/h30LIt33NvayMhJ0QUCZWBhsgAKCRB33NvayMhJ0VW8D/
+ 4oQqGbCwH4E+I2FrTVO5d5bQEjVN+ury0PHIUCNHqeg1F1xUrg2/lAU7yd+NvBNm+0yjjG/3C784ca
+ lNDLY3Pi3WW3gb4IdBxPjkbOdMgDR65Ny9xlBQJkAloNFFlnrjoj7+xth3RHlhmcGWNHTlYp0hqsea
+ DqlxuS7rlq630VwULVgk8j/HKY4CZsQzo52BZQLSu8l1Cydn7aEahiCNH8kH9VlXfQT6BPaPZI6FIi
+ XLJsZACslFR42nPQzoXLtMnVILvhFHoNgRU+7k/eES5Uggoaoe1Aego4jtflkJlOowJoBgkCfnXSPp
+ MhVDElct9x7z5PHeiFAYK9DbN8trou1Og4lC8LzWHEKmouZI0k/PfMqnAK934F/fZcuay+t436tP5i
+ jNDNa2p6m6WvwBbsb376ZiiYFOZkBeTRi0kDHm0a1rXhJA2d8+pS1dIkB2SPcEfwwgmiQYWFZ7ctYI
+ uGn6cUM0KMKm2m0EUOOopVObKVqtxzA5NpIofmtYue3NZB/bAXjpCmZ0vBE7HY2f826wjEZxIsdXtZ
+ us++X5BgaDRGod/5LWmKQS260W5p+e42f+IWcWW77z7DaoLis1QH66ykFocjRJOXkTVQ4oV4YmYoTf
+ d94ZoEXdsoOvReHLjk0km1gU38eKZwBK11thI0Lm+U5AdMWY9YFJEuj+u+UA==
+X-Developer-Key: i=neil.armstrong@linaro.org; a=openpgp;
+ fpr=89EC3D058446217450F22848169AB7B1A4CFF8AE
+X-CRM114-Version: 20100106-BlameMichelson ( TRE 0.8.0 (BSD) ) MR-646709E3 
+X-CRM114-CacheID: sfid-20231124_004143_926642_98873BCC 
+X-CRM114-Status: GOOD (  11.82  )
+X-BeenThere: linux-amlogic@lists.infradead.org
+X-Mailman-Version: 2.1.34
+Precedence: list
+List-Id: <linux-amlogic.lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-amlogic/>
+List-Post: <mailto:linux-amlogic@lists.infradead.org>
+List-Help: <mailto:linux-amlogic-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-amlogic>,
+ <mailto:linux-amlogic-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-amlogic" <linux-amlogic-bounces@lists.infradead.org>
+Errors-To: 
+ linux-amlogic-bounces+linux-amlogic=archiver.kernel.org@lists.infradead.org
+
+This adds a basic devicetree for the MNT Reform2 DIY laptop when using a
+CM4 adapter and a BPI-CM4 module.
+
+Co-developed-by: Lukas F. Hartmann <lukas@mntre.com>
+Signed-off-by: Neil Armstrong <neil.armstrong@linaro.org>
+---
+ arch/arm64/boot/dts/amlogic/Makefile               |   1 +
+ .../meson-g12b-bananapi-cm4-mnt-reform2.dts        | 384 +++++++++++++++++++++
+ 2 files changed, 385 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/amlogic/Makefile b/arch/arm64/boot/dts/amlogic/Makefile
+index cc8b34bd583d..58b5b332bdb7 100644
+--- a/arch/arm64/boot/dts/amlogic/Makefile
++++ b/arch/arm64/boot/dts/amlogic/Makefile
+@@ -15,6 +15,7 @@ dtb-$(CONFIG_ARCH_MESON) += meson-g12a-x96-max.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-a311d-bananapi-m2s.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-a311d-khadas-vim3.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-bananapi-cm4-cm4io.dtb
++dtb-$(CONFIG_ARCH_MESON) += meson-g12b-bananapi-cm4-mnt-reform2.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-gsking-x.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-gtking-pro.dtb
+ dtb-$(CONFIG_ARCH_MESON) += meson-g12b-gtking.dtb
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b-bananapi-cm4-mnt-reform2.dts b/arch/arm64/boot/dts/amlogic/meson-g12b-bananapi-cm4-mnt-reform2.dts
+new file mode 100644
+index 000000000000..003efed529ba
+--- /dev/null
++++ b/arch/arm64/boot/dts/amlogic/meson-g12b-bananapi-cm4-mnt-reform2.dts
+@@ -0,0 +1,384 @@
++// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
++/*
++ * Copyright (c) 2023 Neil Armstrong <neil.armstrong@linaro.org>
++ * Copyright 2023 MNT Research GmbH
++ */
++
++/dts-v1/;
++
++#include "meson-g12b-bananapi-cm4.dtsi"
++#include <dt-bindings/input/input.h>
++#include <dt-bindings/leds/common.h>
++#include <dt-bindings/sound/meson-g12a-tohdmitx.h>
++
++/ {
++	model = "MNT Reform 2 with BPI-CM4 Module";
++	compatible = "mntre,reform2-cm4", "bananapi,bpi-cm4", "amlogic,a311d", "amlogic,g12b";
++	chassis-type = "laptop";
++
++	aliases {
++		ethernet0 = &ethmac;
++		i2c0 = &i2c1;
++		i2c1 = &i2c3;
++	};
++
++	hdmi_connector: hdmi-connector {
++		compatible = "hdmi-connector";
++		type = "a";
++
++		port {
++			hdmi_connector_in: endpoint {
++				remote-endpoint = <&hdmi_tx_tmds_out>;
++			};
++		};
++	};
++
++	leds {
++		compatible = "gpio-leds";
++
++		led-blue {
++			color = <LED_COLOR_ID_BLUE>;
++			function = LED_FUNCTION_STATUS;
++			gpios = <&gpio_ao GPIOAO_7 GPIO_ACTIVE_HIGH>;
++			linux,default-trigger = "heartbeat";
++		};
++
++		led-green {
++			color = <LED_COLOR_ID_GREEN>;
++			function = LED_FUNCTION_STATUS;
++			gpios = <&gpio_ao GPIOAO_2 GPIO_ACTIVE_HIGH>;
++		};
++	};
++
++	sound {
++		compatible = "amlogic,axg-sound-card";
++		model = "MNT-REFORM2-BPI-CM4";
++		audio-widgets = "Headphone", "Headphone Jack",
++				"Speaker", "External Speaker",
++				"Microphone", "Mic Jack";
++		audio-aux-devs = <&tdmout_a>, <&tdmout_b>, <&tdmin_b>;
++		audio-routing =	"TDMOUT_A IN 0", "FRDDR_A OUT 0",
++				"TDMOUT_A IN 1", "FRDDR_B OUT 0",
++				"TDMOUT_A IN 2", "FRDDR_C OUT 0",
++				"TDM_A Playback", "TDMOUT_A OUT",
++				"TDMOUT_B IN 0", "FRDDR_A OUT 1",
++				"TDMOUT_B IN 1", "FRDDR_B OUT 1",
++				"TDMOUT_B IN 2", "FRDDR_C OUT 1",
++				"TDM_B Playback", "TDMOUT_B OUT",
++				"TDMIN_B IN 1", "TDM_B Capture",
++				"TDMIN_B IN 4", "TDM_B Loopback",
++				"TODDR_A IN 1", "TDMIN_B OUT",
++				"TODDR_B IN 1", "TDMIN_B OUT",
++				"TODDR_C IN 1", "TDMIN_B OUT",
++				"Headphone Jack", "HP_L",
++				"Headphone Jack", "HP_R",
++				"External Speaker", "SPK_LP",
++				"External Speaker", "SPK_LN",
++				"External Speaker", "SPK_RP",
++				"External Speaker", "SPK_RN",
++				"LINPUT1", "Mic Jack",
++				"Mic Jack", "MICB";
++
++		assigned-clocks = <&clkc CLKID_MPLL2>,
++					<&clkc CLKID_MPLL0>,
++					<&clkc CLKID_MPLL1>;
++		assigned-clock-parents = <0>, <0>, <0>;
++		assigned-clock-rates = <294912000>,
++				       <270950400>,
++				       <393216000>;
++
++		dai-link-0 {
++			sound-dai = <&frddr_a>;
++		};
++
++		dai-link-1 {
++			sound-dai = <&frddr_b>;
++		};
++
++		dai-link-2 {
++			sound-dai = <&frddr_c>;
++		};
++
++		dai-link-3 {
++			sound-dai = <&toddr_a>;
++		};
++
++		dai-link-4 {
++			sound-dai = <&toddr_b>;
++		};
++
++		dai-link-5 {
++			sound-dai = <&toddr_c>;
++		};
++
++		/* 8ch hdmi interface */
++		dai-link-6 {
++			sound-dai = <&tdmif_a>;
++			dai-format = "i2s";
++			dai-tdm-slot-tx-mask-0 = <1 1>;
++			dai-tdm-slot-tx-mask-1 = <1 1>;
++			dai-tdm-slot-tx-mask-2 = <1 1>;
++			dai-tdm-slot-tx-mask-3 = <1 1>;
++			mclk-fs = <256>;
++
++			codec {
++				sound-dai = <&tohdmitx TOHDMITX_I2S_IN_A>;
++			};
++		};
++
++		/* Analog Audio */
++		dai-link-7 {
++			sound-dai = <&tdmif_b>;
++			dai-format = "i2s";
++			dai-tdm-slot-tx-mask-0 = <1 1>;
++			mclk-fs = <256>;
++
++			codec {
++				sound-dai = <&wm8960>;
++			};
++		};
++
++		/* hdmi glue */
++		dai-link-8 {
++			sound-dai = <&tohdmitx TOHDMITX_I2S_OUT>;
++
++			codec {
++				sound-dai = <&hdmi_tx>;
++			};
++		};
++	};
++
++	reg_main_1v8: regulator-main-1v8 {
++		compatible = "regulator-fixed";
++		regulator-name = "1V8";
++		regulator-min-microvolt = <1800000>;
++		regulator-max-microvolt = <1800000>;
++		vin-supply = <&reg_main_3v3>;
++	};
++
++	reg_main_1v2: regulator-main-1v2 {
++		compatible = "regulator-fixed";
++		regulator-name = "1V2";
++		regulator-min-microvolt = <1200000>;
++		regulator-max-microvolt = <1200000>;
++		vin-supply = <&reg_main_5v>;
++	};
++
++	reg_main_3v3: regulator-main-3v3 {
++		compatible = "regulator-fixed";
++		regulator-name = "3V3";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++	};
++
++	reg_main_5v: regulator-main-5v {
++		compatible = "regulator-fixed";
++		regulator-name = "5V";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++	};
++
++	reg_main_usb: regulator-main-usb {
++		compatible = "regulator-fixed";
++		regulator-name = "USB_PWR";
++		regulator-min-microvolt = <5000000>;
++		regulator-max-microvolt = <5000000>;
++		vin-supply = <&reg_main_5v>;
++	};
++
++	backlight: backlight {
++		compatible = "pwm-backlight";
++		pwms = <&pwm_AO_ab 0 10000 0>;
++		power-supply = <&reg_main_usb>;
++		enable-gpios = <&gpio 58 GPIO_ACTIVE_HIGH>;
++		brightness-levels = <0 32 64 128 160 200 255>;
++		default-brightness-level = <6>;
++	};
++
++	panel {
++		compatible = "innolux,n125hce-gn1";
++		power-supply = <&reg_main_3v3>;
++		backlight = <&backlight>;
++		no-hpd;
++
++		port {
++			panel_in: endpoint {
++				remote-endpoint = <&edp_bridge_out>;
++			};
++		};
++	};
++
++	clock_12288: clock_12288 {
++		compatible = "fixed-clock";
++		#clock-cells = <0>;
++		clock-frequency = <12288000>;
++	};
++};
++
++&mipi_analog_dphy {
++	status = "okay";
++};
++
++&mipi_dphy {
++	status = "okay";
++};
++
++&mipi_dsi {
++	status = "okay";
++
++	assigned-clocks = <&clkc CLKID_GP0_PLL>,
++			  <&clkc CLKID_MIPI_DSI_PXCLK_SEL>,
++			  <&clkc CLKID_MIPI_DSI_PXCLK>,
++			  <&clkc CLKID_CTS_ENCL_SEL>,
++			  <&clkc CLKID_VCLK2_SEL>;
++	assigned-clock-parents = <0>,
++				 <&clkc CLKID_GP0_PLL>,
++				 <0>,
++				 <&clkc CLKID_VCLK2_DIV1>,
++				 <&clkc CLKID_GP0_PLL>;
++	assigned-clock-rates = <936000000>,
++			       <0>,
++			       <936000000>,
++			       <0>,
++			       <0>;
++};
++
++&mipi_dsi_panel_port {
++	mipi_dsi_out: endpoint {
++		remote-endpoint = <&edp_bridge_in>;
++	};
++};
++
++&cecb_AO {
++	status = "okay";
++};
++
++&ethmac {
++	status = "okay";
++};
++
++&hdmi_tx {
++	status = "okay";
++};
++
++&hdmi_tx_tmds_port {
++	hdmi_tx_tmds_out: endpoint {
++		remote-endpoint = <&hdmi_connector_in>;
++	};
++};
++
++&pwm_AO_ab {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pwm_ao_a_pins>;
++	status = "okay";
++};
++
++&i2c0 {
++	status = "okay";
++};
++
++&i2c3 {
++	status = "okay";
++
++	edp_bridge: bridge@2c {
++		compatible = "ti,sn65dsi86";
++		reg = <0x2c>;
++		enable-gpios = <&gpio GPIOX_10 GPIO_ACTIVE_HIGH>; // PIN_24 / GPIO8
++		vccio-supply = <&reg_main_1v8>;
++		vpll-supply = <&reg_main_1v8>;
++		vcca-supply = <&reg_main_1v2>;
++		vcc-supply = <&reg_main_1v2>;
++
++		ports {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			port@0 {
++				reg = <0>;
++
++				edp_bridge_in: endpoint {
++					remote-endpoint = <&mipi_dsi_out>;
++				};
++			};
++
++			port@1 {
++				reg = <1>;
++
++				edp_bridge_out: endpoint {
++					remote-endpoint = <&panel_in>;
++				};
++			};
++		};
++	};
++};
++
++&i2c2 {
++	status = "okay";
++
++	wm8960: codec@1a {
++		compatible = "wlf,wm8960";
++		reg = <0x1a>;
++		clocks = <&clock_12288>;
++		clock-names = "mclk";
++		#sound-dai-cells = <0>;
++		wlf,shared-lrclk;
++	};
++
++	rtc@68 {
++		compatible = "nxp,pcf8523";
++		reg = <0x68>;
++	};
++};
++
++&pcie {
++	status = "okay";
++};
++
++&sd_emmc_b {
++	status = "okay";
++};
++
++&tdmif_a {
++	status = "okay";
++};
++
++&tdmout_a {
++	status = "okay";
++};
++
++&tdmif_b {
++	pinctrl-0 = <&tdm_b_dout0_pins>, <&tdm_b_fs_pins>, <&tdm_b_sclk_pins>, <&tdm_b_din1_pins>;
++	pinctrl-names = "default";
++
++	assigned-clocks = <&clkc_audio AUD_CLKID_TDM_SCLK_PAD1>,
++			  <&clkc_audio AUD_CLKID_TDM_LRCLK_PAD1>;
++	assigned-clock-parents = <&clkc_audio AUD_CLKID_MST_B_SCLK>,
++				 <&clkc_audio AUD_CLKID_MST_B_LRCLK>;
++	assigned-clock-rates = <0>, <0>;
++};
++
++&tdmin_b {
++	status = "okay";
++};
++
++&toddr_a {
++	status = "okay";
++};
++
++&toddr_b {
++	status = "okay";
++};
++
++&toddr_c {
++	status = "okay";
++};
++
++&tohdmitx {
++	status = "okay";
++};
++
++&usb {
++	dr_mode = "host";
++
++	status = "okay";
++};

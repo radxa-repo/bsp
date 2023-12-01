@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Fri, 1 Dec 2023 20:12:50 +0800
+Subject: [PATCH] Fix Manjaro dts for Linux 6.7 backport arm64: dts: meson:
+ g12: name spdifout consistently
+
+Signed-off-by: ZHANG Yuntian <yt@radxa.com>
+---
+ arch/arm64/boot/dts/amlogic/meson-g12b-ugoos-am6-plus.dts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12b-ugoos-am6-plus.dts b/arch/arm64/boot/dts/amlogic/meson-g12b-ugoos-am6-plus.dts
+index bed1dba090581..bdd70e7039bbf 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12b-ugoos-am6-plus.dts
++++ b/arch/arm64/boot/dts/amlogic/meson-g12b-ugoos-am6-plus.dts
+@@ -71,7 +71,7 @@ codec {
+ 
+ 		/* spdif hdmi or toslink interface */
+ 		dai-link-4 {
+-			sound-dai = <&spdifout>;
++			sound-dai = <&spdifout_a>;
+ 
+ 			codec-0 {
+ 				sound-dai = <&spdif_dit>;
+@@ -126,7 +126,7 @@ &ir {
+ 	linux,rc-map-name = "rc-khadas";
+ };
+ 
+-&spdifout {
++&spdifout_a {
+ 	pinctrl-0 = <&spdif_out_h_pins>;
+ 	pinctrl-names = "default";
+ 	status = "okay";
+-- 
+2.43.0
+

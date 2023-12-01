@@ -18,7 +18,7 @@ index 3e6578f27..62eab382a 100644
 +&combphy2 {
 +	status = "okay";
 +};
-+
++ 
  &hdmi {
  	avdd-0v9-supply = <&vdda0v9_image>;
  	avdd-1v8-supply = <&vcca1v8_image>;

@@ -1,0 +1,49 @@
+From 919c2e50f90464a63047c14790da2686f3c89703 Mon Sep 17 00:00:00 2001
+From: Feng Zhang <feng@radxa.com>
+Date: Thu, 2 Nov 2023 15:17:57 +0800
+Subject: [PATCH] arm64: dts: rock pi e: Modify the gmac configuration to
+ rtl8211f
+
+Signed-off-by: Feng Zhang <feng@radxa.com>
+---
+ arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts b/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
+index fa4889cf7..60a221b4c 100644
+--- a/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
++++ b/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
+@@ -146,7 +146,7 @@ &gmac2io {
+ 	assigned-clocks = <&cru SCLK_MAC2IO>, <&cru SCLK_MAC2IO_EXT>;
+ 	assigned-clock-parents = <&gmac_clkin>, <&gmac_clkin>;
+ 	clock_in_out = "input";
+-	phy-handle = <&rtl8211e>;
++	phy-handle = <&rtl8211f>;
+ 	phy-mode = "rgmii";
+ 	phy-supply = <&vcc_io>;
+ 	pinctrl-names = "default";
+@@ -154,8 +154,8 @@ &gmac2io {
+ 	snps,aal;
+ 	snps,rxpbl = <0x4>;
+ 	snps,txpbl = <0x4>;
+-	tx_delay = <0x26>;
+-	rx_delay = <0x11>;
++	tx_delay = <0x1a>;
++	rx_delay = <0x14>;
+ 	status = "okay";
+ 
+ 	mdio {
+@@ -163,7 +163,9 @@ mdio {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 
+-		rtl8211e: ethernet-phy@1 {
++		rtl8211f: ethernet-phy@1 {
++			/* RTL8211F */
++			compatible = "ethernet-phy-id001c.c916";
+ 			reg = <1>;
+ 			pinctrl-0 = <&eth_phy_int_pin>, <&eth_phy_reset_pin>;
+ 			pinctrl-names = "default";
+-- 
+2.25.1
+
