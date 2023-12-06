@@ -22,7 +22,7 @@ new file mode 100644
 index 0000000000..f07543e072
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3308-radxa-s0.dts
-@@ -0,0 +1,405 @@
+@@ -0,0 +1,406 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2019 Akash Gajjar <akash@openedev.com>
@@ -236,6 +236,7 @@ index 0000000000..f07543e072
 +		compatible = "brcm,bcm43430a1-bt";
 +		clocks = <&cru SCLK_RTC32K>;
 +		clock-names = "lpo";
++		max-speed = <1500000>;
 +		device-wakeup-gpios = <&gpio4 RK_PB2 GPIO_ACTIVE_HIGH>;
 +		host-wakeup-gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_LOW>;
 +		shutdown-gpios = <&gpio4 RK_PB3 GPIO_ACTIVE_HIGH>;

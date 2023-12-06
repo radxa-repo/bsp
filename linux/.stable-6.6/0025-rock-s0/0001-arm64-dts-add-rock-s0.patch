@@ -23,7 +23,7 @@ new file mode 100644
 index 0000000000..f07543e072
 --- /dev/null
 +++ b/arch/arm64/boot/dts/rockchip/rk3308-rock-s0.dts
-@@ -0,0 +1,522 @@
+@@ -0,0 +1,523 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright (c) 2019 Akash Gajjar <akash@openedev.com>
@@ -237,6 +237,7 @@ index 0000000000..f07543e072
 +		compatible = "brcm,bcm43430a1-bt";
 +		clocks = <&cru SCLK_RTC32K>;
 +		clock-names = "lpo";
++		max-speed = <1500000>;
 +		device-wakeup-gpios = <&gpio4 RK_PB2 GPIO_ACTIVE_HIGH>;
 +		host-wakeup-gpios = <&gpio4 RK_PB4 GPIO_ACTIVE_LOW>;
 +		shutdown-gpios = <&gpio4 RK_PB3 GPIO_ACTIVE_HIGH>;
@@ -445,7 +446,7 @@ index 0000000000..f07543e072
 +		"PIN_5", "", "", "PIN_27",
 +
 +		/* GPIO0_C0-C3 */
-+		"", "PIN_15", "PIN_33", "",
++		"PIN_28", "PIN_15", "PIN_33", "",
 +		/* GPIO0_C4-C7 */
 +		"", "", "", "",
 +
@@ -468,7 +469,7 @@ index 0000000000..f07543e072
 +		"", "", "", "",
 +
 +		/* GPIO1_C0-C3 */
-+		"PIN_28", "", "", "",
++		"", "", "", "",
 +		/* GPIO1_C4-C7 */
 +		"", "", "PIN_21", "PIN_19",
 +
@@ -486,7 +487,7 @@ index 0000000000..f07543e072
 +		"PIN_35", "PIN_38", "PIN_36", "PIN_40",
 +
 +		/* GPIO2_B0-B3 */
-+		"PIN_26", "PIN_12", "PIN_31", "PIN_20",
++		"PIN_26", "PIN_12", "PIN_31", "PIN_22",
 +		/* GPIO2_B4-B7 */
 +		"PIN_32", "PIN_7", "PIN_11", "PIN_18",
 +
