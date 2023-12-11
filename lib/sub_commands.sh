@@ -24,7 +24,12 @@ _install() {
     then
         trap "set +e; sudo -n true && (sudo umount -R /mnt; sudo kpartx -d '$disk'; sync)" SIGINT SIGQUIT SIGTSTP EXIT
         sudo kpartx -a "$disk"
-        disk="$(sudo blkid -t LABEL=rootfs -o device | grep /dev/mapper/loop | tail -n 1)"
+        echo "Target is a file. Trying to find rootfs partition..."
+        if ! disk="$(sudo blkid -t LABEL=rootfs -o device | grep /dev/mapper/loop | tail -n 1)"
+        then
+            echo "Failed to find rootfs partition." >&2
+            return
+        fi
         disk="${disk%p*}p"
     fi
 
