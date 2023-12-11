@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: RadxaMitchell <machuang@radxa.com>
-Date: Mon, 4 Dec 2023 18:32:32 +0800
+Date: Mon, 11 Dec 2023 10:24:53 +0800
 Subject: [PATCH] Add rock-pi-e gpiod label
 
 Signed-off-by: RadxaMitchell <machuang@radxa.com>
@@ -9,7 +9,7 @@ Signed-off-by: RadxaMitchell <machuang@radxa.com>
  1 file changed, 92 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts b/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
-index 60a221b4c..eb58edb16 100644
+index 60a221b4c..09692ef6b 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
 @@ -418,3 +418,95 @@ &usbdrd3 {
@@ -91,7 +91,7 @@ index 60a221b4c..eb58edb16 100644
 +		/* GPIO3_A0-A3 */
 +		"PIN_23", "PIN_19", "PIN_21", "",
 +		/* GPIO3_A4-A7 */
-+		"PIN_3", "PIN_5", "", "",
++		"PIN_3", "", "PIN_5", "",
 +
 +		/* GPIO3_B0-B3 */
 +		"PIN_24", "", "", "",
