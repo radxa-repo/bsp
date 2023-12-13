@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: RadxaMitchell <machuang@radxa.com>
-Date: Mon, 11 Dec 2023 11:10:54 +0800
+Date: Wed, 13 Dec 2023 11:59:49 +0800
 Subject: [PATCH] Add rock-pi-e gpiod label
 
 Signed-off-by: RadxaMitchell <machuang@radxa.com>
@@ -9,7 +9,7 @@ Signed-off-by: RadxaMitchell <machuang@radxa.com>
  1 file changed, 92 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts b/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
-index ca45e17c8..9e432d7e2 100644
+index ca45e17c8..b80e6c296 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
 +++ b/arch/arm64/boot/dts/rockchip/rk3328-rock-pi-e.dts
 @@ -425,3 +425,95 @@ &dmc {
@@ -43,7 +43,7 @@ index ca45e17c8..9e432d7e2 100644
 +&gpio1 {
 +	gpio-line-names =
 +		/* GPIO1_A0-A3 */
-+		"PIN_8", "PIN_10", "", "",
++		"", "", "", "",
 +		/* GPIO1_A4-A7 */
 +		"", "", "", "",
 +
@@ -66,7 +66,7 @@ index ca45e17c8..9e432d7e2 100644
 +&gpio2 {
 +	gpio-line-names =
 +		/* GPIO2_A0-A3 */
-+		"", "", "PIN_11", "PIN_13",
++		"PIN_8", "PIN_10", "PIN_11", "PIN_13",
 +		/* GPIO2_A4-A7 */
 +		"PIN_27", "PIN_28", "PIN_33", "",
 +
