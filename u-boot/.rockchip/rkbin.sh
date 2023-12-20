@@ -10,7 +10,7 @@ custom_source_action() {
             git_am "./0003-Fix-side-effect-of-broken-rkbin-history.rkbin"
             ;;
         *)
-            git_source "https://github.com/radxa/rkbin.git" b0e55f98f0a8a5993cab9d81a40cf3c4255a34fb
+            git_source "https://github.com/radxa/rkbin.git" 789dd24dacd7b6b5f57199437b6a6d31953311a3
             ;;
     esac
 }
