@@ -20,6 +20,7 @@ bsp_reset() {
     BSP_RKMINILOADER=
     BSP_RKMINILOADER_SPINOR=
     BSP_RKMINILOADER_SPINAND=
+    BSP_RKMINILOADER_SDNAND=
 
     RKBIN_DDR=
     RKMINILOADER=
@@ -118,6 +119,13 @@ bsp_prepare() {
                     else
                         echo "Using Rockchip SPI NAND miniloader $(basename $BSP_RKMINILOADER_SPINAND)"
                     fi
+
+                    if ! BSP_RKMINILOADER_SDNAND=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}v | grep sd.bin | sort | tail -n 1) || [[ -z $BSP_RKMINILOADER_SDNAND ]]
+                    then
+                        echo "Unable to find Rockchip miniloader for SD NAND. This is only required for some platforms." >&2
+                    else
+                        echo "Using Rockchip SD NAND miniloader $(basename $BSP_RKMINILOADER_SDNAND)"
+                    fi
                 fi
             fi
             ;;
@@ -197,6 +205,7 @@ rkpack_idbloader() {
 
         if [[ -n $BSP_RKMINILOADER_SPINOR ]]
         then
+            echo "Using Rockchip SPI NOR miniloader $(basename $BSP_RKMINILOADER_SPINOR)"
             if [[ "$BSP_SOC_OVERRIDE" =~ "rk3399" ]] && [[ "$BSP_BRANCH" == "rk3399-pie-gms-express-baseline" ]]
             then
                 # mkimage in this branch is too old to support multiple data file
@@ -204,6 +213,13 @@ rkpack_idbloader() {
             else
                 $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rkspi -d "${flash_data:+${flash_data}:}$BSP_RKMINILOADER_SPINOR" "$TARGET_DIR/idbloader-spi.img"
             fi
+        fi
+
+        if [[ -n $BSP_RKMINILOADER_SDNAND ]]
+        then
+            echo "Using Rockchip SD NAND miniloader $(basename $BSP_RKMINILOADER_SPINOR)"
+            $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rksd -d "${flash_data}" "$TARGET_DIR/idbloader-sd_nand.img"
+            cat "$BSP_RKMINILOADER_SDNAND" >> "$TARGET_DIR/idbloader-sd_nand.img"
         fi
     else
         if [[ "$BSP_SOC_OVERRIDE" =~ "rk3399" ]]
@@ -227,7 +243,7 @@ rkpack_rkboot() {
     pushd $SCRIPT_DIR/.src/rkbin/
     rm -f ./*.bin
     local variant
-    for variant in "" "_SPINOR" "_SPI_NAND"
+    for variant in "" "_SPINOR" "_SPI_NAND" "_UART0_SD_NAND"
     do
         if [[ -f "$SCRIPT_DIR/.src/rkbin/RKBOOT/${BSP_TRUST_OVERRIDE^^}MINIALL$variant.ini" ]]
         then
@@ -263,7 +279,7 @@ bsp_preparedeb() {
                 rkpack_rkminiloader
             fi
             rkpack_rkboot
-            cp "$TARGET_DIR/idbloader-spi"*".img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+            cp "$TARGET_DIR/idbloader-spi"*".img" "$TARGET_DIR/idbloader-sd"*".img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
             ;;
         mediatek)
             cp "$SCRIPT_DIR/.src/mtk-atf/build/$BSP_BL31_OVERRIDE/release/bl2.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
