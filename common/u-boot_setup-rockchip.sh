@@ -1,5 +1,23 @@
 #!/bin/bash
 
+idbloader() {
+    if [ -e "$SCRIPT_DIR/idbloader-sd_nand.img" ]
+    then
+        echo "$SCRIPT_DIR/idbloader-sd_nand.img"
+    else
+        echo "$SCRIPT_DIR/idbloader.img"
+    fi
+}
+
+rkboot() {
+    if [ -e "$SCRIPT_DIR/rkboot_UART0_SD_NAND.bin" ]
+    then
+        echo "$SCRIPT_DIR/rkboot_UART0_SD_NAND"
+    else
+        echo "$SCRIPT_DIR/rkboot.bin"
+    fi
+}
+
 build_spinor() {
     rm -f /tmp/spi.img
     if [[ -f "$SCRIPT_DIR/idbloader-spi_spl.img" ]] && [[ -f "$SCRIPT_DIR/u-boot.itb" ]]
@@ -12,7 +30,7 @@ build_spinor() {
     then
         echo "Building Rockchip RK35 SPI U-Boot..."
         truncate -s 16M /tmp/spi.img
-        dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader.img" of=/tmp/spi.img bs=512 seek=64
+        dd conv=notrunc,fsync if="$(idbloader)" of=/tmp/spi.img bs=512 seek=64
         dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=16384
     elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
     then
@@ -28,7 +46,7 @@ build_spinor() {
 }
 
 maskrom() {
-    rkdeveloptool db "$SCRIPT_DIR/rkboot.bin"
+    rkdeveloptool db "$(rkboot)"
 }
 
 maskrom_spinor() {
@@ -50,7 +68,7 @@ maskrom_spinand() {
 }
 
 maskrom_update_idbloader() {
-    rkdeveloptool wl 64 "$SCRIPT_DIR/idbloader.img"
+    rkdeveloptool wl 64 "$(idbloader)"
 }
 
 maskrom_update_bootloader() {
@@ -126,7 +144,7 @@ maskrom_reset() {
 update_idbloader() {
     local DEVICE=$1
 
-    dd conv=notrunc,fsync if="$SCRIPT_DIR/idbloader.img" of=$DEVICE bs=512 seek=64
+    dd conv=notrunc,fsync if="$(idbloader)" of=$DEVICE bs=512 seek=64
 }
 
 update_bootloader() {
