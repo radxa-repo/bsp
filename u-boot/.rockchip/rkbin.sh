@@ -1,7 +1,7 @@
 custom_source_action() {
     case $BSP_SOC in
         rk3308)
-            git_source "https://github.com/RadxaYuntian/rkbin.git" fba57c2f676fcea54ec8317c90d04ee9ff0aff66
+            git_source "https://github.com/RadxaYuntian/rkbin.git" fc44f9401c127affb2a879c1e90fa89ddab505f6
             ;;
         rk3399)
             git_source "https://github.com/radxa/rkbin.git" cd2b28dc2c83dccdd99266bb2c43ea525bbf6c18
