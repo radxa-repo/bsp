@@ -195,7 +195,7 @@ rkpack_idbloader() {
         flash_data="${flash_data:+${flash_data}:}${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin"
     fi
 
-    rm -f "$TARGET_DIR/idbloader.img" "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader-spi_spl.img"
+    rm -f "$TARGET_DIR/idbloader.img" "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader-spi_spl.img" "$TARGET_DIR/idbloader-sd_nand.img"
     $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rksd -d "${flash_data}" "$TARGET_DIR/idbloader.img"
 
     if [[ "$1" == "rkminiloader" ]]
