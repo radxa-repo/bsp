@@ -165,6 +165,18 @@ update_bootloader() {
     sync "$DEVICE"
 }
 
+erase_spinor() {
+    local DEVICE=${1:-/dev/mtd0}
+
+    if [[ ! -e $DEVICE ]]
+    then
+        echo "$DEVICE is missing." >&2
+        return 1
+    fi
+
+    flash_erase "$DEVICE" 0 0
+}
+
 update_spinor() {
     local DEVICE=${1:-/dev/mtd0}
 
@@ -175,7 +187,7 @@ update_spinor() {
     fi
 
     build_spinor
-    flash_erase "$DEVICE" 0 0
+    erase_spinor "$DEVICE"
     #nandwrite -p "$DEVICE" /tmp/spi.img
     echo "Writting to $DEVICE..."
     flashcp /tmp/spi.img "$DEVICE"
