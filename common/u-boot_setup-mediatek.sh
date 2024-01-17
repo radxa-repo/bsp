@@ -1,5 +1,9 @@
 #!/bin/bash
 
+readonly ERROR_REQUIRE_FILE=-3
+readonly ERROR_ILLEGAL_PARAMETERS=-4
+readonly ERROR_REQUIRE_TARGET=-5
+
 maskrom() {
     pushd "$SCRIPT_DIR"
     aiot-bootrom
@@ -75,7 +79,7 @@ then
         $ACTION "$@"
     else
         echo "Unsupported action: '$ACTION'" >&2
-        exit 100
+        exit "$ERROR_ILLEGAL_PARAMETERS"
     fi
 
 fi

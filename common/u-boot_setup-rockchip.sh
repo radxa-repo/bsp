@@ -1,5 +1,9 @@
 #!/bin/bash
 
+readonly ERROR_REQUIRE_FILE=-3
+readonly ERROR_ILLEGAL_PARAMETERS=-4
+readonly ERROR_REQUIRE_TARGET=-5
+
 idbloader() {
     if [ -e "$SCRIPT_DIR/idbloader-sd_nand.img" ]
     then
@@ -41,7 +45,7 @@ build_spinor() {
         dd conv=notrunc,fsync if="$SCRIPT_DIR/trust.img" of=/tmp/spi.img bs=512 seek=6144
     else
         echo "Missing U-Boot binary!" >&2
-        return 2
+        return "$ERROR_REQUIRE_FILE"
     fi
 }
 
@@ -82,7 +86,7 @@ maskrom_update_bootloader() {
         rkdeveloptool wl 24576 "$SCRIPT_DIR/trust.img"
     else
         echo "Missing U-Boot binary!" >&2
-        return 2
+        return "$ERROR_REQUIRE_FILE"
     fi
 }
 
@@ -160,7 +164,7 @@ update_bootloader() {
         dd conv=notrunc,fsync if="$SCRIPT_DIR/trust.img" of=$DEVICE bs=512 seek=24576
     else
         echo "Missing U-Boot binary!" >&2
-        return 2
+        return "$ERROR_REQUIRE_FILE"
     fi
     sync "$DEVICE"
 }
@@ -171,7 +175,7 @@ erase_spinor() {
     if [[ ! -e $DEVICE ]]
     then
         echo "$DEVICE is missing." >&2
-        return 1
+        return "$ERROR_REQUIRE_TARGET"
     fi
 
     flash_erase "$DEVICE" 0 0
@@ -183,7 +187,7 @@ update_spinor() {
     if [[ ! -e $DEVICE ]]
     then
         echo "$DEVICE is missing." >&2
-        return 1
+        return "$ERROR_REQUIRE_TARGET"
     fi
 
     build_spinor
@@ -230,7 +234,7 @@ then
         $ACTION "$@"
     else
         echo "Unsupported action: '$ACTION'" >&2
-        exit 100
+        exit "$ERROR_ILLEGAL_PARAMETERS"
     fi
 
 fi
