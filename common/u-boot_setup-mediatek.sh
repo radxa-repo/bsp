@@ -14,6 +14,14 @@ update_bootloader() {
     sync "$DEVICE"
 }
 
+erase_emmc_boot() {
+    if [[ -f "/sys/class/block/$(basename "$1")/force_ro" ]]
+    then
+        echo 0 > "/sys/class/block/$(basename "$1")/force_ro"
+    fi
+    blkdiscard -f "$@"
+}
+
 update_emmc_boot() {
     if [[ -f "/sys/class/block/$(basename "$1")/force_ro" ]]
     then
