@@ -96,7 +96,7 @@ bsp_prepare() {
 
                 if [[ -n $RKMINILOADER ]]
                 then
-                    if BSP_RKMINILOADER=$(find $SCRIPT_DIR/.src/rkbin/bin -name ${RKMINILOADER} ) && [[ "$(basename $BSP_RKMINILOADER)" == "${RKMINILOADER}" ]]
+                    if BSP_RKMINILOADER="$(find $SCRIPT_DIR/.src/rkbin/bin -name ${RKMINILOADER})" && [[ -n "$BSP_RKMINILOADER" ]] && [[ "$(basename $BSP_RKMINILOADER)" == "${RKMINILOADER}" ]]
                     then
                         echo "Using Rockchip miniloader $(basename $BSP_RKMINILOADER) with exact match"
                     elif ! BSP_RKMINILOADER=$(find $SCRIPT_DIR/.src/rkbin/bin | grep ${RKMINILOADER}v | sort | tail -n 1) || [[ -z $BSP_RKMINILOADER ]]
