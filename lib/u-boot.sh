@@ -217,7 +217,7 @@ rkpack_idbloader() {
 
         if [[ -n $BSP_RKMINILOADER_SDNAND ]]
         then
-            echo "Using Rockchip SD NAND miniloader $(basename $BSP_RKMINILOADER_SPINOR)"
+            echo "Using Rockchip SD NAND miniloader $(basename $BSP_RKMINILOADER_SDNAND)"
             $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rksd -d "${flash_data}" "$TARGET_DIR/idbloader-sd_nand.img"
             cat "$BSP_RKMINILOADER_SDNAND" >> "$TARGET_DIR/idbloader-sd_nand.img"
         fi
