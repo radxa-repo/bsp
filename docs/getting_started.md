@@ -51,34 +51,65 @@ cd bsp
 by product name instead of specific profiles. This should help new users to test
 their setup without much `bsp` knowledge:
 
-```bash
 
-Command Format:
+
+
+```bash
+# Command Format:
 
 bsp [options] <linux|u-boot> <profile> [product]
 
-you can build both kernel and u-boot (e.g. radxa-zero)
+```
 
-#./bsp radxa-zero
+There are two steps to build packages
 
-or you can build kernel or u-boot separately
+1. Get the product name 
 
-Build kernel only (e.g. radxa-zero)
+    You can get the product name by the method below:
 
-#./bsp linux radxa-zero
+    Download and run the lastest official debian image on board,
+    run the `uname -r` on the terminal and get the kernel like `5.10.160-28-rk356x`,
+    then the last word such as 'rk356x' is what we want,
+     Or you can get the info from reading the source code.
 
-Build u-boot only (e.g. radxa-zero)
+2. build kernel, u-boot
 
-#./bsp u-boot radxa-zero
+```bash
 
-How to get the product parmater of the board:
+# you can build the kernel and u-boot together or separately
 
-Download and run the lastest official debian image on board,
-run the `uname -r` on the terminal and get the kernel like `5.10.160-28-rk356x`,
-then the last word such as 'rk356x' is what we want,
-Or you can get the info from reading the source code.
+# Build both kernel and u-boot (e.g. radxa-zero)
+
+./bsp radxa-zero
+
+# Build kernel only (e.g. radxa-zero)
+
+./bsp linux radxa-zero
+
+# Build u-boot only (e.g. radxa-zero)
+
+./bsp u-boot radxa-zero
 
 ```
+
+After compilation is completed, many `deb` packages will be generated in the bsp/output directory. You only need to install the following two `deb` packages.
+
+such as
+
+```
+linux-headers-5.10.160-20-rk356x_5.10.160-20_arm64.deb
+linux-image-5.10.160-20-rk356x_5.10.160-20_arm64.deb
+```
+
+The path to the kernel source code is located in the bsp directory at `.src/linux`, and the kernel can be built again after modifying the kernel source code.
+
+If you don't want to sync the lastest code from server, you can add this parameter `--no-prepare-source`, or your modifications will be overwritten.
+
+```
+./bsp --no-prepare-source radxa-zero
+```
+For more bsp parameter usage instructions, you can execute `./bsp` to view.
+
 
 Custom kernel/firmware developer should at least read the [Development reference](dev_flow.md)
 section to better understand the development workflow and the internal data
