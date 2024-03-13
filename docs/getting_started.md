@@ -52,9 +52,32 @@ by product name instead of specific profiles. This should help new users to test
 their setup without much `bsp` knowledge:
 
 ```bash
-# The following command will build linux-stable
-# and u-boot-latest for radxa-zero
-./bsp radxa-zero
+
+Command Format:
+
+bsp [options] <linux|u-boot> <profile> [product]
+
+you can build both kernel and u-boot (e.g. radxa-zero)
+
+#./bsp radxa-zero
+
+or you can build kernel or u-boot separately
+
+Build kernel only (e.g. radxa-zero)
+
+#./bsp linux radxa-zero
+
+Build u-boot only (e.g. radxa-zero)
+
+#./bsp u-boot radxa-zero
+
+How to get the product parmater of the board:
+
+Download and run the lastest official debian image on board,
+run the `uname -r` on the terminal and get the kernel like `5.10.160-28-rk356x`,
+then the last word such as 'rk356x' is what we want,
+Or you can get the info from reading the source code.
+
 ```
 
 Custom kernel/firmware developer should at least read the [Development reference](dev_flow.md)
