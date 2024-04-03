@@ -45,7 +45,12 @@ bsp_makedeb() {
             local VERSION="$kernelversion-${PKG_REVISION}${BSP_GITREV:+-$BSP_GITREV}"
             local URL="https://github.com/radxa-pkg/linux-image-$FORK"
             local DESCRIPTION=${DESCRIPTIONS[$i]}
-            local DEPEND=${DEPENDS[$i]}
+            local DEPEND=("--depends" "${DEPENDS[$i]}")
+            if (( i == 0 ))
+            then
+                # Linux image also requires the overlay package
+                DEPEND+=("--depends" "radxa-overlays-dkms")
+            fi
             local PROVIDE=()
             if [[ -n "${PROVIDES[$i]}" ]]
             then
@@ -53,7 +58,7 @@ bsp_makedeb() {
             fi
             fpm -s empty -t deb -n "$NAME" -v "$VERSION" \
                 --deb-compression xz \
-                --depends "$DEPEND" \
+                "${DEPEND[@]}" \
                 "${PROVIDE[@]}" \
                 --url "$URL" \
                 --description "$DESCRIPTION" \
