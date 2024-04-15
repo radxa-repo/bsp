@@ -1,6 +1,7 @@
 name: Deploy
 on:
   workflow_dispatch:
+  merge_group:
   push:
     branches:
       - main
@@ -71,4 +72,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && github.event_name != 'merge_group'
