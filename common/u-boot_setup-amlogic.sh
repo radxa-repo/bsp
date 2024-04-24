@@ -16,6 +16,14 @@ update_bootloader() {
     sync "$DEVICE"
 }
 
+erase_bootloader() {
+    local DEVICE=$1
+
+    dd conv=notrunc,fsync if=/dev/zero of=$DEVICE bs=1 count=444
+    dd conv=notrunc,fsync if=/dev/zero of=$DEVICE bs=512 skip=1 seek=1 count=2048
+    sync "$DEVICE"
+}
+
 erase_emmc_boot() {
     if [[ -f "/sys/class/block/$(basename "$1")/force_ro" ]]
     then

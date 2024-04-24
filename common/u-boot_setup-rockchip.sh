@@ -169,6 +169,13 @@ update_bootloader() {
     sync "$DEVICE"
 }
 
+erase_bootloader() {
+    local DEVICE=$1
+
+    dd conv=notrunc,fsync if=/dev/zero of=$DEVICE bs=512 seek=64 count=16384
+    sync "$DEVICE"
+}
+
 erase_spinor() {
     local DEVICE=${1:-/dev/mtd0}
 
