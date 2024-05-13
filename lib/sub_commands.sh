@@ -56,7 +56,7 @@ _install() {
         sudo mount "$disk"2 /mnt
         case "$(sudo blkid "$disk"1 -s LABEL -o value)"
         in
-            "armbi_boot")
+            "armbi_boot"|"opi_boot")
                 # new armbian image
                 sudo mount "$disk"1 /mnt/boot
                 ;;
