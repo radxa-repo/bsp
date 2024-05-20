@@ -1,6 +1,6 @@
 custom_source_action() {
     case $BSP_SOC in
-        _rk3399_)
+        rk3399)
             git_source "https://github.com/radxa/rkbin.git" cd2b28dc2c83dccdd99266bb2c43ea525bbf6c18
             git_am "./0001-Update-rkbin.rkbin"
             git_am "./0002-Disable-bl32-for-rk3399.rkbin"
