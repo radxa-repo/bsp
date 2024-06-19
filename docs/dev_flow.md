@@ -34,8 +34,6 @@ You can use `--dirty` to build without resetting the source tree. This will allo
 ./bsp --dirty linux latest
 ```
 
-~~~
-
 ## Install build artifacts
 
 You can use `./bsp install` to install the built package to a root partition (like a microSD card):
