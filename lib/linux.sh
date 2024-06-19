@@ -7,7 +7,7 @@ bsp_reset() {
     BSP_DEFCONFIG="defconfig"
 
     BSP_MAKE_DEFINES=()
-    BSP_MAKE_TARGETS=("all" "bindeb-pkg")
+    BSP_MAKE_TARGETS=("olddefconfig" "all" "bindeb-pkg")
     BSP_DPKG_FLAGS="-d"
 }
 
