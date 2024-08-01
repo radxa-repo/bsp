@@ -259,6 +259,9 @@ bsp_preparedeb() {
     
     mkdir -p "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE"
     cp "$SCRIPT_DIR/common/u-boot_setup-$soc_family.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/setup.sh"
+    if [[ -f "$SCRIPT_DIR/common/u-boot_setup-$soc_family.ps1" ]]; then
+        cp "$SCRIPT_DIR/common/u-boot_setup-$soc_family.ps1" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/setup.ps1"
+    fi
 
     case "$soc_family" in
         amlogic)
