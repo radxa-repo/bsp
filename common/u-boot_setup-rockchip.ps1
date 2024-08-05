@@ -49,7 +49,7 @@ Function BuildSPINOR{
 
         $output.SetLength(16MB)
         $output.Close()
-    } elseif ((Test-Path "$PSScriptRoot/uboot.img","$PSScriptRoot/trust.itb") -notcontains $false) {
+    } elseif ((Test-Path "$PSScriptRoot/idbloader-spi.img","$PSScriptRoot/uboot.img","$PSScriptRoot/trust.img") -notcontains $false) {
         Write-Host "Building Rockchip RK33 SPI U-Boot..."
         $output = [FileStream]::new("spi.img", [FileMode]::Create, [FileAccess]::ReadWrite)
 

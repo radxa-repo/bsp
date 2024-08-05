@@ -36,7 +36,7 @@ build_spinor() {
         truncate -s 16M /tmp/spi.img
         dd conv=notrunc,fsync if="$(idbloader)" of=/tmp/spi.img bs=512 seek=64
         dd conv=notrunc,fsync if="$SCRIPT_DIR/u-boot.itb" of=/tmp/spi.img bs=512 seek=16384
-    elif [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
+    elif [[ -f "$SCRIPT_DIR/idbloader-spi.img" ]] && [[ -f "$SCRIPT_DIR/uboot.img" ]] && [[ -f "$SCRIPT_DIR/trust.img" ]]
     then
         echo "Building Rockchip RK33 SPI U-Boot..."
         truncate -s 4M /tmp/spi.img
