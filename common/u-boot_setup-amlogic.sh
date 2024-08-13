@@ -1,8 +1,14 @@
 #!/bin/bash
 
-readonly ERROR_REQUIRE_FILE=-3
-readonly ERROR_ILLEGAL_PARAMETERS=-4
-readonly ERROR_REQUIRE_TARGET=-5
+if [[ ! -v ERROR_REQUIRE_FILE ]]; then
+    readonly ERROR_REQUIRE_FILE=-3
+fi
+if [[ ! -v ERROR_ILLEGAL_PARAMETERS ]]; then
+    readonly ERROR_ILLEGAL_PARAMETERS=-4
+fi
+if [[ ! -v ERROR_REQUIRE_TARGET ]]; then
+    readonly ERROR_REQUIRE_TARGET=-5
+fi
 
 maskrom() {
     boot-g12.py "$SCRIPT_DIR/u-boot.bin"
