@@ -112,3 +112,23 @@ index 67aef71a1400..ecf5beaa4547 100644
 -- 
 2.41.0
 
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
+index c80d24fc6..bf267d35b 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-g12-common.dtsi
+@@ -2505,6 +2505,7 @@ cpu_thermal: cpu-thermal {
+ 			polling-delay = <1000>;
+ 			polling-delay-passive = <100>;
+ 			thermal-sensors = <&cpu_temp>;
++			sustainable-power = <3000>; /* 3000mW */
+ 
+ 			trips {
+ 				cpu_passive: cpu-passive {
+@@ -2531,6 +2532,7 @@ ddr_thermal: ddr-thermal {
+ 			polling-delay = <1000>;
+ 			polling-delay-passive = <100>;
+ 			thermal-sensors = <&ddr_temp>;
++			sustainable-power = <2000>; /* 2000mW */
+ 
+ 			trips {
+ 				ddr_passive: ddr-passive {
