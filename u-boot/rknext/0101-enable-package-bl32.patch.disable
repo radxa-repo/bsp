@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Tue Nov 12 9:01:24 2024
+From: Chen Jiali <chenjiali@radxa.com>
+Date: Tue, 12 Nov 2024 05:01:24 +0800
+Subject: [PATCH] enable package bl32
+
+diff --git a/arch/arm/mach-rockchip/make_fit_atf.sh b/arch/arm/mach-rockchip/make_fit_atf.sh
+index 045273e3..32ef33b8 100755
+--- a/arch/arm/mach-rockchip/make_fit_atf.sh
++++ b/arch/arm/mach-rockchip/make_fit_atf.sh
+@@ -10,7 +10,7 @@ source ./${srctree}/arch/arm/mach-rockchip/fit_nodes.sh
+ gen_header
+ gen_uboot_node
+ gen_bl31_node
+-#gen_bl32_node
++gen_bl32_node
+ gen_mcu_node
+ gen_loadable_node
+ gen_kfdt_node
