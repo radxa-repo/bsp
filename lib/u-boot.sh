@@ -14,6 +14,8 @@ bsp_reset() {
     BSP_SOC_OVERRIDE=
     BSP_BL31_OVERRIDE=
     BSP_BL31_VARIANT=
+    BSP_BL32_OVERRIDE=
+    BSP_BL32_VARIANT=
     BSP_TRUST_OVERRIDE=
     BSP_BOARD_OVERRIDE=
     BSP_ROCKCHIP_TPL=
@@ -42,6 +44,7 @@ bsp_prepare() {
 
     BSP_SOC_OVERRIDE="${BSP_SOC_OVERRIDE:-"$BSP_SOC"}"
     BSP_BL31_OVERRIDE="${BSP_BL31_OVERRIDE:-"$BSP_SOC"}"
+    BSP_BL32_OVERRIDE="${BSP_BL32_OVERRIDE:-"$BSP_SOC"}"
     BSP_TRUST_OVERRIDE="${BSP_TRUST_OVERRIDE:-"$BSP_SOC"}"
     BSP_BOARD_OVERRIDE="${BSP_BOARD_OVERRIDE:-"$BOARD"}"
 
@@ -81,6 +84,20 @@ bsp_prepare() {
                         echo "Using bl31 $(basename $rkbin_bl31)"
                         BSP_MAKE_EXTRA+=("BL31=$rkbin_bl31")
                     fi
+                fi
+
+                local rkbin_bl32
+                if [[ -n $BSP_BL32_OVERRIDE ]]
+                then
+                    if ! rkbin_bl32=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e "${BSP_BL32_OVERRIDE}_bl32_${BSP_BL32_VARIANT}" | sort | tail -n 1) || [[ -z $rkbin_bl32 ]]
+                    then
+                        echo "Unable to find prebuilt bl32. The resulting bootloader may not work." >&2
+                    else
+                        echo "Using bl32 $(basename $rkbin_bl32)"
+                        ln -sf "$rkbin_bl32" "$SCRIPT_DIR/.src/u-boot/tee.bin"
+                    fi
+                else
+                    rm -f "$SCRIPT_DIR/.src/u-boot/tee.bin"
                 fi
 
                 if [[ -n $RKBIN_DDR ]]
