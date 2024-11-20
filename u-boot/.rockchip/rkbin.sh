@@ -10,7 +10,7 @@ custom_source_action() {
             git_source "https://github.com/radxa/rkbin.git" 9e048f5694b019794dba077ca4871a009fa9be0f
             ;;
         *)
-            git_source "https://github.com/radxa/rkbin.git" a1452c2dd1329c856a70330de3c96c65f7ed32b0
+            git_source "https://github.com/radxa/rkbin.git" a45caf5db84fddb3422142a77cf2b50336f11161
             ;;
     esac
 }
