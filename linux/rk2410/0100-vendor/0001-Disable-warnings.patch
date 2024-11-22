@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZHANG Yuntian <yt@radxa.com>
+Date: Mon, 4 Mar 2024 17:00:58 +0800
+Subject: [PATCH] Disable warnings
+
+---
+ Makefile | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/Makefile b/Makefile
+index 69cdd0d2946c3..585cba7482248 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1083,6 +1088,11 @@ KBUILD_CFLAGS   += $(call cc-option,-Werror=designated-init)
+ # change __FILE__ to the relative path from the srctree
+ KBUILD_CPPFLAGS += $(call cc-option,-fmacro-prefix-map=$(srctree)/=)
+ 
++# Disable warnings in Rockchip drivers
++KBUILD_CFLAGS += $(call cc-disable-warning, unused-variable)
++KBUILD_CFLAGS += $(call cc-disable-warning, incompatible-pointer-types)
++KBUILD_CFLAGS += $(call cc-disable-warning, return-type)
++
+ # include additional Makefiles when needed
+ include-y			:= scripts/Makefile.extrawarn
+ include-$(CONFIG_DEBUG_INFO)	+= scripts/Makefile.debug
+-- 
+2.44.0
+
