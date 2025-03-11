@@ -218,7 +218,6 @@ rkpack_idbloader() {
         flash_data="${flash_data:+${flash_data}:}${SCRIPT_DIR}/.src/u-boot/spl/u-boot-spl.bin"
     fi
 
-    rm -f "$TARGET_DIR/idbloader.img" "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader-spi_spl.img" "$TARGET_DIR/idbloader-sd_nand.img"
     $TARGET_DIR/tools/mkimage -n $BSP_SOC_OVERRIDE -T rksd -d "${flash_data}" "$TARGET_DIR/idbloader.img"
 
     if [[ "$1" == "rkminiloader" ]]
@@ -323,6 +322,7 @@ bsp_preparedeb() {
             cp "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin" "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin.sd.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
             ;;
         rockchip)
+            rm -f "$TARGET_DIR/idbloader.img" "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader-spi_spl.img" "$TARGET_DIR/idbloader-sd_nand.img"
             if [[ -z "$RKMINILOADER" ]]
             then
                 echo "No RKMINILOADER specified. Require prepacked u-boot.itb."
