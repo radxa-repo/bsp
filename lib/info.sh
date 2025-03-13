@@ -92,24 +92,6 @@ get_supported_product() {
     )
 }
 
-get_supported_product() {
-    while (( $# > 0 )) && [[ "$1" == "--" ]]
-    do
-        shift
-    done
-
-    local profiles=( "$(get_supported_profile "${1:-}")" )
-    if ! in_array "${2:-}" "${profiles[@]}"
-    then
-        error $EXIT_UNKNOWN_OPTION "${2:-}"
-    fi
-
-    (
-        source "$SCRIPT_DIR/$1/$2/fork.conf"
-        echo "${SUPPORTED_BOARDS[@]}"
-    )
-}
-
 get_supported_profile() {
     while (( $# > 0 )) && [[ "$1" == "--" ]]
     do
