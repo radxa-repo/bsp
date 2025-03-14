@@ -1,0 +1,114 @@
+From 8d29486a151549af2dedd2fefacc3af7b6608581 Mon Sep 17 00:00:00 2001
+From: Jianqun Xu <jay.xu@rock-chips.com>
+Date: Fri, 30 Sep 2022 18:01:25 +0800
+Subject: [PATCH] pinctrl/rockchip: fix rk3308 pinmux error
+
+The GPIO2A2 GPIO2A3 GPIO2C0 GPIO3B2 GPIO3B3 have 3 bits for pinmux, and
+have a extra bit to select 2bits or 3bits.
+
+The Rockchip downstream has a soc_data_init to choice 3bits mode, but
+the upstream uses 2bits mode.
+
+This patch removes the soc_data_init/re_init and set the soc data init
+directly during probe.
+
+Fixes: ae7b9050a3f2 ("UPSTREAM: pinctrl: rockchip: fix RK3308 pinmux bits")
+
+Signed-off-by: Jianqun Xu <jay.xu@rock-chips.com>
+Change-Id: I57b88c776f86a37e34a38cd7b81e422e0cce2e03
+---
+ drivers/pinctrl/pinctrl-rockchip.c | 40 ++++++++++++++----------------
+ drivers/pinctrl/pinctrl-rockchip.h |  5 ----
+ 2 files changed, 19 insertions(+), 26 deletions(-)
+
+diff --git a/drivers/pinctrl/pinctrl-rockchip.c b/drivers/pinctrl/pinctrl-rockchip.c
+index 76b858b44591e..2f5eb0756c3ec 100644
+--- a/drivers/pinctrl/pinctrl-rockchip.c
++++ b/drivers/pinctrl/pinctrl-rockchip.c
+@@ -591,35 +591,35 @@ static struct rockchip_mux_recalced_data rk3308_mux_recalced_data[] = {
+ 		.bit = 8,
+ 		.mask = 0xf
+ 	}, {
+-		/* gpio2a2_sel */
++		/* gpio2a2_sel_plus */
+ 		.num = 2,
+ 		.pin = 2,
+-		.reg = 0x40,
+-		.bit = 4,
+-		.mask = 0x3
++		.reg = 0x608,
++		.bit = 0,
++		.mask = 0x7
+ 	}, {
+-		/* gpio2a3_sel */
++		/* gpio2a3_sel_plus */
+ 		.num = 2,
+ 		.pin = 3,
+-		.reg = 0x40,
+-		.bit = 6,
+-		.mask = 0x3
++		.reg = 0x608,
++		.bit = 4,
++		.mask = 0x7
+ 	}, {
+-		/* gpio2c0_sel */
++		/* gpio2c0_sel_plus */
+ 		.num = 2,
+ 		.pin = 16,
+-		.reg = 0x50,
+-		.bit = 0,
+-		.mask = 0x3
++		.reg = 0x610,
++		.bit = 8,
++		.mask = 0x7
+ 	}, {
+-		/* gpio3b2_sel */
++		/* gpio3b2_sel_plus */
+ 		.num = 3,
+ 		.pin = 10,
+-		.reg = 0x68,
+-		.bit = 4,
+-		.mask = 0x3
++		.reg = 0x610,
++		.bit = 0,
++		.mask = 0x7
+ 	}, {
+-		/* gpio3b3_sel */
++		/* gpio3b3_sel_plus */
+ 		.num = 3,
+ 		.pin = 11,
+ 		.reg = 0x68,
+@@ -3961,9 +3961,8 @@ static int rockchip_pinctrl_probe(struct platform_device *pdev)
+ 			return PTR_ERR(info->regmap_pmu);
+ 	}
+ 
+-	/* Special handle for some Socs */
+-	if (ctrl->soc_data_init) {
+-		ret = ctrl->soc_data_init(info);
++	if (IS_ENABLED(CONFIG_CPU_RK3308) && ctrl->type == RK3308) {
++		ret = rk3308_soc_data_init(info);
+ 		if (ret)
+ 			return ret;
+ 	}
+@@ -4408,7 +4407,6 @@ static struct rockchip_pin_ctrl rk3308_pin_ctrl __maybe_unused = {
+ 		.niomux_recalced	= ARRAY_SIZE(rk3308_mux_recalced_data),
+ 		.iomux_routes		= rk3308_mux_route_data,
+ 		.niomux_routes		= ARRAY_SIZE(rk3308_mux_route_data),
+-		.soc_data_init		= rk3308_soc_data_init,
+ 		.pull_calc_reg		= rk3308_calc_pull_reg_and_bit,
+ 		.drv_calc_reg		= rk3308_calc_drv_reg_and_bit,
+ 		.schmitt_calc_reg	= rk3308_calc_schmitt_reg_and_bit,
+diff --git a/drivers/pinctrl/pinctrl-rockchip.h b/drivers/pinctrl/pinctrl-rockchip.h
+index 1642432513fd3..2faedfb9ac247 100644
+--- a/drivers/pinctrl/pinctrl-rockchip.h
++++ b/drivers/pinctrl/pinctrl-rockchip.h
+@@ -401,9 +401,6 @@ struct rockchip_pin_ctrl {
+ 	u32				niomux_recalced;
+ 	struct rockchip_mux_route_data *iomux_routes;
+ 	u32				niomux_routes;
+-
+-	int	(*soc_data_init)(struct rockchip_pinctrl *info);
+-
+ 	int	(*pull_calc_reg)(struct rockchip_pin_bank *bank,
+ 				    int pin_num, struct regmap **regmap,
+ 				    int *reg, u8 *bit);
