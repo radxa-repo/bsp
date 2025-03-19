@@ -148,7 +148,7 @@ prepare_source() {
     if [ -L "$TARGET_DIR" ]; then
         TARGET_DIR=$(readlink -f "$TARGET_DIR")
     else
-        [ ! -d "$TARGET_DIR" ] && mkdir -p "$TARGET_DIR"
+        mkdir -p "$TARGET_DIR"
     fi
 
     if $LONG_VERSION
