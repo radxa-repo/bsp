@@ -34,12 +34,6 @@ container_exec() {
     CONTAINER_OPTIONS=( "--name" "bsp" )
     CONTAINER_OPTIONS+=( "--workdir" "$PWD" )
     CONTAINER_OPTIONS+=( "--mount" "type=bind,source=$PWD,destination=$PWD" )
-    # Check if the kernel path is a soft link
-    if [ -L "$SCRIPT_DIR/.src/linux" ]; then
-        TARGET_REAL_PATH=$(readlink -f "$SCRIPT_DIR/.src/linux")
-        CONTAINER_OPTIONS+=( "--mount" "type=bind,source=$TARGET_REAL_PATH,destination=$TARGET_REAL_PATH")
-    fi
-
     if [[ -t 0 ]]
     then
         CONTAINER_OPTIONS+=( "-it" )
