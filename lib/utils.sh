@@ -145,11 +145,7 @@ prepare_source() {
     TARGET_DIR="$SCRIPT_DIR/.src/$target"
     local fork_dir="$SCRIPT_DIR/$target/$FORK"
 
-    if [ -L "$TARGET_DIR" ]; then
-        TARGET_DIR=$(readlink -f "$TARGET_DIR")
-    else
-        mkdir -p "$TARGET_DIR"
-    fi
+    mkdir -p "$TARGET_DIR"
 
     if $LONG_VERSION
     then
