@@ -56,7 +56,7 @@ bsp_prepare() {
                 BSP_DEFCONFIG="${BSP_BOARD_OVERRIDE}-${BSP_SOC}_defconfig"
                 ;;
             *)
-                BSP_DEFCONFIG="${BOARD}_defconfig"
+                BSP_DEFCONFIG="${BSP_BOARD_OVERRIDE}_defconfig"
                 ;;
         esac
     fi
@@ -258,7 +258,7 @@ rkpack_rkminiloader() {
     mv ./trust.img "$TARGET_DIR/trust.img"
     popd
 
-    cp "$TARGET_DIR/uboot.img" "$TARGET_DIR/trust.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+    cp "$TARGET_DIR/uboot.img" "$TARGET_DIR/trust.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/"
 }
 
 rkpack_rkboot() {
@@ -280,7 +280,7 @@ rkpack_rkboot() {
         fi
 
         $SCRIPT_DIR/.src/rkbin/tools/boot_merger "$rkboot_ini"
-        mv ./*_loader_*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/rkboot$variant.bin"
+        mv ./*_loader_*.bin "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/rkboot$variant.bin"
 
         if [[ -n $RKBOOT_IDB ]]
         then
@@ -308,10 +308,10 @@ rkpack_rkboot() {
 bsp_preparedeb() {
     local soc_family=$(get_soc_family $BSP_SOC)
     
-    mkdir -p "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE"
-    cp "$SCRIPT_DIR/common/u-boot_setup-$soc_family.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/setup.sh"
+    mkdir -p "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD"
+    cp "$SCRIPT_DIR/common/u-boot_setup-$soc_family.sh" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/setup.sh"
     if [[ -f "$SCRIPT_DIR/common/u-boot_setup-$soc_family.ps1" ]]; then
-        cp "$SCRIPT_DIR/common/u-boot_setup-$soc_family.ps1" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/setup.ps1"
+        cp "$SCRIPT_DIR/common/u-boot_setup-$soc_family.ps1" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/setup.ps1"
     fi
 
     case "$soc_family" in
@@ -319,7 +319,7 @@ bsp_preparedeb() {
             make -C "$SCRIPT_DIR/.src/fip" -j$(nproc) distclean
             make -C "$SCRIPT_DIR/.src/fip" -j$(nproc) fip BOARD=$BSP_BOARD_OVERRIDE UBOOT_BIN="$TARGET_DIR/u-boot.bin"
 
-            cp "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin" "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin.sd.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+            cp "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin" "$SCRIPT_DIR/.src/fip/$BSP_BOARD_OVERRIDE/u-boot.bin.sd.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/"
             ;;
         rockchip)
             rm -f "$TARGET_DIR/idbloader.img" "$TARGET_DIR/idbloader-spi.img" "$TARGET_DIR/idbloader-spi_spl.img" "$TARGET_DIR/idbloader-sd_nand.img"
@@ -327,18 +327,18 @@ bsp_preparedeb() {
             then
                 echo "No RKMINILOADER specified. Require prepacked u-boot.itb."
                 rkpack_idbloader "spl"
-                cp "$TARGET_DIR/u-boot.itb" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+                cp "$TARGET_DIR/u-boot.itb" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/"
             else
                 echo "Packaging U-Boot with Rockchip Miniloader"
                 rkpack_idbloader "rkminiloader"
                 rkpack_rkminiloader
             fi
             rkpack_rkboot
-            cp "$TARGET_DIR/idbloader-spi"*".img" "$TARGET_DIR/idbloader-sd"*".img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+            cp "$TARGET_DIR/idbloader-spi"*".img" "$TARGET_DIR/idbloader-sd"*".img" "$TARGET_DIR/idbloader.img" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/"
             ;;
         mediatek)
-            cp "$SCRIPT_DIR/.src/mtk-atf/build/$BSP_BL31_OVERRIDE/release/bl2.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
-            truncate -s%4 "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/bl2.bin"
+            cp "$SCRIPT_DIR/.src/mtk-atf/build/$BSP_BL31_OVERRIDE/release/bl2.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/"
+            truncate -s%4 "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/bl2.bin"
 
             local media="emmc"
             if "$BSP_UFS_BOOT"
@@ -346,13 +346,13 @@ bsp_preparedeb() {
                 media="ufs"
             fi
             "$TARGET_DIR/tools/mkimage" -T mtk_image -a 0x201000 -e 0x201000 -n "media=$media;arm64=1" \
-                -d "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/bl2.bin" \
-                "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/bl2.img"
-            rm "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/bl2.bin"
+                -d "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/bl2.bin" \
+                "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/bl2.img"
+            rm "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/bl2.bin"
 
-            cp "$SCRIPT_DIR/.src/lk-prebuilt/$BSP_MTK_LK_PROJECT/lk.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+            cp "$SCRIPT_DIR/.src/lk-prebuilt/$BSP_MTK_LK_PROJECT/lk.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/"
 
-            cp "$TARGET_DIR/u-boot.bin" "$TARGET_DIR/u-boot-mtk.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BSP_BOARD_OVERRIDE/"
+            cp "$TARGET_DIR/u-boot.bin" "$TARGET_DIR/u-boot-mtk.bin" "$SCRIPT_DIR/.root/usr/lib/u-boot/$BOARD/"
             ;;
         *)
             error $EXIT_UNSUPPORTED_OPTION "$soc_family"
