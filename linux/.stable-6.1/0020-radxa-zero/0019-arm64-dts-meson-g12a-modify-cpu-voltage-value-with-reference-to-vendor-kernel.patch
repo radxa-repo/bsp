@@ -1,0 +1,42 @@
+From 3b12880260e714bf98edcf5dbb28dfe8568d96be Wed Apr 2 10:53:25 2025
+From: Chen Jiali <ChenJiali@radxa.com>
+Date: Wed Apr 2 18:53:25 2025 +0800
+Subject: arm64: dts: meson-g12a: modify cpu voltage value with reference to vendor kernel
+
+diff --git a/arch/arm64/boot/dts/amlogic/meson-g12a.dtsi b/arch/arm64/boot/dts/amlogic/meson-g12a.dtsi
+index 60ab83f34..bf40c74c1 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-g12a.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-g12a.dtsi
+@@ -68,27 +68,27 @@ opp-1000000000 {
+ 
+ 		opp-1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+-			opp-microvolt = <731000>;
++			opp-microvolt = <761000>;
+ 		};
+ 
+ 		opp-1398000000 {
+ 			opp-hz = /bits/ 64 <1398000000>;
+-			opp-microvolt = <761000>;
++			opp-microvolt = <791000>;
+ 		};
+ 
+ 		opp-1512000000 {
+ 			opp-hz = /bits/ 64 <1512000000>;
+-			opp-microvolt = <791000>;
++			opp-microvolt = <831000>;
+ 		};
+ 
+ 		opp-1608000000 {
+ 			opp-hz = /bits/ 64 <1608000000>;
+-			opp-microvolt = <831000>;
++			opp-microvolt = <871000>;
+ 		};
+ 
+ 		opp-1704000000 {
+ 			opp-hz = /bits/ 64 <1704000000>;
+-			opp-microvolt = <861000>;
++			opp-microvolt = <921000>;
+ 		};
+ 
+ 		opp-1800000000 {
