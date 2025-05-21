@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: bsp <bsp@radxa.com>
+Date: Wed, 21 May 2025 14:17:46 +0800
+Subject: [PATCH] [PATCH] rockchip: add cmd_dtimg config
+
+Signed-off-by: bsp <bsp@radxa.com>
+---
+ configs/rock-pi-4b-rk3399_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/configs/rock-pi-4b-rk3399_defconfig b/configs/rock-pi-4b-rk3399_defconfig
+index 09b7ad16..1417630f 100644
+--- a/configs/rock-pi-4b-rk3399_defconfig
++++ b/configs/rock-pi-4b-rk3399_defconfig
+@@ -102,3 +102,4 @@ CONFIG_LCD=y
+ CONFIG_USE_TINY_PRINTF=y
+ CONFIG_SPL_TINY_MEMSET=y
+ CONFIG_ERRNO_STR=y
++CONFIG_CMD_DTIMG=y
+\ No newline at end of file
+-- 
+2.34.1
+
