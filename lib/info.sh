@@ -15,7 +15,7 @@ Automatic mode:
 Manual mode:
     $(basename "$0") [options] <linux|u-boot> <profile> [product]
 
-    When building u-boot, you can also provide the 'product' argument,
+    When building linux or u-boot, you can also provide the 'product' argument,
     which will only build for that specific product, instead of for all products
     supported by the specified profile.
 

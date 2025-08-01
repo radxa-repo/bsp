@@ -71,6 +71,17 @@ bsp_makedeb() {
 }
 
 component_build() {
+    local profile="$1" product="$2"
+    
+    if [[ -n "$product" ]]
+    then
+        if ! in_array "$product" "${SUPPORTED_BOARDS[@]}"
+        then
+            error $EXIT_UNKNOWN_OPTION "$product"
+        fi
+        SUPPORTED_BOARDS=("$product")
+    fi
+    
     if $DTB_ONLY
     then
         BSP_MAKE_TARGETS=("dtbs")
