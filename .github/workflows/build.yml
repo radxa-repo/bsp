@@ -36,7 +36,7 @@ jobs:
       u-boot: ${{ steps.query.outputs.u-boot }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Query available board configs
         id: query
         run: |
