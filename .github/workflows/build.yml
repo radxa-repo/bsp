@@ -33,7 +33,6 @@ jobs:
   query:
     runs-on: ubuntu-latest
     outputs:
-      linux: ${{ steps.query.outputs.linux }}
       u-boot: ${{ steps.query.outputs.u-boot }}
     steps:
       - name: Checkout
@@ -41,7 +40,6 @@ jobs:
       - name: Query available board configs
         id: query
         run: |
-          echo "linux=$(./bsp json profile linux)" >> $GITHUB_OUTPUT
           echo "u-boot=$(./bsp json profile u-boot)" >> $GITHUB_OUTPUT
   build_u-boot:
     needs: query
@@ -50,20 +48,6 @@ jobs:
       matrix:
         targets: [ u-boot ]
         profiles: ${{fromJSON(needs.query.outputs.u-boot)}}
-    steps:
-      - name: Build
-        uses: radxa-repo/bsp@main
-        with:
-          target: ${{ matrix.targets }}
-          edition: ${{ matrix.profiles }}
-          artifacts: true
-  build_linux:
-    needs: query
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        targets: [ linux ]
-        profiles: ${{fromJSON(needs.query.outputs.linux)}}
     steps:
       - name: Build
         uses: radxa-repo/bsp@main
