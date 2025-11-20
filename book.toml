@@ -1,7 +1,6 @@
 [book]
 authors = ["Radxa Limited"]
 language = "en"
-multilingual = true
 src = "docs"
 title = "bsp"
 
