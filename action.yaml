@@ -37,7 +37,7 @@ runs:
         popd
     - name: Upload artifacts
       if: inputs.artifacts == 'true' && inputs.board != 'rootfs'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ${{ inputs.target }}_${{ inputs.edition }}_${{ inputs.revision }}
         path: .output
