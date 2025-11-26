@@ -88,6 +88,7 @@ bsp_prepare() {
                 fi
 
                 local rkbin_bl32
+                rm -f "$SCRIPT_DIR/.src/u-boot/tee.bin"
                 if [[ -n $BSP_BL32_OVERRIDE ]]
                 then
                     if ! rkbin_bl32=$(find $SCRIPT_DIR/.src/rkbin/bin | grep -e "${BSP_BL32_OVERRIDE}_bl32_${BSP_BL32_VARIANT}" | sort | tail -n 1) || [[ -z $rkbin_bl32 ]]
@@ -97,8 +98,6 @@ bsp_prepare() {
                         echo "Using bl32 $(basename $rkbin_bl32)"
                         ln -sf "$rkbin_bl32" "$SCRIPT_DIR/.src/u-boot/tee.bin"
                     fi
-                else
-                    rm -f "$SCRIPT_DIR/.src/u-boot/tee.bin"
                 fi
 
                 if [[ -n $RKBIN_DDR ]]
