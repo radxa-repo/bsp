@@ -110,10 +110,10 @@ main() {
         esac
     done
 
-    if ! $NO_SUBMODULE_CHECK && [[ -z "$(git submodule status)" ]]
-    then
-        error $EXIT_NO_SUBMODULE
-    fi
+    # if ! $NO_SUBMODULE_CHECK && [[ -z "$(git submodule status)" ]]
+    # then
+    #     error $EXIT_NO_SUBMODULE
+    # fi
 
     TEMP="${1:-}"
     shift || true
