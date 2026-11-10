@@ -27,7 +27,7 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install --no-install-recommends -y qemu-user-static binfmt-support
+        sudo apt-get install --no-install-recommends -y qemu-user-binfmt binfmt-support
     - name: Build
       shell: bash
       run: |
